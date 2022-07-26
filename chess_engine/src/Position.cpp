@@ -4,6 +4,7 @@
 namespace matt
 {
 	Position::Position()
+		: m_enPassant(false)
 	{
 		// 2D Array mit 'whitespace' initialisieren
 		for (auto i = 0; i < 8; i++)
@@ -24,5 +25,13 @@ namespace matt
 	{
 		assert(index < 8);
 		return m_data[index];
+	}
+	void Position::setEnPassant(bool value)
+	{
+		m_enPassant = value;
+	}
+	bool Position::getEnPassant() const
+	{
+		return m_enPassant;
 	}
 }

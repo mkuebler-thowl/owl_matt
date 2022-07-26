@@ -26,6 +26,8 @@ namespace matt
 		/// <returns>die neue Spielposition bzw. Ausgangsstellung</returns>
 		static const Position& applyMove(const Position& position, const Move& move);
 
+		static bool isKinginCheckAfterMove(const Position& position, short player, const Move& move);
+	private:
 		/// <summary>
 		/// Funktion zur Überprüfung, ob die aktuelle Stellung den jeweiligen König bedroht.
 		/// </summary>
@@ -33,7 +35,7 @@ namespace matt
 		/// <param name="player:">Der aktuelle Spieler, der am Zug ist</param>
 		/// <returns>Steht der König des aktuellen Spielers im Schach?</returns>
 		static bool isKingInCheck(const Position& position, short player);
-	private:
+
 		/// Überprüfe alle diagonalen Felder vom König ausgesehen
 		static bool checkKingDiagonal(int king_x, int king_y, const Position& position, short player);
 		/// Überprüfe alle horizontalen und vertikalen Felder vom König ausgesehen
@@ -42,5 +44,14 @@ namespace matt
 		static bool checkKingKnights(int king_x, int king_y, const Position& position, short player);
 		/// Überprüfe alle möglichen Bauerbedrohungen vom König ausgesehen
 		static bool checkKingPawns(int king_x, int king_y, const Position& position, short player);
+
+		// TODO: En Passant
+		static std::vector<Move> getValidPawnMoves(const Position& position, int x, int y, short player);
+		static std::vector<Move> getValidKnightMoves(const Position& position, int x, int y, short player);
+		static std::vector<Move> getValidKingMoves(const Position& position, int x, int y, short player);
+		static std::vector<Move> getValidRookMoves(const Position& position, int x, int y, short player);
+		static std::vector<Move> getValidBishopMoves(const Position& position, int x, int y, short player);
+
+		static bool isInsideChessboard(int x, int y);
 	};
 }

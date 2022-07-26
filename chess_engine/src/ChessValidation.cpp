@@ -1,24 +1,52 @@
 #include "ChessValidation.hpp"
 #include "ChessEngine.hpp"
-
+#include <string>
 namespace matt
 {
 	std::vector<Move> ChessValidation::getValidMoves(const Position& position, short player, bool sort)
 	{
 		std::vector<Move> moves;
 
+		int pawn_direction = player;
+
 		for (int y = 0; y < 8; y++)
 		{
 			for (int x = 0; x < 8; x++)
 			{
-				if (player == PLAYER_WHITE)
+				switch (position[y][x])
 				{
-					switch (position[y][x])
-					{
-					case 'P':
-						// TODO:
-						break;
-					}
+				case 'P':
+				case 'p': {
+					auto pawns = getValidPawnMoves(position, x, y, player);
+					moves.insert(moves.end(), pawns.begin(), pawns.end());
+					break; }
+				case 'N':
+				case 'n': {
+					auto knights = getValidKnightMoves(position, x, y, player);
+					moves.insert(moves.end(), knights.begin(), knights.end());
+					break; }
+				case 'K':
+				case 'k': {
+					auto kings = getValidKingMoves(position, x, y, player);
+					moves.insert(moves.end(), kings.begin(), kings.end());
+					break; }
+				case 'R':
+				case 'r': {
+					auto rooks = getValidRookMoves(position, x, y, player);
+					moves.insert(moves.end(), rooks.begin(), rooks.end());
+					break; }
+				case 'B':
+				case 'b': {
+					auto bishops = getValidBishopMoves(position, x, y, player);
+					moves.insert(moves.end(), bishops.begin(), bishops.end());
+					break; }
+				case 'Q':
+				case 'q': {
+					auto axis = getValidRookMoves(position, x, y, player);
+					auto diagonal = getValidBishopMoves(position, x, y, player);
+					moves.insert(moves.end(), axis.begin(), axis.end());
+					moves.insert(moves.end(), diagonal.begin(), diagonal.end());
+					break; }
 				}
 			}
 		}
@@ -31,6 +59,12 @@ namespace matt
 		pos[move.targetY][move.targetX] = position[move.startY][move.startX];
 		pos[move.startY][move.startX] = ' ';
 		return pos;
+	}
+
+	bool ChessValidation::isKinginCheckAfterMove(const Position& position, short player, const Move& move)
+	{
+		auto nextPosition = applyMove(position, move);
+		return isKingInCheck(nextPosition, player);
 	}
 
 	bool ChessValidation::isKingInCheck(const Position& position, short player)
@@ -259,5 +293,303 @@ namespace matt
 		}
 
 		return false;
+	}
+
+	std::vector<Move> ChessValidation::getValidPawnMoves(const Position& position, int x, int y, short player)
+	{
+		std::vector<Move> moves;
+
+		auto pawn_direction = player;
+		std::string enemies = player == PLAYER_WHITE ? "pnbrqk" : "PNBRQK";
+		std::string promotion_str = player == PLAYER_WHITE ? "NBRQ" : "nbrq";
+
+		if (y > 0 && player == PLAYER_WHITE || y < 7 && player == PLAYER_BLACK)
+		{
+			// Schritt nach vorne 
+			if (position[y - pawn_direction][x] == ' ')
+			{
+				Move move;
+				move.startX = x;
+				move.startY = y;
+				move.targetX = x;
+				move.targetY = y - pawn_direction;
+				move.capture = false;
+
+				// Bauernumwandlung?
+				if (y - pawn_direction == 0) {
+
+					for (auto c : promotion_str)
+					{
+						move.promotion = c;
+						if (!isKinginCheckAfterMove(position, player, move))
+							moves.push_back(move);
+					}
+				}
+				else
+				{
+					if (!isKinginCheckAfterMove(position, player, move))
+						moves.push_back(move);
+				}
+			}
+			// 2-Schritte am Anfang?
+			if ((y == 6 && player == PLAYER_WHITE && position[4][x] == ' ' && position[5][x] == ' ')
+				|| (y == 1 && player == PLAYER_BLACK && position[2][x] == ' ' && position[3][x] == ' '))
+			{
+				Move move;
+				move.startX = x;
+				move.startY = y;
+				move.targetX = x;
+				move.targetY = y - 2 * pawn_direction;
+				move.capture = false;
+				move.promotion = 0;
+
+				if (!isKinginCheckAfterMove(position, player, move))
+					moves.push_back(move);
+			}
+
+			// Diagonal Schlagen:
+			if (x > 0)
+			{
+				// links oben
+				if (enemies.find(position[y - pawn_direction][x - 1]) != std::string::npos)
+				{
+					Move move;
+					move.startX = x;
+					move.startY = y;
+					move.targetX = x - 1;
+					move.targetY = y - pawn_direction;
+					move.capture = true;
+					move.promotion = 0;
+
+					if (!isKinginCheckAfterMove(position, player, move))
+						moves.push_back(move);
+				}
+
+				// rechts oben
+				if (enemies.find(position[y - pawn_direction][x + 1]) != std::string::npos)
+				{
+					Move move;
+					move.startX = x;
+					move.startY = y;
+					move.targetX = x + 1;
+					move.targetY = y - pawn_direction;
+					move.capture = true;
+					move.promotion = 0;
+
+					if (!isKinginCheckAfterMove(position, player, move))
+						moves.push_back(move);
+				}
+			}
+		}
+
+		return moves;
+	}
+	std::vector<Move> ChessValidation::getValidKnightMoves(const Position& position, int x, int y, short player)
+	{
+		std::vector<Move> moves;
+		std::vector<std::pair<int, int>> possible_places = { {1,-2},{2,-1},{2,1},{1,2},{-1,2},{-2,1},{-2,-1} };
+		std::string enemies = player == PLAYER_WHITE ? "pnbrqk" : "PNBRQK";
+
+		for (auto pair : possible_places)
+		{
+			if (isInsideChessboard(x + pair.first, y + pair.second))
+			{
+				auto piece = position[y + pair.second][x + pair.first];
+				auto capture = enemies.find(piece) != std::string::npos;
+				if (piece == ' ' || capture)
+				{
+					Move move;
+					move.startX = x;
+					move.startY = y;
+					move.targetX = x + pair.first;
+					move.targetY = y + pair.second;
+					move.capture = capture;
+
+					// Prüfen ob der König nach dem Zug nicht im Schach steht:
+					if(!isKinginCheckAfterMove(position, player, move))
+						moves.push_back(move);
+				}
+			}
+		}
+		return moves;
+	}
+	std::vector<Move> ChessValidation::getValidKingMoves(const Position& position, int x, int y, short player)
+	{
+		std::vector<Move> moves;
+		std::string enemies = player == PLAYER_WHITE ? "pnbrqk" : "PNBRQK";
+		std::vector<std::pair<int, int>> possible_places = { {0,-1},{1,-1},{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1} };
+
+		for (auto pair : possible_places)
+		{
+			if (isInsideChessboard(x + pair.first, y + pair.second))
+			{
+				auto piece = position[y + pair.second][x + pair.first];
+				auto capture = enemies.find(piece) != std::string::npos;
+				if (piece == ' ' || capture)
+				{
+					Move move;
+					move.startX = x;
+					move.startY = y;
+					move.targetX = x + pair.first;
+					move.targetY = y + pair.second;
+					move.capture = capture;
+
+					// Prüfen ob der König nach dem Zug nicht im Schach steht:
+					if (!isKinginCheckAfterMove(position, player, move))
+						moves.push_back(move);
+				}
+			}
+		}
+
+		return moves;
+	}
+	std::vector<Move> ChessValidation::getValidRookMoves(const Position& position, int x, int y, short player)
+	{
+		std::vector<Move> moves;
+		
+		std::string enemies = player == PLAYER_WHITE ? "pnbrqk" : "PNBRQK";
+		// nach links schauen
+		bool left_empty = true;
+		bool right_empty = true;
+		bool up_empty = true;
+		bool down_empty = false;
+
+		int x_offset = 1;
+		int y_offset = 1;
+
+		while (left_empty)
+		{
+			if (isInsideChessboard(x - x_offset, y))
+			{
+				auto place = position[y][x - x_offset];
+				auto capture = enemies.find(place) != std::string::npos;
+
+				if (place == ' ' || capture)
+				{
+					Move move;
+					move.startX = x;
+					move.startY = y;
+					move.targetX = x - x_offset;
+					move.targetY = y;
+					move.capture = capture;
+					if (capture) left_empty = false;
+				}
+				else
+				{
+					left_empty = false;
+				}
+			}
+			else
+			{
+				left_empty = false;
+			}
+
+			x_offset++;
+		}
+
+		x_offset = 1;
+
+		while (right_empty)
+		{
+			if (isInsideChessboard(x + x_offset, y))
+			{
+				auto place = position[y][x + x_offset];
+				auto capture = enemies.find(place) != std::string::npos;
+
+				if (place == ' ' || capture)
+				{
+					Move move;
+					move.startX = x;
+					move.startY = y;
+					move.targetX = x + x_offset;
+					move.targetY = y;
+					move.capture = capture;
+					if (capture) right_empty = false;
+				}
+				else
+				{
+					right_empty = false;
+				}
+			}
+			else
+			{
+				right_empty = false;
+			}
+			x_offset++;
+		}
+
+		while (up_empty)
+		{
+			if (isInsideChessboard(x , y - y_offset))
+			{
+				auto place = position[y - y_offset][x];
+				auto capture = enemies.find(place) != std::string::npos;
+
+				if (place == ' ' || capture)
+				{
+					Move move;
+					move.startX = x;
+					move.startY = y;
+					move.targetX = x;
+					move.targetY = y - y_offset;
+					move.capture = capture;
+					if (capture) up_empty = false;
+				}
+				else
+				{
+					up_empty = false;
+				}
+			}
+			else
+			{
+				up_empty = false;
+			}
+			y_offset++;
+		}
+
+		while (down_empty)
+		{
+			if (isInsideChessboard(x, y + y_offset))
+			{
+				auto place = position[y + y_offset][x];
+				auto capture = enemies.find(place) != std::string::npos;
+
+				if (place == ' ' || capture)
+				{
+					Move move;
+					move.startX = x;
+					move.startY = y;
+					move.targetX = x;
+					move.targetY = y + y_offset;
+					move.capture = capture;
+					if (capture) down_empty = false;
+				}
+				else
+				{
+					down_empty = false;
+				}
+			}
+			else
+			{
+				down_empty = false;
+			}
+			y_offset++;
+		}
+
+		return moves;
+	}
+
+	std::vector<Move> ChessValidation::getValidBishopMoves(const Position& position, int x, int y, short player)
+	{
+		std::vector<Move> moves;
+
+		// TODO: bishop moves
+
+		return moves;
+	}
+
+	bool ChessValidation::isInsideChessboard(int x, int y)
+	{
+		return x>=0 && x<8 && y>=0 && y<8;
 	}
 }
