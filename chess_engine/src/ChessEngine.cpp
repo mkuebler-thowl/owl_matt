@@ -7,6 +7,7 @@ namespace matt
 {
 	ChessEngine::ChessEngine()
 	{
+		m_validation = std::make_unique<ChessValidation>();
 	}
 	ChessEngine::~ChessEngine()
 	{
@@ -38,7 +39,7 @@ namespace matt
 
 	MinMaxResult ChessEngine::minMax(const Position& position, short player, unsigned short depth, bool sort)
 	{
-		auto moves = ChessValidation::getValidMoves(position, sort);
+		auto moves = m_validation->getValidMoves(position, sort);
 		auto result = MinMaxResult{};
 
 		if (depth == 0 || moves.empty())
@@ -51,7 +52,7 @@ namespace matt
 
 		for (auto move : moves)
 		{
-			auto current_position = ChessValidation::applyMove(position, move);
+			auto current_position = m_validation->applyMove(position, move);
 			result = minMax(current_position, -player, depth - 1, sort);
 
 			if (result.value > score && player == PLAYER_WHITE || result.value < score && player == PLAYER_BLACK)

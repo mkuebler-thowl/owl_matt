@@ -1,11 +1,12 @@
 #pragma once
 
 #include <vector>
-
+#include <memory>
 
 #include "Position.hpp"
 #include "Move.hpp"
 #include "MinMaxResult.hpp"
+#include "ChessValidation.hpp"
 
 namespace matt
 {
@@ -44,9 +45,7 @@ namespace matt
 		/// <param name="random:">Bei Aktivierung wird aus einer Menge bestmöglicher Züge (+-Threshold) ein Zug zufällig gewählt</param>
 		/// <returns>Der bestmögliche gefundene Zug innerhalb der Suchtiefe</returns>
 		Move searchMove(const Position& position, short player, unsigned short depth, unsigned char parameter_flags, bool random = false);
-
 	private:
-
 		/// <summary>
 		/// Bewertungsfunktion
 		/// </summary>
@@ -54,7 +53,6 @@ namespace matt
 		/// <param name="simple:">Wenn aktiv wird nur die einfache Materialbalance berechnet (Bei Sortierung möglicherweise ausreichend)"</param>
 		/// <returns>Nutzwert</returns>
 		float evaluate(const Position& position, bool simple = false);
-
 
 		/// <summary>
 		/// Klassischer Min-Max-Algorithmus zur Zugfindung
@@ -78,5 +76,6 @@ namespace matt
 		/// <returns></returns>
 		float alphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort = false);
 
+		std::unique_ptr<ChessValidation> m_validation;
 	};
 }

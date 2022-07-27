@@ -1,5 +1,7 @@
 #include "ChessValidation.hpp"
 #include "ChessEngine.hpp"
+#include "FENParser.hpp"
+
 #include <string>
 namespace matt
 {
@@ -13,40 +15,69 @@ namespace matt
 		{
 			for (int x = 0; x < 8; x++)
 			{
-				switch (position[y][x])
+				if (player == PLAYER_WHITE)
 				{
-				case 'P':
-				case 'p': {
-					auto pawns = getValidPawnMoves(position, x, y, player);
-					moves.insert(moves.end(), pawns.begin(), pawns.end());
-					break; }
-				case 'N':
-				case 'n': {
-					auto knights = getValidKnightMoves(position, x, y, player);
-					moves.insert(moves.end(), knights.begin(), knights.end());
-					break; }
-				case 'K':
-				case 'k': {
-					auto kings = getValidKingMoves(position, x, y, player);
-					moves.insert(moves.end(), kings.begin(), kings.end());
-					break; }
-				case 'R':
-				case 'r': {
-					auto rooks = getValidRookMoves(position, x, y, player);
-					moves.insert(moves.end(), rooks.begin(), rooks.end());
-					break; }
-				case 'B':
-				case 'b': {
-					auto bishops = getValidBishopMoves(position, x, y, player);
-					moves.insert(moves.end(), bishops.begin(), bishops.end());
-					break; }
-				case 'Q':
-				case 'q': {
-					auto axis = getValidRookMoves(position, x, y, player);
-					auto diagonal = getValidBishopMoves(position, x, y, player);
-					moves.insert(moves.end(), axis.begin(), axis.end());
-					moves.insert(moves.end(), diagonal.begin(), diagonal.end());
-					break; }
+					switch (position[y][x])
+					{
+					case 'P': {
+						auto pawns = getValidPawnMoves(position, x, y, player);
+						moves.insert(moves.end(), pawns.begin(), pawns.end());
+						break; }
+					case 'N': {
+						auto knights = getValidKnightMoves(position, x, y, player);
+						moves.insert(moves.end(), knights.begin(), knights.end());
+						break; }
+					case 'K': {
+						auto kings = getValidKingMoves(position, x, y, player);
+						moves.insert(moves.end(), kings.begin(), kings.end());
+						break; }
+					case 'R': {
+						auto rooks = getValidRookMoves(position, x, y, player);
+						moves.insert(moves.end(), rooks.begin(), rooks.end());
+						break; }
+					case 'B': {
+						auto bishops = getValidBishopMoves(position, x, y, player);
+						moves.insert(moves.end(), bishops.begin(), bishops.end());
+						break; }
+					case 'Q': {
+						auto axis = getValidRookMoves(position, x, y, player);
+						auto diagonal = getValidBishopMoves(position, x, y, player);
+						moves.insert(moves.end(), axis.begin(), axis.end());
+						moves.insert(moves.end(), diagonal.begin(), diagonal.end());
+						break; }
+					}
+				}
+				else if (player == PLAYER_BLACK)
+				{
+					switch (position[y][x])
+					{
+					case 'p': {
+						auto pawns = getValidPawnMoves(position, x, y, player);
+						moves.insert(moves.end(), pawns.begin(), pawns.end());
+						break; }
+					case 'n': {
+						auto knights = getValidKnightMoves(position, x, y, player);
+						moves.insert(moves.end(), knights.begin(), knights.end());
+						break; }
+					case 'k': {
+						auto kings = getValidKingMoves(position, x, y, player);
+						moves.insert(moves.end(), kings.begin(), kings.end());
+						break; }
+					case 'r': {
+						auto rooks = getValidRookMoves(position, x, y, player);
+						moves.insert(moves.end(), rooks.begin(), rooks.end());
+						break; }
+					case 'b': {
+						auto bishops = getValidBishopMoves(position, x, y, player);
+						moves.insert(moves.end(), bishops.begin(), bishops.end());
+						break; }
+					case 'q': {
+						auto axis = getValidRookMoves(position, x, y, player);
+						auto diagonal = getValidBishopMoves(position, x, y, player);
+						moves.insert(moves.end(), axis.begin(), axis.end());
+						moves.insert(moves.end(), diagonal.begin(), diagonal.end());
+						break; }
+					}
 				}
 			}
 		}
@@ -56,8 +87,45 @@ namespace matt
 	const Position& ChessValidation::applyMove(const Position& position, const Move& move)
 	{
 		auto pos = position;
-		pos[move.targetY][move.targetX] = position[move.startY][move.startX];
+		auto figure = position[move.startY][move.startX];
+
+		pos[move.targetY][move.targetX] = figure;
 		pos[move.startY][move.startX] = ' ';
+		
+		// Wurde die En Passant-Capture eingelöst? Lösche richtiges Feld
+		if (move.enPassantCapture && (move.targetY == 2 || move.targetY == 5)) 
+		{
+			pos[move.startY][move.targetX] = ' ';
+		}
+
+		pos.addMoveCount();
+		pos.changePlayer();
+
+		// En Passant zurücksetzen:
+		if (position.isEnPassant())
+		{
+			pos.resetEnPassant();
+		}
+
+		// 50-Züge-Regel: Capture abfragen & Bauernbewegung
+		if (figure == 'P' || figure == 'p' || move.capture)
+		{
+			pos.resetMoveCount();
+		}
+
+		// En passant für die Folgeposition bestimmen:
+		if ((figure == 'p' && move.startY == 1 && move.targetY == 3)
+			|| (figure == 'P' && move.startY == 6 && move.targetY == 4))
+		{
+			auto dir = move.startY == 1 ? 1 : -1;
+			pos.setEnPassant(move.startX, move.startY + dir);
+		}
+
+		// 100 Halbzüge woanders informieren; auswerten
+		if (pos.getMoveCount() >= 100) // 100 Halbzüge bzw. 50 Züge
+		{
+			pos.setGameState(GameState::Remis);
+		}
 		return pos;
 	}
 
@@ -66,7 +134,26 @@ namespace matt
 		auto nextPosition = applyMove(position, move);
 		return isKingInCheck(nextPosition, player);
 	}
+	void ChessValidation::addAppliedMoveToRepitionMap(Position& position)
+	{
+		auto fen = FENParser::positionToFen(position);
+		auto search = m_repitionMap.find(fen);
 
+		if (search != m_repitionMap.end())
+		{
+			m_repitionMap[fen]++;
+			// Stellungswiederholung 3x?
+			if (m_repitionMap[fen] >= 3)
+			{
+				position.setGameState(GameState::Remis);
+			}
+		}
+		else
+		{
+			m_repitionMap[fen] = 1;
+		}
+	}
+	
 	bool ChessValidation::isKingInCheck(const Position& position, short player)
 	{
 		char king = player == PLAYER_WHITE ? 'K' : 'k';
@@ -350,7 +437,7 @@ namespace matt
 			// Diagonal Schlagen:
 			if (x > 0)
 			{
-				// links oben
+				// links oben/unten
 				if (enemies.find(position[y - pawn_direction][x - 1]) != std::string::npos)
 				{
 					Move move;
@@ -365,7 +452,7 @@ namespace matt
 						moves.push_back(move);
 				}
 
-				// rechts oben
+				// rechts oben/unten
 				if (enemies.find(position[y - pawn_direction][x + 1]) != std::string::npos)
 				{
 					Move move;
@@ -379,7 +466,49 @@ namespace matt
 					if (!isKinginCheckAfterMove(position, player, move))
 						moves.push_back(move);
 				}
+
+				// En Passant überprüfen
+				if (position.isEnPassant())
+				{
+					auto enPassant = position.getEnPassant();
+					if (y - pawn_direction == enPassant.second)
+					{
+						// links oben/unten
+						if (enPassant.first == x - 1)
+						{
+							Move move;
+							move.startX = x;
+							move.startY = y;
+							move.targetX = x - 1;
+							move.targetY = y - pawn_direction;
+							move.capture = true;
+							move.enPassantCapture = true;
+							move.promotion = 0;
+
+							if (!isKinginCheckAfterMove(position, player, move))
+								moves.push_back(move);
+						}
+
+						// rechts oben/unten
+						if (enPassant.first == x + 1)
+						{
+							Move move;
+							move.startX = x;
+							move.startY = y;
+							move.targetX = x + 1;
+							move.targetY = y - pawn_direction;
+							move.capture = true;
+							move.enPassantCapture = true;
+							move.promotion = 0;
+
+							if (!isKinginCheckAfterMove(position, player, move))
+								moves.push_back(move);
+						}
+					}
+				}
 			}
+
+
 		}
 
 		return moves;
@@ -446,144 +575,66 @@ namespace matt
 	std::vector<Move> ChessValidation::getValidRookMoves(const Position& position, int x, int y, short player)
 	{
 		std::vector<Move> moves;
-		
 		std::string enemies = player == PLAYER_WHITE ? "pnbrqk" : "PNBRQK";
-		// nach links schauen
-		bool left_empty = true;
-		bool right_empty = true;
-		bool up_empty = true;
-		bool down_empty = false;
-
-		int x_offset = 1;
-		int y_offset = 1;
-
-		while (left_empty)
+		std::vector<std::pair<int, int>> directions = { {0,-1}, {1,0}, {0,-1}, {-1,0} };
+		
+		for (auto direction : directions)
 		{
-			if (isInsideChessboard(x - x_offset, y))
-			{
-				auto place = position[y][x - x_offset];
-				auto capture = enemies.find(place) != std::string::npos;
-
-				if (place == ' ' || capture)
-				{
-					Move move;
-					move.startX = x;
-					move.startY = y;
-					move.targetX = x - x_offset;
-					move.targetY = y;
-					move.capture = capture;
-					if (capture) left_empty = false;
-				}
-				else
-				{
-					left_empty = false;
-				}
-			}
-			else
-			{
-				left_empty = false;
-			}
-
-			x_offset++;
-		}
-
-		x_offset = 1;
-
-		while (right_empty)
-		{
-			if (isInsideChessboard(x + x_offset, y))
-			{
-				auto place = position[y][x + x_offset];
-				auto capture = enemies.find(place) != std::string::npos;
-
-				if (place == ' ' || capture)
-				{
-					Move move;
-					move.startX = x;
-					move.startY = y;
-					move.targetX = x + x_offset;
-					move.targetY = y;
-					move.capture = capture;
-					if (capture) right_empty = false;
-				}
-				else
-				{
-					right_empty = false;
-				}
-			}
-			else
-			{
-				right_empty = false;
-			}
-			x_offset++;
-		}
-
-		while (up_empty)
-		{
-			if (isInsideChessboard(x , y - y_offset))
-			{
-				auto place = position[y - y_offset][x];
-				auto capture = enemies.find(place) != std::string::npos;
-
-				if (place == ' ' || capture)
-				{
-					Move move;
-					move.startX = x;
-					move.startY = y;
-					move.targetX = x;
-					move.targetY = y - y_offset;
-					move.capture = capture;
-					if (capture) up_empty = false;
-				}
-				else
-				{
-					up_empty = false;
-				}
-			}
-			else
-			{
-				up_empty = false;
-			}
-			y_offset++;
-		}
-
-		while (down_empty)
-		{
-			if (isInsideChessboard(x, y + y_offset))
-			{
-				auto place = position[y + y_offset][x];
-				auto capture = enemies.find(place) != std::string::npos;
-
-				if (place == ' ' || capture)
-				{
-					Move move;
-					move.startX = x;
-					move.startY = y;
-					move.targetX = x;
-					move.targetY = y + y_offset;
-					move.capture = capture;
-					if (capture) down_empty = false;
-				}
-				else
-				{
-					down_empty = false;
-				}
-			}
-			else
-			{
-				down_empty = false;
-			}
-			y_offset++;
+			auto dirMoves = continueValidMovesOnLine(position, x, y, enemies, direction.first, direction.second);
+			moves.insert(moves.end(), dirMoves.begin(), dirMoves.end());
 		}
 
 		return moves;
 	}
-
 	std::vector<Move> ChessValidation::getValidBishopMoves(const Position& position, int x, int y, short player)
 	{
 		std::vector<Move> moves;
+		std::string enemies = player == PLAYER_WHITE ? "pnbrqk" : "PNBRQK";
+		std::vector<std::pair<int, int>> directions = { {-1,-1}, {1,-1}, {1,1}, {-1,1} };
 
-		// TODO: bishop moves
+		for (auto direction : directions)
+		{
+			auto dirMoves = continueValidMovesOnLine(position, x, y, enemies, direction.first, direction.second);
+			moves.insert(moves.end(), dirMoves.begin(), dirMoves.end());
+		}
+
+		return moves;
+	}
+	std::vector<Move> ChessValidation::continueValidMovesOnLine(const Position& position, int x, int y, const std::string& enemies_string, int xDir, int yDir)
+	{
+		std::vector<Move> moves;
+
+		bool line_empty = true;
+
+		int offset = 1;
+
+		while (line_empty)
+		{
+			int line_x = x + xDir * offset;
+			int line_y = y + yDir * offset;
+
+			if (isInsideChessboard(line_x, line_y))
+			{
+				auto place = position[line_x][line_y];
+				auto capture = enemies_string.find(place) != std::string::npos;
+
+				if (place == ' ' || capture)
+				{
+					Move move;
+					move.startX = x;
+					move.startY = y;
+					move.targetX = line_x;
+					move.targetY = line_y;
+					move.capture = capture;
+					if (capture) line_empty = false;
+				}
+			}
+			else
+			{
+				line_empty = false;
+			}
+			offset++;
+		}
 
 		return moves;
 	}

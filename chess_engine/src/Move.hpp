@@ -6,18 +6,23 @@ namespace matt
 	struct Move
 	{
 		/// Startfeld (Spalte)
-		unsigned short startX;
+		unsigned short startX = 0;
 		/// Startfeld (Reihe)
-		unsigned short startY;
+		unsigned short startY = 0;
 
 		/// Zielfeld (Spalte)
-		unsigned short targetX;
+		unsigned short targetX = 0;
 		/// Zielfeld (Reihe)
-		unsigned short targetY;
+		unsigned short targetY = 0;
 
 		/// Figure geschlagen
-		bool capture;
+		bool capture = false;
 		/// Bauernumwandlung
-		char promotion;
+		char promotion = 0;
+
+		/// <summary>
+		/// Figure durch EnPassant geschlagen?
+		/// </summary>
+		bool enPassantCapture = false;
 	};
 }

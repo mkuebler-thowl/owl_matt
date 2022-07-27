@@ -4,7 +4,7 @@
 
 namespace matt
 {
-	// TODO: Für random eine Liste benutzen mit moves
+	// TODO: Für random eine Liste benutzen mit best moves? 
 	/// Result-Objekt für die Zugfindung mit dem Min-Max-Algorithmus
 	struct MinMaxResult
 	{

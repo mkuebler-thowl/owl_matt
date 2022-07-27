@@ -1,10 +1,11 @@
 #include "Position.hpp"
 #include <cassert>
+#include "ChessEngine.hpp"
 
 namespace matt
 {
 	Position::Position()
-		: m_enPassant(false)
+		: m_enPassant(false), m_movesCount(0), m_player(PLAYER_WHITE), m_state(GameState::Active)
 	{
 		// 2D Array mit 'whitespace' initialisieren
 		for (auto i = 0; i < 8; i++)
@@ -21,17 +22,62 @@ namespace matt
 
 	}
 
+	Position::Position(const std::string& fen)
+	{
+		// TODO: Implement fen-string
+	}
+
 	std::array<char, 8>& Position::operator[](int index) const
 	{
 		assert(index < 8);
 		return m_data[index];
 	}
-	void Position::setEnPassant(bool value)
+	void Position::setEnPassant(int x, int y)
 	{
-		m_enPassant = value;
+		m_enPassant = true;
+		m_enPassantPosition = { x,y };
 	}
-	bool Position::getEnPassant() const
+
+	void Position::resetEnPassant()
+	{
+		m_enPassant = false;
+	}
+
+	bool Position::isEnPassant() const
 	{
 		return m_enPassant;
+	}
+	const std::pair<int, int>& Position::getEnPassant() const
+	{
+		return m_enPassantPosition;
+	}
+	void Position::addMoveCount()
+	{
+		m_movesCount++;
+	}
+	void Position::resetMoveCount()
+	{
+		m_movesCount = 0;
+	}
+	int Position::getMoveCount() const
+	{
+		return m_movesCount;
+	}
+	void Position::changePlayer()
+	{
+		m_player = m_player == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE;
+	}
+	int Position::getPlayer() const
+	{
+		return m_player;
+	}
+	void Position::setGameState(GameState state)
+	{
+		m_state = state;
+	}
+
+	GameState Position::getGameState() const
+	{
+		return m_state;
 	}
 }
