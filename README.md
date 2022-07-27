@@ -1,2 +1,2 @@
-# schwach_matt_chess_engine
+# SchwachMatt Chess Engine
 Chess Engine in C++
