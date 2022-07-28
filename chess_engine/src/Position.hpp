@@ -5,6 +5,7 @@
 
 namespace matt
 {
+	/// Enumeration für mögliche Spielzustände einer Schachposition.
 	enum class GameState
 	{
 		Active,
@@ -20,7 +21,24 @@ namespace matt
 		explicit Position();
 		virtual ~Position();
 
-		Position(const std::string& fen);
+		/// <summary>
+		/// Schachposition initialisieren. Wird bei Auslesen von FEN-Strings benötigt.
+		/// </summary>
+		/// <param name="data:">Daten-Array für das Schachfeld</param>
+		/// <param name="player:">Der Spieler der aktuell dran ist</param>
+		/// <param name="whiteCastlingShort:">Kann Weiß noch kurz rochieren?</param>
+		/// <param name="whiteCastlingLong:">Kann Weiß noch lang rochieren?</param>
+		/// <param name="blackCastlingShort:">Kann Schwarz noch kurz rochieren?</param>
+		/// <param name="blackCastlingLong:">Kann Schwarz noch lange rochieren?</param>
+		/// <param name="enPassant:">Wurde ein En passant begangen?</param>
+		/// <param name="enPassantPosition:">Übergangenes En passant Feld</param>
+		/// <param name="moveCount:">Anzahl der Halbzüge seitdem kein Bauer bewegt oder eine Figur geschlagen wurde</param>
+		/// <param name="moveNumber:">Aktuelle Zugnummer, die nachdem Schwarz dran war, inkrementiert wird</param>
+		Position(const std::array<std::array<char, 8>, 8> data, short player, 
+			bool whiteCastlingShort, bool whiteCastlingLong, 
+			bool blackCastlingShort, bool blackCastlingLong, 
+			bool enPassant, std::pair<int, int> enPassantPosition, 
+			int moveCount, int moveNumber);
 
 		/// <summary>
 		/// Operatorüberladung [index], so dass über Position[x][y] auf die jeweilige Zelle bzw. Feld zugegriffen werden kann.
@@ -29,99 +47,75 @@ namespace matt
 		/// <returns>Gibt das jeweilige Zeilenarray[index] zurück.</returns>
 		std::array<char, 8>& operator[](int index) const;
 
-		/// <summary>
 		/// En Passant setzen
-		/// </summary>
 		void setEnPassant(int x, int y);
-
-		/// <summary>
 		/// En Passant zurücksetzen
-		/// </summary>
 		void resetEnPassant();
-
-		/// <summary>
 		/// En Passant auslesen
-		/// </summary>
 		bool isEnPassant() const;
 
-		/// <summary>
 		/// En Passant-Position auslesen
-		/// </summary>
-		/// <returns></returns>
 		const std::pair<int, int>& getEnPassant() const;
 
-		/// <summary>
 		/// Halbzug hinzutragen
-		/// </summary>
 		void addMoveCount();
-
-		/// <summary>
 		/// Halbzüge auf 0 zurücksetzen
-		/// </summary>
 		void resetMoveCount();
-
-		/// <summary>
 		/// aktuelle Halbzüge abfragen
-		/// </summary>
-		/// <returns></returns>
 		int getMoveCount() const;
+		/// aktuelle Zugnummer abfragen
+		int getMoveNumber() const;
 
-		/// <summary>
 		/// Wechsel den aktuellen Spieler
-		/// </summary>
 		void changePlayer();
-
-		/// <summary>
-		/// Gebe den aktuellen Spieler zurück
-		/// </summary>
-		/// <returns></returns>
+		/// Gibt den aktuellen Spieler zurück (Der dran ist)
 		int getPlayer() const;
 
-		/// <summary>
 		/// GameState ändern
-		/// </summary>
-		/// <param name="state">neuer State</param>
 		void setGameState(GameState state) const;
-
-		/// <summary>
 		/// GameState abrufen
-		/// </summary>
-		/// <returns></returns>
 		GameState getGameState() const;
 
+		/// Kann Weiß noch kurz rochieren?
 		bool getWhiteCastlingShort() const;
+		/// Kann Weiß noch lang rochieren?
 		bool getWhiteCastlingLong() const;
+		/// Kann Schwarz noch kurz rochieren?
 		bool getBlackCastlingShort() const;
+		/// Kann Schwarz noch lang rochieren?
 		bool getBlackCastlingLong() const;
-
+		/// Für Weiß: Kurz-Rochade deaktivieren
 		void resetWhiteCastlingShort();
+		/// Für Weiß: Lang-Rochade deaktivieren
 		void resetWhiteCastlingLong();
+		/// Für Schwarz: Kurz-Rochade deaktivieren
 		void resetBlackCastlingShort();
+		/// Für Schwarz: Lang-Rochade deaktivieren
 		void resetBlackCastlingLong();
 	private:
-		/// <summary>
 		/// 8x8 char-Array als Datenobjekt für eine Spielposition
-		/// </summary>
 		mutable std::array<std::array<char, 8>, 8> m_data;
-
+		/// En Passant möglich?
 		bool m_enPassant;
-
+		/// En Passant Position
 		std::pair<int,int> m_enPassantPosition;
-
-		/// <summary>
 		/// Anzahl der Halbszüge zur Bestimmung der 50-Züge-Regel
-		/// </summary>
 		int m_movesCount;
-		/// <summary>
-		/// Aktueller Spieler
-		/// </summary>
-		int m_player;
+		/// Nummerierung der Folgezüge. Beginnt bei 1 und wird nachdem Schwarz dran war, um eins erhöht.
+		int m_moveNumber;
 
+		/// Aktueller Spieler
+		int m_player;
+		/// Kann Weiß noch kurz rochieren?
 		bool m_whiteCastlingShort;
+		/// Kann Weiß noch lang rochieren?
 		bool m_whiteCastlingLong;
+		/// Kann Schwarz noch kurz rochieren?
 		bool m_blackCastlingShort;
+		/// Kann Schwarz noch lang rochieren?
 		bool m_blackCastlingLong;
 
+		/// Korrespondierender Spielzustand zur Position (Aktiv, Sieg für Weiß/Schwarz oder Remis)
 		mutable GameState m_state;
 	};
 }

@@ -89,7 +89,6 @@ namespace matt
 
 		return moves;
 	}
-
 	const Position& ChessValidation::applyMove(const Position& position, const Move& move)
 	{
 		auto pos = position;

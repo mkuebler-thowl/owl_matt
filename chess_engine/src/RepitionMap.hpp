@@ -8,7 +8,9 @@
 namespace matt
 {
 	/// <summary>
-	/// Datenstruktur zur Überprüfung der Stellungswiederholung
+	/// Datenstruktur zur Überprüfung der Stellungswiederholung. Diese verwendet ein Dictionary-Datenstruktur.
+	/// - Diese besteht aus String-Schlüssel (64-char Feldinformation)
+	/// - Jeder Schlüssel verweist auf die Anzahl der Wiederholungen der korrespondierenden Schachstellung.
 	/// </summary>
 	class RepitionMap
 	{
@@ -21,7 +23,7 @@ namespace matt
 	private:
 		/// <summary>
 		/// Stellungswiederholung-Dictionary
-		/// string: Die jeweilige fen-string
+		/// string: Zusammensetzung aus 64 Felder bzw. Characters
 		/// int: Die Anzahl der sich wiederholenden Stellung
 		/// </summary>
 		std::map<std::string, int> m_data;

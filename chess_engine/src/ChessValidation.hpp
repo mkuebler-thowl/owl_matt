@@ -8,7 +8,7 @@
 
 namespace matt
 {
-	/// ChessValidation bietet als Hilfsklasse für Funktionen zur Überprüfung und Ermittlung legaler Züge.
+	/// ChessValidation bietet als Hilfsklasse für statische Funktionen zur Überprüfung und Ermittlung legaler Züge.
 	class ChessValidation
 	{
 	public:
@@ -37,9 +37,8 @@ namespace matt
 		/// <param name="move:">Angewendeter Zug</param>
 		/// <returns>Ob der König im Schach stehen würde</returns>
 		static bool isKinginCheckAfterMove(const Position& position, short player, const Move& move);
-
-
 	private:
+
 		/// <summary>
 		/// Funktion zur Überprüfung, ob die aktuelle Stellung den jeweiligen König bedroht.
 		/// </summary>
@@ -47,6 +46,7 @@ namespace matt
 		/// <param name="player:">Der aktuelle Spieler, der am Zug ist</param>
 		/// <returns>Steht der König des aktuellen Spielers im Schach?</returns>
 		static bool isKingInCheck(const Position& position, short player);
+
 		/// <summary>
 		/// Ist die Platzierung x,y im Schach bzw. wird diese Position bedroht? 
 		/// </summary>

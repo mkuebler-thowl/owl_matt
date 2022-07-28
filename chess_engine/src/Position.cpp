@@ -5,7 +5,7 @@
 namespace matt
 {
 	Position::Position()
-		: m_enPassant(false), m_movesCount(0), m_player(PLAYER_WHITE), m_state(GameState::Active), 
+		: m_enPassant(false), m_movesCount(0), m_moveNumber(1), m_player(PLAYER_WHITE), m_state(GameState::Active), 
 		m_whiteCastlingShort(true), m_whiteCastlingLong(true), m_blackCastlingShort(true), m_blackCastlingLong(true)
 	{
 		// 2D Array mit 'whitespace' initialisieren
@@ -23,9 +23,18 @@ namespace matt
 
 	}
 
-	Position::Position(const std::string& fen)
+	Position::Position(const std::array<std::array<char, 8>, 8> data, short player, 
+		bool whiteCastlingShort, bool whiteCastlingLong, 
+		bool blackCastlingShort, bool blackCastlingLong, 
+		bool enPassant, std::pair<int, int> enPassantPosition, 
+		int moveCount, int moveNumber)
+		: m_data(data), m_player(player), 
+		m_whiteCastlingShort(whiteCastlingShort), m_whiteCastlingLong(whiteCastlingLong),
+		m_blackCastlingShort(blackCastlingShort), m_blackCastlingLong(blackCastlingLong),
+		m_enPassant(enPassant), m_enPassantPosition(enPassantPosition), 
+		m_movesCount(moveCount), m_moveNumber(moveNumber)
 	{
-		// TODO: Implement fen-string
+
 	}
 
 	std::array<char, 8>& Position::operator[](int index) const
@@ -64,8 +73,15 @@ namespace matt
 	{
 		return m_movesCount;
 	}
+	int Position::getMoveNumber() const
+	{
+		return m_moveNumber;
+	}
 	void Position::changePlayer()
 	{
+		// Zugnummer erhöhen
+		if (m_player == PLAYER_BLACK) m_moveNumber++;
+		// Spieler wechseln
 		m_player = m_player == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE;
 	}
 	int Position::getPlayer() const
