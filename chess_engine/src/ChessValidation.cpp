@@ -169,6 +169,8 @@ namespace matt
 				else if (move.startX == 7) pos.resetBlackCastlingShort();
 			}
 		}
+
+		return pos;
 	}
 
 	bool ChessValidation::isKinginCheckAfterMove(const Position& position, short player, const Move& move)

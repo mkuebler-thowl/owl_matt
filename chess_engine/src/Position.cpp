@@ -72,7 +72,7 @@ namespace matt
 	{
 		return m_player;
 	}
-	void Position::setGameState(GameState state)
+	void Position::setGameState(GameState state) const
 	{
 		m_state = state;
 	}

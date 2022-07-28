@@ -50,7 +50,7 @@ namespace matt
 
 		for (auto move : moves)
 		{
-			auto current_position = ChessValidation::applyMove(position, move, player);
+			auto current_position = ChessValidation::applyMove(position, move);
 			result = minMax(current_position, -player, depth - 1, sort);
 
 			if (result.value > score && player == PLAYER_WHITE || result.value < score && player == PLAYER_BLACK)
