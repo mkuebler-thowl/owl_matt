@@ -1,0 +1,29 @@
+#pragma once
+
+#include <map>
+#include <string>
+
+#include "Position.hpp"
+
+namespace matt
+{
+	/// <summary>
+	/// Datenstruktur zur Überprüfung der Stellungswiederholung
+	/// </summary>
+	class RepitionMap
+	{
+	public:
+		/// <summary>
+		/// Neu Spielposition zur Repition Map hinzufügen. Wird für die dreimalige Stellungswiederholung verwendet.
+		/// </summary>
+		/// <param name="position:">Die jeweilige Stellung</param>
+		void addAppliedMoveToRepitionMap(Position& position);
+	private:
+		/// <summary>
+		/// Stellungswiederholung-Dictionary
+		/// string: Die jeweilige fen-string
+		/// int: Die Anzahl der sich wiederholenden Stellung
+		/// </summary>
+		std::map<std::string, int> m_data;
+	};
+}

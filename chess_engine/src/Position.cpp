@@ -5,7 +5,8 @@
 namespace matt
 {
 	Position::Position()
-		: m_enPassant(false), m_movesCount(0), m_player(PLAYER_WHITE), m_state(GameState::Active)
+		: m_enPassant(false), m_movesCount(0), m_player(PLAYER_WHITE), m_state(GameState::Active), 
+		m_whiteCastlingShort(true), m_whiteCastlingLong(true), m_blackCastlingShort(true), m_blackCastlingLong(true)
 	{
 		// 2D Array mit 'whitespace' initialisieren
 		for (auto i = 0; i < 8; i++)
@@ -79,5 +80,37 @@ namespace matt
 	GameState Position::getGameState() const
 	{
 		return m_state;
+	}
+	bool Position::getWhiteCastlingShort() const
+	{
+		return m_whiteCastlingShort;
+	}
+	bool Position::getWhiteCastlingLong() const
+	{
+		return m_whiteCastlingLong;
+	}
+	bool Position::getBlackCastlingShort() const
+	{
+		return m_blackCastlingShort;
+	}
+	bool Position::getBlackCastlingLong() const
+	{
+		return m_blackCastlingLong;
+	}
+	void Position::resetWhiteCastlingShort()
+	{
+		m_whiteCastlingShort = false;
+	}
+	void Position::resetWhiteCastlingLong()
+	{
+		m_whiteCastlingLong = false;
+	}
+	void Position::resetBlackCastlingShort()
+	{
+		m_blackCastlingShort = false;
+	}
+	void Position::resetBlackCastlingLong()
+	{
+		m_blackCastlingLong = false;
 	}
 }

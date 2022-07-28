@@ -24,5 +24,15 @@ namespace matt
 		/// Figure durch EnPassant geschlagen?
 		/// </summary>
 		bool enPassantCapture = false;
+		
+		/// <summary>
+		/// Ist der Zug eine lange Rochade?
+		/// </summary>
+		bool castlingLong = false;
+
+		/// <summary>
+		/// Ist der Zug eine kurze Rochade?
+		/// </summary>
+		bool castlingShort = false;
 	};
 }

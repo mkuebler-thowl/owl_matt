@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <memory>
 
 #include "Position.hpp"
 #include "Move.hpp"
@@ -76,6 +75,5 @@ namespace matt
 		/// <returns></returns>
 		float alphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort = false);
 
-		std::unique_ptr<ChessValidation> m_validation;
 	};
 }

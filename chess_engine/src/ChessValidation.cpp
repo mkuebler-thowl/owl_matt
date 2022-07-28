@@ -81,7 +81,13 @@ namespace matt
 				}
 			}
 		}
-		return std::vector<Move>();
+
+		// Schachmatt abfragen
+		// Da jeder Zug, der ein "Schach" auslöst entfernt wird, gilt das natürlich auch für alle Folgezüge, die eine "Schach"-Situation nicht auflösen können.
+		// Deshalb reicht es abzufragen, ob der König im Schach steht und keine Züge mehr zur Verfügung stehen
+		evaluateCheckmate(position, player, moves.empty());
+
+		return moves;
 	}
 
 	const Position& ChessValidation::applyMove(const Position& position, const Move& move)
@@ -92,6 +98,20 @@ namespace matt
 		pos[move.targetY][move.targetX] = figure;
 		pos[move.startY][move.startX] = ' ';
 		
+		// Ist der Zug eine Rochade? => Turm bewegen
+		if (move.castlingLong)
+		{
+			auto rook = position[move.startY][0];
+			pos[move.startY][0] = ' ';
+			pos[move.startY][3] = rook;
+		}
+		else if (move.castlingShort)
+		{
+			auto rook = position[move.startY][7];
+			pos[move.startY][7] = ' ';
+			pos[move.startY][5] = rook;
+		}
+
 		// Wurde die En Passant-Capture eingelöst? Lösche richtiges Feld
 		if (move.enPassantCapture && (move.targetY == 2 || move.targetY == 5)) 
 		{
@@ -126,7 +146,29 @@ namespace matt
 		{
 			pos.setGameState(GameState::Remis);
 		}
-		return pos;
+
+		// Rochieren gegebenfalls deaktivieren
+		if (pos.getWhiteCastlingShort() || pos.getWhiteCastlingLong() || pos.getBlackCastlingLong() || pos.getBlackCastlingShort())
+		{
+			switch (figure)
+			{
+			case 'K':
+				pos.resetWhiteCastlingLong();
+				pos.resetWhiteCastlingShort();
+				break;
+			case 'k':
+				pos.resetBlackCastlingLong();
+				pos.resetBlackCastlingShort();
+				break;
+			case 'R':
+				if (move.startX == 0) pos.resetWhiteCastlingLong();
+				else if (move.startX == 7) pos.resetWhiteCastlingShort();
+				break;
+			case 'r':
+				if (move.startX == 0) pos.resetBlackCastlingLong();
+				else if (move.startX == 7) pos.resetBlackCastlingShort();
+			}
+		}
 	}
 
 	bool ChessValidation::isKinginCheckAfterMove(const Position& position, short player, const Move& move)
@@ -134,35 +176,9 @@ namespace matt
 		auto nextPosition = applyMove(position, move);
 		return isKingInCheck(nextPosition, player);
 	}
-	void ChessValidation::addAppliedMoveToRepitionMap(Position& position)
-	{
-		auto fen = FENParser::positionToFen(position);
-		auto search = m_repitionMap.find(fen);
-
-		if (search != m_repitionMap.end())
-		{
-			m_repitionMap[fen]++;
-			// Stellungswiederholung 3x?
-			if (m_repitionMap[fen] >= 3)
-			{
-				position.setGameState(GameState::Remis);
-			}
-		}
-		else
-		{
-			m_repitionMap[fen] = 1;
-		}
-	}
-	
 	bool ChessValidation::isKingInCheck(const Position& position, short player)
 	{
 		char king = player == PLAYER_WHITE ? 'K' : 'k';
-		char enemy_queen = player == PLAYER_WHITE ? 'q' : 'Q';
-		char enemy_rook = player == PLAYER_WHITE ? 'r' : 'R';
-		char enemy_bishop = player == PLAYER_WHITE ? 'b' : 'B';
-		char enemy_knight = player == PLAYER_WHITE ? 'n' : 'N';
-		char enemy_pawn = player == PLAYER_WHITE ? 'p' : 'P';
-
 		int king_x, king_y;
 		bool king_found = false;
 
@@ -195,6 +211,16 @@ namespace matt
 
 		return false;
 	}
+	bool ChessValidation::isPlaceInCheck(const Position& position, int x, int y, short player)
+	{
+		if (checkKingPawns(x, y, position, player)) return true;
+		if (checkKingAxis(x, y, position, player)) return true;
+		if (checkKingDiagonal(x, y, position, player)) return true;
+		if (checkKingKnights(x, y, position, player)) return true;
+
+		return false;
+	}
+
 	bool ChessValidation::checkKingDiagonal(int king_x, int king_y, const Position& position, short player)
 	{
 		char enemy_queen = player == PLAYER_WHITE ? 'q' : 'Q';
@@ -380,6 +406,23 @@ namespace matt
 		}
 
 		return false;
+	}
+	void ChessValidation::evaluateCheckmate(const Position& position, short player, bool noValidMoves)
+	{
+		if (noValidMoves)
+		{
+			// Sieg & Niederlage
+			if (isKingInCheck(position, player))
+			{
+				auto state = player == PLAYER_WHITE ? GameState::PlayerBlackWins : GameState::PlayerWhiteWins;
+				position.setGameState(state);
+			}
+			// Pattsituation (Spieler kann keine Bewegung durchführen)
+			else
+			{
+				position.setGameState(GameState::Remis);
+			}
+		}
 	}
 
 	std::vector<Move> ChessValidation::getValidPawnMoves(const Position& position, int x, int y, short player)
@@ -567,6 +610,76 @@ namespace matt
 					if (!isKinginCheckAfterMove(position, player, move))
 						moves.push_back(move);
 				}
+			}
+		}
+
+		// Rochade 
+		if (player == PLAYER_WHITE)
+		{
+			if (position.getWhiteCastlingShort() 
+				&& isPlaceInCheck(position, 5, 7, player) 
+				&& isPlaceInCheck(position, 6, 7, player) 
+				&& position[7][5] == ' '
+				&& position[7][6] == ' ');
+			{
+				Move move;
+				move.startX = x;
+				move.startY = y;
+				move.targetX = x+2;
+				move.targetY = y;
+				move.castlingShort = true;
+
+				moves.push_back(move);
+			}
+			if (position.getWhiteCastlingLong()
+				&& isPlaceInCheck(position, 2, 7, player)
+				&& isPlaceInCheck(position, 3, 7, player)
+				&& position[7][3] == ' '
+				&& position[7][2] == ' '
+				&& position[7][1] == ' ')
+			{
+				Move move;
+				move.startX = x;
+				move.startY = y;
+				move.targetX = x - 2;
+				move.targetY = y;
+				move.castlingLong = true;
+
+				moves.push_back(move);
+			}
+		}
+		else if (player == PLAYER_BLACK)
+		{
+			if (position.getBlackCastlingShort()
+				&& isPlaceInCheck(position, 5, 0, player)
+				&& isPlaceInCheck(position, 6, 0, player)
+				&& position[0][5] == ' '
+				&& position[0][6] == ' ');
+			{
+				Move move;
+				move.startX = x;
+				move.startY = y;
+				move.targetX = x + 2;
+				move.targetY = y;
+				move.castlingShort = true;
+
+				moves.push_back(move);
+			}
+			if (position.getBlackCastlingLong()
+				&& isPlaceInCheck(position, 2, 0, player)
+				&& isPlaceInCheck(position, 3, 0, player)
+				&& position[0][3] == ' '
+				&& position[0][2] == ' '
+				&& position[0][1] == ' ')
+			{
+				Move move;
+				move.startX = x;
+				move.startY = y;
+				move.targetX = x - 2;
+				move.targetY = y;
+				move.castlingLong = true;
+
+				moves.push_back(move);
 			}
 		}
 

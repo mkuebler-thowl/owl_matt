@@ -7,7 +7,7 @@ namespace matt
 {
 	ChessEngine::ChessEngine()
 	{
-		m_validation = std::make_unique<ChessValidation>();
+
 	}
 	ChessEngine::~ChessEngine()
 	{
@@ -15,21 +15,19 @@ namespace matt
 
 	Move ChessEngine::searchMove(const Position& position, short player, unsigned short depth, unsigned char parameterFlags, bool random)
 	{
-		bool sort = parameterFlags | FT_SORT;
+		auto sort = parameterFlags | FT_SORT;
 
 		// MinMax oder MinMax+Sort
 		if (parameterFlags == FT_NULL || parameterFlags == FT_SORT)
 		{
 			auto value = minMax(position, player, depth, sort);
 		}
-
 		// AlphaBeta oder AlphaBeta+Sort
-		if (parameterFlags == FT_ALPHA_BETA || parameterFlags == (FT_ALPHA_BETA | FT_SORT))
+		else if (parameterFlags == FT_ALPHA_BETA || parameterFlags == (FT_ALPHA_BETA | FT_SORT))
 		{ 
-			auto value = alphaBeta(position, player, depth, INF, -INF, sort);
+			auto value = alphaBeta(position, player, depth, -INF, INF, sort);
 			
 		}
-
 
 		//std::cout << (parameter_flags == (FT_ALPHA_BETA | FT_NESTED) || parameter_flags == (FT_ALPHA_BETA | FT_NESTED | FT_SORT)) << std::endl;
 		//std::cout << (parameter_flags == FT_NESTED || parameter_flags == (FT_NESTED | FT_SORT)) << std::endl;
@@ -39,7 +37,7 @@ namespace matt
 
 	MinMaxResult ChessEngine::minMax(const Position& position, short player, unsigned short depth, bool sort)
 	{
-		auto moves = m_validation->getValidMoves(position, sort);
+		auto moves = ChessValidation::getValidMoves(position, sort);
 		auto result = MinMaxResult{};
 
 		if (depth == 0 || moves.empty())
@@ -52,7 +50,7 @@ namespace matt
 
 		for (auto move : moves)
 		{
-			auto current_position = m_validation->applyMove(position, move);
+			auto current_position = ChessValidation::applyMove(position, move, player);
 			result = minMax(current_position, -player, depth - 1, sort);
 
 			if (result.value > score && player == PLAYER_WHITE || result.value < score && player == PLAYER_BLACK)

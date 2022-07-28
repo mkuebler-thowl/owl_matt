@@ -5,7 +5,7 @@
 
 namespace matt
 {
-	enum GameState
+	enum class GameState
 	{
 		Active,
 		PlayerWhiteWins,
@@ -81,13 +81,23 @@ namespace matt
 		/// GameState ändern
 		/// </summary>
 		/// <param name="state">neuer State</param>
-		void setGameState(GameState state);
+		void setGameState(GameState state) const;
 
 		/// <summary>
 		/// GameState abrufen
 		/// </summary>
 		/// <returns></returns>
 		GameState getGameState() const;
+
+		bool getWhiteCastlingShort() const;
+		bool getWhiteCastlingLong() const;
+		bool getBlackCastlingShort() const;
+		bool getBlackCastlingLong() const;
+
+		void resetWhiteCastlingShort();
+		void resetWhiteCastlingLong();
+		void resetBlackCastlingShort();
+		void resetBlackCastlingLong();
 	private:
 		/// <summary>
 		/// 8x8 char-Array als Datenobjekt für eine Spielposition
@@ -107,6 +117,11 @@ namespace matt
 		/// </summary>
 		int m_player;
 
-		GameState m_state;
+		bool m_whiteCastlingShort;
+		bool m_whiteCastlingLong;
+		bool m_blackCastlingShort;
+		bool m_blackCastlingLong;
+
+		mutable GameState m_state;
 	};
 }
