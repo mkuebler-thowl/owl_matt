@@ -45,6 +45,7 @@ namespace matt
 		/// <returns>Der bestmögliche gefundene Zug innerhalb der Suchtiefe</returns>
 		Move searchMove(const Position& position, short player, unsigned short depth, unsigned char parameter_flags, bool random = false);
 	private:
+		// TODO: Vielleicht auslagen (um Klasse kleiner zu halten) Klassename: ChessEvaluation
 		/// <summary>
 		/// Bewertungsfunktion
 		/// </summary>

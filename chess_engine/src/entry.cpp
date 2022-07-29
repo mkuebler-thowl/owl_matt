@@ -19,6 +19,5 @@ auto main() -> int
 	//auto str = matt::FENParser::positionToFen(pos);
 	//pos = matt::FENParser::fenToPosition(str);
 
-
 	std::cout << "exit" << std::endl;
 }

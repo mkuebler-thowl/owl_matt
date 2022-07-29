@@ -15,11 +15,12 @@ namespace matt
 	class RepitionMap
 	{
 	public:
+		// TODO: lange fen-form durch einfachen 64-char-String ersetzen
 		/// <summary>
 		/// Neu Spielposition zur Repition Map hinzufügen. Wird für die dreimalige Stellungswiederholung verwendet.
 		/// </summary>
 		/// <param name="position:">Die jeweilige Stellung</param>
-		void addAppliedMoveToRepitionMap(Position& position);
+		void addPosition(Position& position);
 	private:
 		/// <summary>
 		/// Stellungswiederholung-Dictionary

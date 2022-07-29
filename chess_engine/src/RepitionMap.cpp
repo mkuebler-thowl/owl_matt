@@ -4,7 +4,7 @@
 
 namespace matt
 {
-	void RepitionMap::addAppliedMoveToRepitionMap(Position& position)
+	void RepitionMap::addPosition(Position& position)
 	{
 		auto fen = FENParser::positionToFen(position);
 		auto search = m_data.find(fen);
