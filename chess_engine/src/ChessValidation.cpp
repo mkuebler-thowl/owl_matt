@@ -742,6 +742,10 @@ namespace matt
 					move.capture = capture;
 					if (capture) line_empty = false;
 				}
+				else
+				{
+					line_empty = false;
+				}
 			}
 			else
 			{
