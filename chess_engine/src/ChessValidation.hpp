@@ -22,6 +22,15 @@ namespace matt
 		static std::vector<Move> getValidMoves(const Position& position, short player, bool sort = false);
 
 		/// <summary>
+		/// Funktion zur Ermittlung der Anzahl gültiger Züge zu einer bestimmten Position. Wird für die Piece-Mobilty verwendet.
+		/// </summary>
+		/// <param name="position">Ausgangsstellung</param>
+		/// <param name="x">Spalte 0-7 (rechts-links)</param>
+		/// <param name="y">Zeile 0-7 (oben-unten)</param>
+		/// <returns>Anzahl gefundener Züge</returns>
+		static unsigned short countPossibleMovesOnField(const Position& position, int x, int y);
+
+		/// <summary>
 		/// Zug auf eine Position anwenden. Hinweis: Diese Funktion überprüft nicht, ob der Zug auf die Position angwendet werden darf. In der Zugfindung später wichtig, in der Überprüfungphase irrelevant.
 		/// </summary>
 		/// <param name="position:">Aktuelle Spielposition bzw. Ausgangsstellung</param>
@@ -29,6 +38,7 @@ namespace matt
 		/// <returns>die neue Spielposition bzw. Ausgangsstellung</returns>
 		static const Position& applyMove(const Position& position, const Move& move);
 
+		// TODO: position.getPlayer() macht player:parameter überflüssig?
 		/// <summary>
 		/// Überprüfung, ob der König durch den nächsten Zug im Schach steht.
 		/// </summary>
@@ -37,6 +47,9 @@ namespace matt
 		/// <param name="move:">Angewendeter Zug</param>
 		/// <returns>Ob der König im Schach stehen würde</returns>
 		static bool isKinginCheckAfterMove(const Position& position, short player, const Move& move);
+
+		/// Überprüfe ob die Stelle x,y die Spielfeldgrenzen überschreitet
+		static bool isInsideChessboard(int x, int y);
 	private:
 
 		/// <summary>
@@ -82,7 +95,6 @@ namespace matt
 		/// Suche alle Linien ab für Läufer, Türme und Dame
 		static std::vector<Move> continueValidMovesOnLine(const Position& position, int x, int y, const std::string& enemies_string, int xDir, int yDir);
 
-		/// Überprüfe ob die Stelle x,y die Spielfeldgrenzen überschreitet
-		static bool isInsideChessboard(int x, int y);
+
 	};
 }

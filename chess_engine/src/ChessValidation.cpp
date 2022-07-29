@@ -9,8 +9,6 @@ namespace matt
 	{
 		std::vector<Move> moves;
 
-		int pawn_direction = player;
-
 		for (int y = 0; y < 8; y++)
 		{
 			for (int x = 0; x < 8; x++)
@@ -88,6 +86,42 @@ namespace matt
 		evaluateCheckmate(position, player, moves.empty());
 
 		return moves;
+	}
+	unsigned short ChessValidation::countPossibleMovesOnField(const Position& position, int x, int y)
+	{
+		unsigned short count = 0;
+
+		short player = position.getPlayer();
+
+		switch (position[y][x])
+		{
+		case 'P':
+		case 'p':
+			count += getValidPawnMoves(position, x, y, player).size();
+			break;
+		case 'N':
+		case 'n':
+			count += getValidKnightMoves(position, x, y, player).size();
+			break;
+		case 'B':
+		case 'b':
+			count += getValidBishopMoves(position, x, y, player).size();
+			break;
+		case 'R':
+		case 'r':
+			count += getValidRookMoves(position, x, y, player).size();
+			break;
+		case 'Q':
+		case 'q':
+			count += getValidBishopMoves(position, x, y, player).size();
+			count += getValidRookMoves(position, x, y, player).size();
+			break;
+		case 'K':
+		case 'k':
+			count += getValidKingMoves(position, x, y, player).size();
+			break;
+		}
+		return count;
 	}
 	const Position& ChessValidation::applyMove(const Position& position, const Move& move)
 	{
@@ -199,7 +233,7 @@ namespace matt
 			}
 		}
 
-		// Wenn König nicht gefunden:
+		// Falls der König nicht gefunden wird:
 		if (!king_found)
 		{
 			return false;
@@ -323,47 +357,17 @@ namespace matt
 	bool ChessValidation::checkKingKnights(int king_x, int king_y, const Position& position, short player)
 	{
 		char enemy_knight = player == PLAYER_WHITE ? 'n' : 'N';
+		std::vector<std::pair<int, int>> directions = { {-1,-2}, {2,-1}, {2,1}, {1,2}, {-1,2}, {-2,1}, {-2,-1}, {-1,-2} };
 
-		// Springerfelder im Uhrzeigersinn (1-8) überprüfen:
-		// Springerfeld 1
-		if (king_x < 7 && king_y > 1)
+		for (auto direction : directions)
 		{
-			if (position[king_y - 2][king_x + 1] == enemy_knight) return true;
-		}
-		// Springerfeld 2
-		if (king_x < 6 && king_y > 0)
-		{
-			if (position[king_y - 1][king_x + 2] == enemy_knight) return true;
-		}
-		// Springerfeld 3
-		if (king_x < 6 && king_y < 7)
-		{
-			if (position[king_y + 1][king_x + 2] == enemy_knight) return true;
-		}
-		// Springerfeld 4
-		if (king_x < 7 && king_y < 6)
-		{
-			if (position[king_y + 2][king_x + 1] == enemy_knight) return true;
-		}
-		// Springerfeld 5
-		if (king_x > 0 && king_y < 6)
-		{
-			if (position[king_y + 2][king_x - 1] == enemy_knight) return true;
-		}
-		// Springerfeld 6
-		if (king_x > 1 && king_y < 7)
-		{
-			if (position[king_y + 1][king_x - 2] == enemy_knight) return true;
-		}
-		// Springerfeld 7
-		if (king_x > 1 && king_y > 0)
-		{
-			if (position[king_y - 1][king_x - 2] == enemy_knight) return true;
-		}
-		// Springerfeld 8
-		if (king_x > 0 && king_y > 1)
-		{
-			if (position[king_y - 2][king_x - 1] == enemy_knight) return true;
+			auto x = king_x + direction.first;
+			auto y = king_y + direction.second;
+
+			if (isInsideChessboard(x,y))
+			{
+				if (position[y][x] == enemy_knight) return true;
+			}
 		}
 
 		return false;
@@ -557,6 +561,7 @@ namespace matt
 
 		return moves;
 	}
+
 	std::vector<Move> ChessValidation::getValidKnightMoves(const Position& position, int x, int y, short player)
 	{
 		std::vector<Move> moves;
@@ -586,6 +591,7 @@ namespace matt
 		}
 		return moves;
 	}
+
 	std::vector<Move> ChessValidation::getValidKingMoves(const Position& position, int x, int y, short player)
 	{
 		std::vector<Move> moves;
@@ -686,6 +692,7 @@ namespace matt
 
 		return moves;
 	}
+
 	std::vector<Move> ChessValidation::getValidRookMoves(const Position& position, int x, int y, short player)
 	{
 		std::vector<Move> moves;
@@ -700,6 +707,7 @@ namespace matt
 
 		return moves;
 	}
+
 	std::vector<Move> ChessValidation::getValidBishopMoves(const Position& position, int x, int y, short player)
 	{
 		std::vector<Move> moves;
@@ -714,6 +722,7 @@ namespace matt
 
 		return moves;
 	}
+
 	std::vector<Move> ChessValidation::continueValidMovesOnLine(const Position& position, int x, int y, const std::string& enemies_string, int xDir, int yDir)
 	{
 		std::vector<Move> moves;
