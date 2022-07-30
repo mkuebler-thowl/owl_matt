@@ -19,5 +19,7 @@ auto main() -> int
 	//auto str = matt::FENParser::positionToFen(pos);
 	//pos = matt::FENParser::fenToPosition(str);
 
+	std::array<int, 6> data{ 0 };
+
 	std::cout << "exit" << std::endl;
 }

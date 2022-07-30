@@ -25,6 +25,13 @@ namespace matt
 	// Alle Bewertungsfunktions-Features
 	constexpr unsigned char EVAL_FT_ALL = 0xff;
 
+	// Faktoren
+	constexpr float MATERIAL_DYNAMIC_GAME_PHASE_FACTOR	= 1.00f; // Materialwerte zu Spielphase (Faktor)
+	constexpr float SIMPLE_PIECE_SQUARE_FACTOR			= 1.00f; // Piece-Square-Tabelle (Faktor)
+	constexpr float PIECE_MOBILITY_FACTOR				= 1.00f; // Piece-Mobility (Faktor)
+	constexpr float BISHOP_PAIR_BONUS_FACTOR			= 1.00f; // Bauernstruktur (Faktor)
+	constexpr float PAWN_STRUCTURE_FACTOR				= 1.00f; // Läuferpaar (Faktor)
+
 	// Spielphase Bedingungen
 	constexpr unsigned short MIDGAME_NUMBER = 12;			// Die Zugnummer, ab der die Partie als Mittelspiel betrachtet wird
 	constexpr float MINIMUM_BALANCE_FOR_ENDGAME = 17.00f;	// Das Minimum des einfachen gesamten Materialwertes (W+S, ohne Bauern), ab der die Partie als Endspiel betrachtet wird
@@ -46,6 +53,20 @@ namespace matt
 	constexpr unsigned short BISHOP = 2;	// Läufer-Index
 	constexpr unsigned short ROOK	= 3;	// Turm-Index
 	constexpr unsigned short QUEEN	= 4;	// Dame-Index
+	constexpr unsigned short KING	= 5;	// König-Index
+
+	constexpr unsigned char PAWN_WHITE = 'P';
+	constexpr unsigned char PAWN_BLACK = 'p';
+	constexpr unsigned char BISHOP_WHITE = 'B';
+	constexpr unsigned char BISHOP_BLACK = 'b';
+	constexpr unsigned char KNIGHT_WHITE = 'N';
+	constexpr unsigned char KNIGHT_BLACK = 'n';
+	constexpr unsigned char ROOK_WHITE = 'R';
+	constexpr unsigned char ROOK_BLACK = 'r';
+	constexpr unsigned char QUEEN_WHITE = 'Q';
+	constexpr unsigned char QUEEN_BLACK = 'q';
+	constexpr unsigned char KING_WHITE = 'K';
+	constexpr unsigned char KING_BLACK = 'k';
 
 	// Bonus
 	constexpr float BISHOP_PAIR_BONUS = 0.50f; // Läuferpaar-Bonus
@@ -59,7 +80,7 @@ namespace matt
 	constexpr float PIECE_MOBILITY_KING_FACTOR		= 0.10f; // König-Figurenbewegung (Faktor)
 
 	// Zusätzliche Dynamische Bauerngewichtung
-	constexpr std::array<float, 8> MATERIAL_DYNAMIC_PAWNS = { 0.05f, 0.03f, 0.01f, 0.00f, -0.01f, -0.02f -0.03f, -0.05f };
+	constexpr std::array<float, 8> MATERIAL_DYNAMIC_PAWNS = { 1.05f, 1.03f, 1.01f, 1.00f, 0.99f, 0.98f, 0.97f, 0.95f };
 
 	// Bauernstruktur Malus
 	constexpr float PAWN_STRUCTURE_DOUBLE_PAWNS_PENALTY		= -0.200f;	// Doppelte Bauern Malus
@@ -89,6 +110,7 @@ namespace matt
 		/// Isolierte Bauern?
 		static bool isIsolatedPawn(const Position& position, int x, int y);
 		/// Backwards Bauern?
+		// TODO: Implement
 		static bool isBackwardsPawn(const Position& position, int x, int y);
 		/// Passierte Bauern?
 		static bool isPassedPawn(const Position& position, int x, int y);
