@@ -14,6 +14,13 @@ namespace matt
 		auto white_pawn_score = 0.00f;
 		auto black_pawn_score = 0.00f;
 
+		// Zur Bestimmung der Peace Square Tables:
+		auto white_square_table_score = 0.0f;
+		auto black_square_table_score = 0.0f;
+		std::pair<int, int> white_king_pos = { 0.0f, 0.0f };
+		std::pair<int, int> black_king_pos = { 0.0f, 0.0f };
+
+
 		// Anzahl der Figuren
 		unsigned short white_pawns = 0;
 		unsigned short black_pawns = 0;
@@ -114,6 +121,30 @@ namespace matt
 				{
 					possible_moves[position[y][x]] += ChessValidation::countPossibleMovesOnField(position, x, y);
 				}
+
+				// Square Table addieren (Ohne König)
+				if (evaluationFeatureFlags & EVAL_FT_PIECE_SQUARE_TABLE)
+				{
+					auto table_index = x + (COLUMNS * y);
+
+					switch (position[y][x])
+					{
+					case PAWN_WHITE: white_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_PAWN_WEIGHT * PIECE_SQUARE_TABLE_PAWN[table_index]; break;
+					case PAWN_BLACK: black_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_PAWN_WEIGHT * MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_PAWN)[table_index]; break;
+					case KNIGHT_WHITE: white_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_KNIGHT_WEIGHT * PIECE_SQUARE_TABLE_KNIGHT[table_index]; break;
+					case KNIGHT_BLACK: black_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_KNIGHT_WEIGHT * MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_KNIGHT)[table_index]; break;
+					case BISHOP_WHITE: white_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_BISHOP_WEIGHT * PIECE_SQUARE_TABLE_BISHOP[table_index]; break;
+					case BISHOP_BLACK: black_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_BISHOP_WEIGHT * MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_BISHOP)[table_index]; break;
+					case ROOK_WHITE: white_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_ROOK_WEIGHT * PIECE_SQUARE_TABLE_ROOK[table_index]; break;
+					case ROOK_BLACK: black_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_ROOK_WEIGHT * MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_ROOK)[table_index]; break;
+					case QUEEN_WHITE: white_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_QUEEN_WEIGHT * PIECE_SQUARE_TABLE_QUEEN[table_index]; break;
+					case QUEEN_BLACK: black_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_QUEEN_WEIGHT * MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_QUEEN)[table_index]; break;
+					// Bestimme die Positionen der Könige, um diese der Square-Table hinzuzufügen, 
+					// da die Spielphase erst später bestimmt werden kann und es für Mittel- und Endspiel unterschiedliche Tabellen gibt
+					case KING_WHITE: white_king_pos = {x,y};  break;
+					case KING_BLACK: black_king_pos = {x,y}; break;
+					}
+				}
 			}
 		}
 
@@ -151,6 +182,16 @@ namespace matt
 				black_score += black_bishops * MATERIAL_ADDITION_MID_GAME_PHASE[BISHOP] * MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
 				black_score += black_rooks   * MATERIAL_ADDITION_MID_GAME_PHASE[ROOK]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
 				black_score += black_queens  * MATERIAL_ADDITION_MID_GAME_PHASE[QUEEN]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+
+				// Piece Square Table für König anlegen
+				if (evaluationFeatureFlags & EVAL_FT_PIECE_SQUARE_TABLE)
+				{
+					auto table_white_index = white_king_pos.first + (COLUMNS * white_king_pos.second);
+					auto table_black_index = white_king_pos.first + (COLUMNS * white_king_pos.second);
+
+					white_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_KING_MID_GAME_WEIGHT * PIECE_SQUARE_TABLE_KING_MID_GAME[table_white_index];
+					black_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_KING_MID_GAME_WEIGHT * MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_KING_MID_GAME)[table_black_index];
+				}
 				break;
 			case GAME_PHASE_END:
 				white_score += white_pawns	 * MATERIAL_ADDITION_END_GAME_PHASE[PAWN]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
@@ -164,6 +205,16 @@ namespace matt
 				black_score += black_bishops * MATERIAL_ADDITION_END_GAME_PHASE[BISHOP] * MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
 				black_score += black_rooks	 * MATERIAL_ADDITION_END_GAME_PHASE[ROOK]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
 				black_score += black_queens  * MATERIAL_ADDITION_END_GAME_PHASE[QUEEN]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+
+				// Piece Square Table für König anlegen
+				if (evaluationFeatureFlags & EVAL_FT_PIECE_SQUARE_TABLE)
+				{
+					auto table_white_index = white_king_pos.first + (COLUMNS * white_king_pos.second);
+					auto table_black_index = white_king_pos.first + (COLUMNS * white_king_pos.second);
+
+					white_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_KING_END_GAME_WEIGHT * PIECE_SQUARE_TABLE_KING_END_GAME[table_white_index];
+					black_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_KING_END_GAME_WEIGHT * MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_KING_END_GAME)[table_black_index];
+				}
 				break;
 			}
 		}
@@ -212,8 +263,8 @@ namespace matt
 		}
 
 		// Bauern Materialwert addieren
-		white_score += white_pawn_score;
-		black_score += black_pawn_score;
+		white_score += white_pawn_score + white_square_table_score;
+		black_score += black_pawn_score + black_square_table_score;
 
 		// Je nach Spieler score der Spieler voneinander abziehen und zurückgeben
 		return enginePlayer == PLAYER_WHITE ? white_score - black_score : black_score - white_score;

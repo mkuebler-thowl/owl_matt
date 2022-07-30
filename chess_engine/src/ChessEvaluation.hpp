@@ -7,7 +7,7 @@ namespace matt
 {
 	// Bewertungsfunktions-Feature
 	constexpr unsigned char EVAL_FT_MATERIAL_DYNAMIC_GAME_PHASE = (1 << 0); // Materialwerte abhängig von der Spielphase (Eröffnung, Mittel- und Endspiel)
-	constexpr unsigned char EVAL_FT_SIMPLE_PEACE_SQUARE			= (1 << 1); // Piece-Square-Tabelle
+	constexpr unsigned char EVAL_FT_PIECE_SQUARE_TABLE			= (1 << 1); // Piece-Square-Tabelle
 	constexpr unsigned char EVAL_FT_PIECE_MOBILITY				= (1 << 2); // Piece-Mobility
 	constexpr unsigned char EVAL_FT_PAWN_STRUCUTRE				= (1 << 3); // Bauernstruktur (Double, Isolated, Connected, Backwards, Chain, Passed)
 	constexpr unsigned char EVAL_FT_BISHOP_PAIR					= (1 << 4); // Läuferpaar
@@ -17,7 +17,7 @@ namespace matt
 	// Alle Standard Bewertungsfunktions-Features
 	constexpr unsigned char EVAL_FT_STANDARD = 
 		EVAL_FT_MATERIAL_DYNAMIC_GAME_PHASE | 
-		EVAL_FT_SIMPLE_PEACE_SQUARE | 
+		EVAL_FT_PIECE_SQUARE_TABLE | 
 		EVAL_FT_PIECE_MOBILITY | 
 		EVAL_FT_PAWN_STRUCUTRE |
 		EVAL_FT_BISHOP_PAIR;
@@ -28,7 +28,7 @@ namespace matt
 	// Faktoren (Mit welcher Gewichtung die Features Einfluss auf die Bewertung haben 0.0 = 0% und 1.0 = 100%)
 
 	constexpr float MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT	= 1.00f; // Materialwerte zu Spielphase (Faktor)
-	constexpr float SIMPLE_PIECE_SQUARE_WEIGHT			= 1.00f; // Piece-Square-Tabelle (Faktor)
+	constexpr float PIECE_SQUARE_TABLE_WEIGHT			= 1.00f; // Piece-Square-Tabelle (Faktor)
 	constexpr float PIECE_MOBILITY_WEIGHT				= 1.00f; // Piece-Mobility (Faktor)
 	constexpr float BISHOP_PAIR_BONUS_WEIGHT			= 1.00f; // Bauernstruktur (Faktor)
 	constexpr float PAWN_STRUCTURE_WEIGHT				= 1.00f; // Läuferpaar (Faktor)
@@ -94,6 +94,110 @@ namespace matt
 	constexpr float PAWN_STRUCTURE_CONNECTED_PAWNS_BONUS	= 0.100f;	// Verbundene Bauern Bonus
 	constexpr float PAWN_STRUCTURE_CHAIN_PAWNS_BONUS		=  0.100f;	// Bauernkette Bonus
 	constexpr float PAWN_STRUCTURE_PASSED_PAWNS_BONUS		=  0.200f;	// Freibauern Bonus
+
+	// Piece Square Tables
+
+	constexpr float PIECE_SQUARE_TABLE_PAWN_WEIGHT			= 1.0f;	// Bauern-Tabellen-Gewicht (Faktor)
+	constexpr float PIECE_SQUARE_TABLE_KNIGHT_WEIGHT		= 1.0f;	// Springer-Tabellen-Gewicht (Faktor)
+	constexpr float PIECE_SQUARE_TABLE_BISHOP_WEIGHT		= 1.0f;	// Läufer-Tabellen-Gewicht (Faktor)
+	constexpr float PIECE_SQUARE_TABLE_ROOK_WEIGHT			= 1.0f;	// Turm-Tabellen-Gewicht (Faktor)
+	constexpr float PIECE_SQUARE_TABLE_QUEEN_WEIGHT			= 1.0f;	// Dame-Tabellen-Gewicht (Faktor)
+	constexpr float PIECE_SQUARE_TABLE_KING_MID_GAME_WEIGHT	= 1.0f;	// König-Tabellen-Mittelspiel-Gewicht (Faktor)
+	constexpr float PIECE_SQUARE_TABLE_KING_END_GAME_WEIGHT	= 1.0f;	// König-Tabellen-Endspiel-Gewicht (Faktor)
+
+	constexpr std::array<float, 64> PIECE_SQUARE_TABLE_PAWN = {
+		0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f,
+		0.50f, 0.50f, 0.50f, 0.50f, 0.50f, 0.50f, 0.50f, 0.50f,
+		0.10f, 0.10f, 0.20f, 0.30f, 0.30f, 0.20f, 0.10f, 0.10f,
+		0.05f, 0.05f, 0.10f, 0.25f, 0.25f, 0.10f, 0.05f, 0.05f,
+		0.00f, 0.00f, 0.00f, 0.20f, 0.20f, 0.00f, 0.00f, 0.00f,
+		0.05f,-0.05f,-0.10f, 0.00f, 0.00f,-0.10f,-0.05f, 0.05f,
+		0.05f, 0.10f, 0.10f,-0.20f,-0.20f, 0.10f, 0.10f, 0.05f,
+		0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f
+	};
+
+	constexpr std::array<float, 64> PIECE_SQUARE_TABLE_KNIGHT = {
+		-0.50f,-0.40f,-0.30f,-0.30f,-0.30f,-0.30f,-0.40f,-0.50f,
+		-0.00f,-0.20f, 0.00f, 0.00f, 0.00f, 0.00f,-0.20f,-0.40f,
+		-0.00f, 0.00f, 0.10f, 0.15f, 0.15f, 0.10f, 0.00f,-0.30f,
+		-0.00f, 0.05f, 0.15f, 0.20f, 0.20f, 0.15f, 0.05f,-0.30f,
+		-0.00f, 0.00f, 0.15f, 0.20f, 0.20f, 0.15f, 0.00f,-0.30f,
+		-0.00f, 0.05f, 0.10f, 0.15f, 0.15f, 0.10f, 0.05f,-0.30f,
+		-0.40f,-0.20f, 0.00f, 0.05f, 0.05f, 0.00f,-0.20f,-0.40f,
+		-0.50f,-0.40f,-0.30f,-0.30f,-0.30f,-0.30f,-0.40f,-0.50f
+	};
+
+	constexpr std::array<float, 64> PIECE_SQUARE_TABLE_BISHOP = {
+		-0.20f,-0.10f,-0.10f,-0.10f,-0.10f,-0.10f,-0.10f,-0.20f,
+		-0.10f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f,-0.10f,
+		-0.10f, 0.00f, 0.05f, 0.10f, 0.10f, 0.05f, 0.00f,-0.10f,
+		-0.10f, 0.05f, 0.05f, 0.10f, 0.10f, 0.05f, 0.05f,-0.10f,
+		-0.10f, 0.00f, 0.10f, 0.10f, 0.10f, 0.10f, 0.00f,-0.10f,
+		-0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f,-0.10f,
+		-0.10f, 0.05f, 0.00f, 0.00f, 0.00f, 0.00f, 0.05f,-0.10f,
+		-0.20f,-0.10f,-0.10f,-0.10f,-0.10f,-0.10f,-0.10f,-0.20f
+	};
+
+	constexpr std::array<float, 64> PIECE_SQUARE_TABLE_ROOK = {
+		 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f,  0.00f,
+		 0.05f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f,  0.05f,
+		-0.05f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, -0.05f,
+		-0.05f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, -0.05f,
+		-0.05f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, -0.05f,
+		-0.05f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, -0.05f,
+		-0.05f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, -0.05f,
+		 0.00f, 0.00f, 0.00f, 0.05f, 0.05f, 0.00f, 0.00f,  0.00f
+	};
+
+	constexpr std::array<float, 64> PIECE_SQUARE_TABLE_QUEEN = {
+		-0.20f,-0.10f,-0.10f, -0.05, -0.05f,-0.10f,-0.10f,-0.20f,
+		-0.10f, 0.00f, 0.00f,  0.00,  0.00f, 0.00f, 0.00f,-0.10f,
+		-0.10f, 0.00f, 0.05f,  0.05,  0.05f, 0.05f, 0.00f,-0.10f,
+		-0.05f, 0.00f, 0.05f,  0.05,  0.05f, 0.05f, 0.00f,-0.05f,
+		 0.00f, 0.00f, 0.05f,  0.05,  0.05f, 0.05f, 0.00f,-0.05f,
+		-0.10f, 0.05f, 0.05f,  0.05,  0.05f, 0.05f, 0.00f,-0.10f,
+		-0.10f, 0.00f, 0.05f,  0.00,  0.00f, 0.00f, 0.00f,-0.10f,
+		-0.20f,-0.10f,-0.10f, -0.05, -0.05f,-0.10f,-0.10f,-0.20f
+	};
+
+	constexpr std::array<float, 64> PIECE_SQUARE_TABLE_KING_MID_GAME = {
+		-0.30f,-0.40f,-0.40f,-0.50f,-0.50f,-0.40f,-0.40f,-0.30f,
+		-0.30f,-0.40f,-0.40f,-0.50f,-0.50f,-0.40f,-0.40f,-0.30f,
+		-0.30f,-0.40f,-0.40f,-0.50f,-0.50f,-0.40f,-0.40f,-0.30f,
+		-0.30f,-0.40f,-0.40f,-0.50f,-0.50f,-0.40f,-0.40f,-0.30f,
+		-0.20f,-0.30f,-0.30f,-0.40f,-0.40f,-0.30f,-0.30f,-0.20f,
+		-0.10f,-0.20f,-0.20f,-0.20f,-0.20f,-0.20f,-0.20f,-0.10f,
+		 0.20f, 0.20f, 0.00f, 0.00f, 0.00f, 0.00f, 0.20f, 0.20f,
+		 0.20f, 0.30f, 0.10f, 0.00f, 0.00f, 0.10f, 0.30f, 0.20f
+	};
+
+	constexpr std::array<float, 64> PIECE_SQUARE_TABLE_KING_END_GAME = {
+		-0.50f,-0.40f,-0.30f,-0.20f,-0.20f,-0.30f,-0.40f,-0.50f,
+		-0.30f,-0.20f,-0.10f, 0.00f, 0.00f,-0.10f,-0.20f,-0.30f,
+		-0.30f,-0.10f, 0.20f, 0.30f, 0.30f, 0.20f,-0.10f,-0.30f,
+		-0.30f,-0.10f, 0.30f, 0.40f, 0.40f, 0.30f,-0.10f,-0.30f,
+		-0.30f,-0.10f, 0.30f, 0.40f, 0.40f, 0.30f,-0.10f,-0.30f,
+		-0.30f,-0.10f, 0.20f, 0.30f, 0.30f, 0.20f,-0.10f,-0.30f,
+		-0.30f,-0.30f, 0.00f, 0.00f, 0.00f, 0.00f,-0.30f,-0.30f,
+		-0.50f,-0.30f,-0.30f,-0.30f,-0.30f,-0.30f,-0.30f,-0.50f
+	};
+
+	constexpr std::array<float, 64> MIRROR_PIECE_SQUARE_TABLE(const std::array<float, 64> t)
+	{
+		std::array<float, 64>&& sort_table =
+		{
+			t[56], t[57], t[58], t[59], t[60], t[61], t[62], t[63],
+			t[48], t[49], t[50], t[51], t[52], t[53], t[54], t[55],
+			t[40], t[41], t[42], t[43], t[44], t[45], t[46], t[47],
+			t[32], t[33], t[34], t[35], t[36], t[37], t[38], t[39],
+			t[24], t[25], t[26], t[27], t[28], t[29], t[30], t[31],
+			t[16], t[17], t[18], t[19], t[20], t[21], t[22], t[23],
+			 t[8],  t[9], t[10], t[11], t[12], t[13], t[14], t[15],
+			 t[0],  t[1],  t[2],  t[3],  t[4],  t[5],  t[6],  t[7]
+		};
+
+		return sort_table;
+	}
 
 	class ChessEvaluation
 	{
