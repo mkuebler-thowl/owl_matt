@@ -25,7 +25,7 @@ namespace matt {
         rows.push_back(fen.substr(0, pos));
         fen.replace(0, pos + 1, "");
 
-        auto data = std::array<::std::array<char, 8>,8>();
+        auto data = std::array<::std::array<char, COLUMNS>,ROWS>();
 
         int y = 0;
         for (auto row : rows)

@@ -25,21 +25,22 @@ namespace matt
 	// Alle Bewertungsfunktions-Features
 	constexpr unsigned char EVAL_FT_ALL = 0xff;
 
-	// Faktoren
-	constexpr float MATERIAL_DYNAMIC_GAME_PHASE_FACTOR	= 1.00f; // Materialwerte zu Spielphase (Faktor)
-	constexpr float SIMPLE_PIECE_SQUARE_FACTOR			= 1.00f; // Piece-Square-Tabelle (Faktor)
-	constexpr float PIECE_MOBILITY_FACTOR				= 1.00f; // Piece-Mobility (Faktor)
-	constexpr float BISHOP_PAIR_BONUS_FACTOR			= 1.00f; // Bauernstruktur (Faktor)
-	constexpr float PAWN_STRUCTURE_FACTOR				= 1.00f; // Läuferpaar (Faktor)
+	// Faktoren (Mit welcher Gewichtung die Features Einfluss auf die Bewertung haben 0.0 = 0% und 1.0 = 100%)
+
+	constexpr float MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT	= 1.00f; // Materialwerte zu Spielphase (Faktor)
+	constexpr float SIMPLE_PIECE_SQUARE_WEIGHT			= 1.00f; // Piece-Square-Tabelle (Faktor)
+	constexpr float PIECE_MOBILITY_WEIGHT				= 1.00f; // Piece-Mobility (Faktor)
+	constexpr float BISHOP_PAIR_BONUS_WEIGHT			= 1.00f; // Bauernstruktur (Faktor)
+	constexpr float PAWN_STRUCTURE_WEIGHT				= 1.00f; // Läuferpaar (Faktor)
 
 	// Spielphase Bedingungen
 	constexpr unsigned short MIDGAME_NUMBER = 12;			// Die Zugnummer, ab der die Partie als Mittelspiel betrachtet wird
 	constexpr float MINIMUM_BALANCE_FOR_ENDGAME = 17.00f;	// Das Minimum des einfachen gesamten Materialwertes (W+S, ohne Bauern), ab der die Partie als Endspiel betrachtet wird
 
 	// Spielphasen:
-	constexpr unsigned char GAME_PHASE_START	= 0;	// Eröffnungsphase
-	constexpr unsigned char GAME_PHASE_MID		= 1;	// Mittelspielphase
-	constexpr unsigned char GAME_PHASE_END		= 2;	// Endspielphase
+	constexpr unsigned short GAME_PHASE_START	= 0;	// Eröffnungsphase
+	constexpr unsigned short GAME_PHASE_MID		= 1;	// Mittelspielphase
+	constexpr unsigned short GAME_PHASE_END		= 2;	// Endspielphase
 
 	// Materialwert + Addition für die jeweilige Spielphase				//  P	   N	  B		 R		Q
 	constexpr std::array<float, 5> MATERIAL_VALUES						= { 1.00f, 3.00f, 3.00f, 5.00f, 9.00f }; // Materialwert
@@ -68,28 +69,31 @@ namespace matt
 	constexpr unsigned char KING_WHITE = 'K';
 	constexpr unsigned char KING_BLACK = 'k';
 
+	constexpr unsigned short MAX_PAWN_COUNT = 8;
+	constexpr unsigned short MAX_PIECE_TYPES = 6;
+
 	// Bonus
 	constexpr float BISHOP_PAIR_BONUS = 0.50f; // Läuferpaar-Bonus
 
-	// Figurenbewegung (Faktor)
-	constexpr float PIECE_MOBILITY_PAWN_FACTOR		= 0.10f; // Bauern-Figurbewegung (Faktor)
-	constexpr float PIECE_MOBILITY_KNIGHT_FACTOR	= 0.10f; // Springer-Figurenbewegung (Faktor)
-	constexpr float PIECE_MOBILITY_BISHOP_FACTOR	= 0.10f; // Läufer-Figurenbewegung (Faktor)
-	constexpr float PIECE_MOBILITY_ROOK_FACTOR		= 0.10f; // Turm-Figurenbewegung (Faktor)
-	constexpr float PIECE_MOBILITY_QUEEN_FACTOR		= 0.10f; // Dame-Figurenbewegung (Faktor)
-	constexpr float PIECE_MOBILITY_KING_FACTOR		= 0.10f; // König-Figurenbewegung (Faktor)
+	// Figurenbewegung (Gewichtung)
+	constexpr float PIECE_MOBILITY_PAWN_WEIGHT		= 0.10f; // Bauern-Figurbewegung (Faktor)
+	constexpr float PIECE_MOBILITY_KNIGHT_WEIGHT	= 0.10f; // Springer-Figurenbewegung (Faktor)
+	constexpr float PIECE_MOBILITY_BISHOP_WEIGHT	= 0.10f; // Läufer-Figurenbewegung (Faktor)
+	constexpr float PIECE_MOBILITY_ROOK_WEIGHT		= 0.10f; // Turm-Figurenbewegung (Faktor)
+	constexpr float PIECE_MOBILITY_QUEEN_WEIGHT		= 0.10f; // Dame-Figurenbewegung (Faktor)
+	constexpr float PIECE_MOBILITY_KING_WEIGHT		= 0.10f; // König-Figurenbewegung (Faktor)
 
 	// Zusätzliche Dynamische Bauerngewichtung
-	constexpr std::array<float, 8> MATERIAL_DYNAMIC_PAWNS = { 1.05f, 1.03f, 1.01f, 1.00f, 0.99f, 0.98f, 0.97f, 0.95f };
+	constexpr std::array<float, MAX_PAWN_COUNT> MATERIAL_DYNAMIC_PAWNS = { 1.05f, 1.03f, 1.01f, 1.00f, 0.99f, 0.98f, 0.97f, 0.95f };
 
 	// Bauernstruktur Malus
 	constexpr float PAWN_STRUCTURE_DOUBLE_PAWNS_PENALTY		= -0.200f;	// Doppelte Bauern Malus
 	constexpr float PAWN_STRUCTURE_ISOLATED_PAWNS_PENALTY	= -0.100f;	// Isolierte Bauern Malus
-	constexpr float PAWN_STRUCTURE_BACKWARDS_PAWNS_PENALTY	= -0.125f;	// Backwards Bauern Malus
+	constexpr float PAWN_STRUCTURE_BACKWARDS_PAWNS_PENALTY	= -0.125f;	// Rückständige Bauern Malus
 	// Bauernstruktur Bonus
-	constexpr float PAWN_STRUCTURE_CONNECTED_PAWNS_BONUS	= 0.100f;	// Connected Bauern Bonus
-	constexpr float PAWN_STRUCTURE_CHAIN_PAWNS_BONUS		=  0.100f;	// Chain Bauern Bonus
-	constexpr float PAWN_STRUCTURE_PASSED_PAWNS_BONUS		=  0.200f;	// Passierte Bauern Bonus
+	constexpr float PAWN_STRUCTURE_CONNECTED_PAWNS_BONUS	= 0.100f;	// Verbundene Bauern Bonus
+	constexpr float PAWN_STRUCTURE_CHAIN_PAWNS_BONUS		=  0.100f;	// Bauernkette Bonus
+	constexpr float PAWN_STRUCTURE_PASSED_PAWNS_BONUS		=  0.200f;	// Freibauern Bonus
 
 	class ChessEvaluation
 	{
@@ -117,6 +121,8 @@ namespace matt
 		/// Verkettete Bauern? 
 		static bool isChainPawn(const Position& position, int x, int y);
 		/// Hilfsfunktion zur Überprüfung, ob Grenzen eingehalten werden und ob sich ein freundlicher Bauer bei der Position x+xOffset, y+yOffset befindet
-		static bool isInsideAndPawnStructure(const Position& position, int x, int y, int xOffset, int yOffset);
+		static bool isPieceEqualOnOffset(const Position& position, int x, int y, int xOffset, int yOffset);
+		/// Hilfsfunktion zur Überprüfung, ob Grenzen eingehalten werden und ob sich ein feindlicher Bauer bei der Position x+xOffset, y+yOffset befindet
+		static bool isPieceEnemyPawnOnOffset(const Position& position, int x, int y, int xOffset, int yOffset);
 	};
 }

@@ -44,71 +44,69 @@ namespace matt
 
 		// Pro Spielfeld Figure zählen und Materialwert hinzutragen
 		// Anmerkung: Der Materialwert der Bauern wird später zu white_score bzw. black_score hinzugetragen!
-		for (int y = 0; y < 8; y++)
+		for (int y = 0; y < ROWS; y++)
 		{
-			for (int x = 0; x < 8; x++)
+			for (int x = 0; x < COLUMNS; x++)
 			{
 				switch (position[y][x])
 				{
-				case 'P':
+				case PAWN_WHITE:
 					white_pawns++;
 					// Bauernstruktur für Weiß bestimmen
 					if (evaluationFeatureFlags & EVAL_FT_PAWN_STRUCUTRE)
 					{
-						if (isDoublePawn(position, x, y)) white_pawn_score += PAWN_STRUCTURE_DOUBLE_PAWNS_PENALTY * PAWN_STRUCTURE_FACTOR;
-						if (isConnectedPawn(position, x, y)) white_pawn_score += PAWN_STRUCTURE_CONNECTED_PAWNS_BONUS * PAWN_STRUCTURE_FACTOR;
-						if (isChainPawn(position, x, y)) white_pawn_score += PAWN_STRUCTURE_CHAIN_PAWNS_BONUS * PAWN_STRUCTURE_FACTOR;
-						if (isIsolatedPawn(position, x, y)) white_pawn_score += PAWN_STRUCTURE_ISOLATED_PAWNS_PENALTY * PAWN_STRUCTURE_FACTOR;
-						if (isPassedPawn(position, x, y)) white_pawn_score += PAWN_STRUCTURE_PASSED_PAWNS_BONUS * PAWN_STRUCTURE_FACTOR;
+						if (isDoublePawn(position, x, y))		white_pawn_score += PAWN_STRUCTURE_DOUBLE_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
+						if (isConnectedPawn(position, x, y))	white_pawn_score += PAWN_STRUCTURE_CONNECTED_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
+						if (isChainPawn(position, x, y))		white_pawn_score += PAWN_STRUCTURE_CHAIN_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
+						if (isIsolatedPawn(position, x, y))		white_pawn_score += PAWN_STRUCTURE_ISOLATED_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
+						if (isPassedPawn(position, x, y))		white_pawn_score += PAWN_STRUCTURE_PASSED_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
+						if (isBackwardsPawn(position, x, y))	white_pawn_score += PAWN_STRUCTURE_BACKWARDS_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
 					}
 					break;
-				case 'p':
+				case PAWN_BLACK:
 					black_pawns++;
 					// Bauernstruktur für Schwarz bestimmen
 					if (evaluationFeatureFlags & EVAL_FT_PAWN_STRUCUTRE)
 					{
-						if (isDoublePawn(position, x, y)) black_pawn_score += PAWN_STRUCTURE_BACKWARDS_PAWNS_PENALTY * PAWN_STRUCTURE_FACTOR;
-						if (isConnectedPawn(position, x, y)) black_pawn_score += PAWN_STRUCTURE_CONNECTED_PAWNS_BONUS * PAWN_STRUCTURE_FACTOR;
-						if (isChainPawn(position, x, y)) black_pawn_score += PAWN_STRUCTURE_CHAIN_PAWNS_BONUS * PAWN_STRUCTURE_FACTOR;
-						if (isIsolatedPawn(position, x, y))	black_pawn_score += PAWN_STRUCTURE_ISOLATED_PAWNS_PENALTY * PAWN_STRUCTURE_FACTOR;
-						if (isPassedPawn(position, x, y)) black_pawn_score += PAWN_STRUCTURE_PASSED_PAWNS_BONUS * PAWN_STRUCTURE_FACTOR;
+						if (isDoublePawn(position, x, y))		black_pawn_score += PAWN_STRUCTURE_DOUBLE_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
+						if (isConnectedPawn(position, x, y))	black_pawn_score += PAWN_STRUCTURE_CONNECTED_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
+						if (isChainPawn(position, x, y))		black_pawn_score += PAWN_STRUCTURE_CHAIN_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
+						if (isIsolatedPawn(position, x, y))		black_pawn_score += PAWN_STRUCTURE_ISOLATED_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
+						if (isPassedPawn(position, x, y))		black_pawn_score += PAWN_STRUCTURE_PASSED_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
+						if (isBackwardsPawn(position, x, y))	black_pawn_score += PAWN_STRUCTURE_BACKWARDS_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
 					}
 					break;
-				case 'N':
+				case KNIGHT_WHITE:
 					white_knights++; 
 					white_score += MATERIAL_VALUES[KNIGHT];
 					break;
-				case 'n':
+				case KNIGHT_BLACK:
 					black_knights++;
 					black_score += MATERIAL_VALUES[KNIGHT];
 					break;
-				case 'B':
+				case BISHOP_WHITE:
 					white_bishops++;
 					white_score += MATERIAL_VALUES[BISHOP];
 					break;
-				case 'b':
+				case BISHOP_BLACK:
 					black_bishops++;
 					black_score += MATERIAL_VALUES[BISHOP];
 					break;
-				case 'R':
+				case ROOK_WHITE:
 					white_rooks++;
 					white_score += MATERIAL_VALUES[ROOK];
 					break;
-				case 'r':
+				case ROOK_BLACK:
 					black_rooks++;
 					black_score += MATERIAL_VALUES[ROOK];
 					break;
-				case 'Q':
+				case QUEEN_WHITE:
 					white_queens++;
 					white_score += MATERIAL_VALUES[QUEEN];
 					break;
-				case 'q':
+				case QUEEN_BLACK:
 					black_queens++;
 					black_score += MATERIAL_VALUES[QUEEN];
-					break;
-				case 'K':
-					break;
-				case 'k':
 					break;
 				}
 				// Piece Mobility Züge zählen
@@ -124,48 +122,48 @@ namespace matt
 		{
 			// Spielphase bestimmen
 			auto game_phase = position.getMoveNumber() >= MIDGAME_NUMBER ? GAME_PHASE_MID : GAME_PHASE_START;
-			game_phase = game_phase == GAME_PHASE_MID && white_score + black_score <= MINIMUM_BALANCE_FOR_ENDGAME ? GAME_PHASE_END : GAME_PHASE_MID;
+			game_phase = game_phase == GAME_PHASE_MID && white_score + black_score <= MINIMUM_BALANCE_FOR_ENDGAME ? GAME_PHASE_END : game_phase;
 
 			switch (game_phase)
 			{
 			case GAME_PHASE_START:
-				white_score += white_pawns	 * MATERIAL_ADDITION_BEGIN_GAME_PHASE[PAWN]		* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				white_score += white_knights * MATERIAL_ADDITION_BEGIN_GAME_PHASE[KNIGHT]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				white_score += white_bishops * MATERIAL_ADDITION_BEGIN_GAME_PHASE[BISHOP]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				white_score += white_rooks	 * MATERIAL_ADDITION_BEGIN_GAME_PHASE[ROOK]		* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				white_score += white_queens  * MATERIAL_ADDITION_BEGIN_GAME_PHASE[QUEEN]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
+				white_score += white_pawns	 * MATERIAL_ADDITION_BEGIN_GAME_PHASE[PAWN]		* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				white_score += white_knights * MATERIAL_ADDITION_BEGIN_GAME_PHASE[KNIGHT]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				white_score += white_bishops * MATERIAL_ADDITION_BEGIN_GAME_PHASE[BISHOP]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				white_score += white_rooks	 * MATERIAL_ADDITION_BEGIN_GAME_PHASE[ROOK]		* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				white_score += white_queens  * MATERIAL_ADDITION_BEGIN_GAME_PHASE[QUEEN]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
 
-				black_score += black_pawns   * MATERIAL_ADDITION_BEGIN_GAME_PHASE[PAWN]		* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				black_score += black_knights * MATERIAL_ADDITION_BEGIN_GAME_PHASE[KNIGHT]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				black_score += black_bishops * MATERIAL_ADDITION_BEGIN_GAME_PHASE[BISHOP]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				black_score += black_rooks   * MATERIAL_ADDITION_BEGIN_GAME_PHASE[ROOK]		* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				black_score += black_queens  * MATERIAL_ADDITION_BEGIN_GAME_PHASE[QUEEN]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
+				black_score += black_pawns   * MATERIAL_ADDITION_BEGIN_GAME_PHASE[PAWN]		* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				black_score += black_knights * MATERIAL_ADDITION_BEGIN_GAME_PHASE[KNIGHT]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				black_score += black_bishops * MATERIAL_ADDITION_BEGIN_GAME_PHASE[BISHOP]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				black_score += black_rooks   * MATERIAL_ADDITION_BEGIN_GAME_PHASE[ROOK]		* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				black_score += black_queens  * MATERIAL_ADDITION_BEGIN_GAME_PHASE[QUEEN]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
 				break;
 			case GAME_PHASE_MID:
-				white_score += white_pawns	 * MATERIAL_ADDITION_MID_GAME_PHASE[PAWN]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				white_score += white_knights * MATERIAL_ADDITION_MID_GAME_PHASE[KNIGHT] * MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				white_score += white_bishops * MATERIAL_ADDITION_MID_GAME_PHASE[BISHOP] * MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				white_score += white_rooks	 * MATERIAL_ADDITION_MID_GAME_PHASE[ROOK]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				white_score += white_queens  * MATERIAL_ADDITION_MID_GAME_PHASE[QUEEN]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
+				white_score += white_pawns	 * MATERIAL_ADDITION_MID_GAME_PHASE[PAWN]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				white_score += white_knights * MATERIAL_ADDITION_MID_GAME_PHASE[KNIGHT] * MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				white_score += white_bishops * MATERIAL_ADDITION_MID_GAME_PHASE[BISHOP] * MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				white_score += white_rooks	 * MATERIAL_ADDITION_MID_GAME_PHASE[ROOK]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				white_score += white_queens  * MATERIAL_ADDITION_MID_GAME_PHASE[QUEEN]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
 
-				black_score += black_pawns   * MATERIAL_ADDITION_MID_GAME_PHASE[PAWN]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				black_score += black_knights * MATERIAL_ADDITION_MID_GAME_PHASE[KNIGHT] * MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				black_score += black_bishops * MATERIAL_ADDITION_MID_GAME_PHASE[BISHOP] * MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				black_score += black_rooks   * MATERIAL_ADDITION_MID_GAME_PHASE[ROOK]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				black_score += black_queens  * MATERIAL_ADDITION_MID_GAME_PHASE[QUEEN]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
+				black_score += black_pawns   * MATERIAL_ADDITION_MID_GAME_PHASE[PAWN]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				black_score += black_knights * MATERIAL_ADDITION_MID_GAME_PHASE[KNIGHT] * MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				black_score += black_bishops * MATERIAL_ADDITION_MID_GAME_PHASE[BISHOP] * MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				black_score += black_rooks   * MATERIAL_ADDITION_MID_GAME_PHASE[ROOK]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				black_score += black_queens  * MATERIAL_ADDITION_MID_GAME_PHASE[QUEEN]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
 				break;
 			case GAME_PHASE_END:
-				white_score += white_pawns	 * MATERIAL_ADDITION_END_GAME_PHASE[PAWN]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				white_score += white_knights * MATERIAL_ADDITION_END_GAME_PHASE[KNIGHT] * MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				white_score += white_bishops * MATERIAL_ADDITION_END_GAME_PHASE[BISHOP] * MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				white_score += white_rooks	 * MATERIAL_ADDITION_END_GAME_PHASE[ROOK]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				white_score += white_queens  * MATERIAL_ADDITION_END_GAME_PHASE[QUEEN]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
+				white_score += white_pawns	 * MATERIAL_ADDITION_END_GAME_PHASE[PAWN]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				white_score += white_knights * MATERIAL_ADDITION_END_GAME_PHASE[KNIGHT] * MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				white_score += white_bishops * MATERIAL_ADDITION_END_GAME_PHASE[BISHOP] * MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				white_score += white_rooks	 * MATERIAL_ADDITION_END_GAME_PHASE[ROOK]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				white_score += white_queens  * MATERIAL_ADDITION_END_GAME_PHASE[QUEEN]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
 
-				black_score += black_pawns	 * MATERIAL_ADDITION_END_GAME_PHASE[PAWN]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				black_score += black_knights * MATERIAL_ADDITION_END_GAME_PHASE[KNIGHT] * MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				black_score += black_bishops * MATERIAL_ADDITION_END_GAME_PHASE[BISHOP] * MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				black_score += black_rooks	 * MATERIAL_ADDITION_END_GAME_PHASE[ROOK]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
-				black_score += black_queens  * MATERIAL_ADDITION_END_GAME_PHASE[QUEEN]	* MATERIAL_DYNAMIC_GAME_PHASE_FACTOR;
+				black_score += black_pawns	 * MATERIAL_ADDITION_END_GAME_PHASE[PAWN]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				black_score += black_knights * MATERIAL_ADDITION_END_GAME_PHASE[KNIGHT] * MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				black_score += black_bishops * MATERIAL_ADDITION_END_GAME_PHASE[BISHOP] * MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				black_score += black_rooks	 * MATERIAL_ADDITION_END_GAME_PHASE[ROOK]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+				black_score += black_queens  * MATERIAL_ADDITION_END_GAME_PHASE[QUEEN]	* MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
 				break;
 			}
 		}
@@ -174,8 +172,8 @@ namespace matt
 		if (evaluationFeatureFlags & EVAL_FT_DYNAMIC_PAWNS)
 		{
 			// Bauernanzahl clampen:
-			if (white_pawns > 8) white_pawns = 8;
-			if (black_pawns > 8) black_pawns = 8;
+			if (white_pawns > MAX_PAWN_COUNT) white_pawns = MAX_PAWN_COUNT;
+			if (black_pawns > MAX_PAWN_COUNT) black_pawns = MAX_PAWN_COUNT;
 
 			// Dynamische Bauern addieren
 			white_pawn_score += white_pawns * MATERIAL_DYNAMIC_PAWNS[white_pawns];
@@ -191,26 +189,26 @@ namespace matt
 		// Läuferpaar aktiviert?
 		if (evaluationFeatureFlags & EVAL_FT_BISHOP_PAIR)
 		{
-			if (white_bishops >= 2) white_score += BISHOP_PAIR_BONUS * BISHOP_PAIR_BONUS_FACTOR;
-			if (black_bishops >= 2) black_score += BISHOP_PAIR_BONUS * BISHOP_PAIR_BONUS_FACTOR;
+			if (white_bishops >= 2) white_score += BISHOP_PAIR_BONUS * BISHOP_PAIR_BONUS_WEIGHT;
+			if (black_bishops >= 2) black_score += BISHOP_PAIR_BONUS * BISHOP_PAIR_BONUS_WEIGHT;
 		}
 
 		// Piece Mobility hinzufügen:
 		if (evaluationFeatureFlags & EVAL_FT_PIECE_MOBILITY)
 		{
-			white_score += PIECE_MOBILITY_FACTOR * PIECE_MOBILITY_PAWN_FACTOR	* possible_moves[PAWN_WHITE];
-			white_score += PIECE_MOBILITY_FACTOR * PIECE_MOBILITY_KNIGHT_FACTOR * possible_moves[KNIGHT_WHITE];
-			white_score += PIECE_MOBILITY_FACTOR * PIECE_MOBILITY_BISHOP_FACTOR * possible_moves[BISHOP_WHITE];
-			white_score += PIECE_MOBILITY_FACTOR * PIECE_MOBILITY_ROOK_FACTOR	* possible_moves[ROOK_WHITE];
-			white_score += PIECE_MOBILITY_FACTOR * PIECE_MOBILITY_QUEEN_FACTOR	* possible_moves[QUEEN_WHITE];
-			white_score += PIECE_MOBILITY_FACTOR * PIECE_MOBILITY_KING_FACTOR	* possible_moves[KING_WHITE];
+			white_score += PIECE_MOBILITY_WEIGHT * PIECE_MOBILITY_PAWN_WEIGHT	* possible_moves[PAWN_WHITE];
+			white_score += PIECE_MOBILITY_WEIGHT * PIECE_MOBILITY_KNIGHT_WEIGHT * possible_moves[KNIGHT_WHITE];
+			white_score += PIECE_MOBILITY_WEIGHT * PIECE_MOBILITY_BISHOP_WEIGHT * possible_moves[BISHOP_WHITE];
+			white_score += PIECE_MOBILITY_WEIGHT * PIECE_MOBILITY_ROOK_WEIGHT	* possible_moves[ROOK_WHITE];
+			white_score += PIECE_MOBILITY_WEIGHT * PIECE_MOBILITY_QUEEN_WEIGHT	* possible_moves[QUEEN_WHITE];
+			white_score += PIECE_MOBILITY_WEIGHT * PIECE_MOBILITY_KING_WEIGHT	* possible_moves[KING_WHITE];
 
-			black_score += PIECE_MOBILITY_FACTOR * PIECE_MOBILITY_PAWN_FACTOR	* possible_moves[PAWN_BLACK];
-			black_score += PIECE_MOBILITY_FACTOR * PIECE_MOBILITY_KNIGHT_FACTOR * possible_moves[KNIGHT_BLACK];
-			black_score += PIECE_MOBILITY_FACTOR * PIECE_MOBILITY_BISHOP_FACTOR * possible_moves[BISHOP_BLACK];
-			black_score += PIECE_MOBILITY_FACTOR * PIECE_MOBILITY_ROOK_FACTOR	* possible_moves[ROOK_BLACK];
-			black_score += PIECE_MOBILITY_FACTOR * PIECE_MOBILITY_QUEEN_FACTOR	* possible_moves[QUEEN_BLACK];
-			black_score += PIECE_MOBILITY_FACTOR * PIECE_MOBILITY_KING_FACTOR	* possible_moves[KING_BLACK];
+			black_score += PIECE_MOBILITY_WEIGHT * PIECE_MOBILITY_PAWN_WEIGHT	* possible_moves[PAWN_BLACK];
+			black_score += PIECE_MOBILITY_WEIGHT * PIECE_MOBILITY_KNIGHT_WEIGHT * possible_moves[KNIGHT_BLACK];
+			black_score += PIECE_MOBILITY_WEIGHT * PIECE_MOBILITY_BISHOP_WEIGHT * possible_moves[BISHOP_BLACK];
+			black_score += PIECE_MOBILITY_WEIGHT * PIECE_MOBILITY_ROOK_WEIGHT	* possible_moves[ROOK_BLACK];
+			black_score += PIECE_MOBILITY_WEIGHT * PIECE_MOBILITY_QUEEN_WEIGHT	* possible_moves[QUEEN_BLACK];
+			black_score += PIECE_MOBILITY_WEIGHT * PIECE_MOBILITY_KING_WEIGHT	* possible_moves[KING_BLACK];
 		}
 
 		// Bauern Materialwert addieren
@@ -222,22 +220,22 @@ namespace matt
 	}
 	bool ChessEvaluation::isDoublePawn(const Position& position, int x, int y)
 	{
-		if (isInsideAndPawnStructure(position, x, y, 0, 1)) return true;
-		if (isInsideAndPawnStructure(position, x, y, 0, -1)) return true;
+		if (isPieceEqualOnOffset(position, x, y, 0, 1)) return true;
+		if (isPieceEqualOnOffset(position, x, y, 0, -1)) return true;
 
 		return false;
 	}
 	bool ChessEvaluation::isConnectedPawn(const Position& position, int x, int y)
 	{
-		if (isInsideAndPawnStructure(position, x, y, 1, 0)) return true;		
-		if (isInsideAndPawnStructure(position, x, y, -1, 0)) return true;
+		if (isPieceEqualOnOffset(position, x, y, 1, 0)) return true;		
+		if (isPieceEqualOnOffset(position, x, y, -1, 0)) return true;
 
 		return false;
 	}
 	bool ChessEvaluation::isIsolatedPawn(const Position& position, int x, int y)
 	{
-		if (isInsideAndPawnStructure(position, x, y, 1, 0)) return false;
-		if (isInsideAndPawnStructure(position, x, y, -1, 0)) return false;
+		if (isPieceEqualOnOffset(position, x, y, 1, 0)) return false;
+		if (isPieceEqualOnOffset(position, x, y, -1, 0)) return false;
 		if (isDoublePawn(position, x, y)) return false;
 		if (isChainPawn(position, x, y)) return false;
 
@@ -245,35 +243,29 @@ namespace matt
 	}
 	bool ChessEvaluation::isBackwardsPawn(const Position& position, int x, int y)
 	{
-		auto enemy = position.getPlayer() == PLAYER_WHITE ? 'p' : 'P';
+		auto enemy_pawn = position.getPlayer() == PLAYER_WHITE ? PAWN_BLACK : PAWN_WHITE;
+		auto dir = enemy_pawn == PAWN_WHITE ? 1 : -1;
 
-		//switch (enemy)
-		//{
-		//case 'p':
-		//	if (y <= 5)
-		//	{
-		//		if (!isConnectedPawn(position, x, y) && position[y+2])
-		//	}
-		//	break;
-		//case 'P':
-		//	if (y >= 2)
-		//	{
-
-		//	}
-		//	break;
-		//}
+		if (!isConnectedPawn(position, x, y))
+		{
+			// Gegnerischer Bauer vorne
+			if (isPieceEnemyPawnOnOffset(position, x, y, 0, dir)) return true;
+			if (isPieceEnemyPawnOnOffset(position, x, y, 1, 2 * dir)) return true;
+			if (isPieceEnemyPawnOnOffset(position, x, y, -1, 2 * dir)) return true;
+		}
 
 		return false;
 	}
 	bool ChessEvaluation::isPassedPawn(const Position& position, int x, int y)
 	{
-		auto enemy_pawn = position.getPlayer() == PLAYER_WHITE ? 'p' : 'P';
+		auto enemy_pawn = position[y][x] == PAWN_WHITE ? PAWN_BLACK : PAWN_WHITE;
 
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < ROWS; i++)
 		{
-			if (!ChessValidation::isInsideChessboard(x, y + i))
+			if (i == y) continue; // Eigenes Feld ignorieren
+			if (ChessValidation::isInsideChessboard(x, i))
 			{
-				if (position[y + i][x] == enemy_pawn) return false;
+				if (position[i][x] == enemy_pawn) return false;
 			}
 		}
 
@@ -281,19 +273,32 @@ namespace matt
 	}
 	bool ChessEvaluation::isChainPawn(const Position& position, int x, int y)
 	{
-		if (isInsideAndPawnStructure(position, x, y, 1, 1)) return true;
-		if (isInsideAndPawnStructure(position, x, y, 1, -1)) return true;
-		if (isInsideAndPawnStructure(position, x, y, -1, 1)) return true;
-		if (isInsideAndPawnStructure(position, x, y, -1, -1)) return true;
+		if (isPieceEqualOnOffset(position, x, y, 1, 1)) return true;
+		if (isPieceEqualOnOffset(position, x, y, 1, -1)) return true;
+		if (isPieceEqualOnOffset(position, x, y, -1, 1)) return true;
+		if (isPieceEqualOnOffset(position, x, y, -1, -1)) return true;
 
 		return false;
 	}
 
-	bool ChessEvaluation::isInsideAndPawnStructure(const Position& position, int x, int y, int xOffset, int yOffset)
+	bool ChessEvaluation::isPieceEqualOnOffset(const Position& position, int x, int y, int xOffset, int yOffset)
 	{
-		if (!ChessValidation::isInsideChessboard(x + xOffset, y + yOffset))
+		if (ChessValidation::isInsideChessboard(x + xOffset, y + yOffset))
 		{
 			if (position[y][x] == position[y + yOffset][x + xOffset]) return true;
+		}
+
+		return false;
+	}
+
+	bool ChessEvaluation::isPieceEnemyPawnOnOffset(const Position& position, int x, int y, int xOffset, int yOffset)
+	{
+		auto startPawn = position.getPlayer() == PLAYER_WHITE ? PAWN_WHITE : PAWN_BLACK;
+		auto targetPawn = startPawn == PAWN_WHITE ? PAWN_BLACK : PAWN_WHITE;
+
+		if (ChessValidation::isInsideChessboard(x + xOffset, y + yOffset))
+		{
+			if (position[y][x] == startPawn && targetPawn == position[y + yOffset][x + xOffset]) return true;
 		}
 
 		return false;

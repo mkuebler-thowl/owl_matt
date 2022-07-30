@@ -13,6 +13,10 @@ namespace matt
 		PlayerBlackWins,
 		Remis
 	};
+
+	constexpr unsigned short ROWS = 8;
+	constexpr unsigned short COLUMNS = 8;
+
 	/// Datenstruktur für eine beliebige Schachposition. 
 	/// Beinhaltet ein 8x8 char-Array, um eine jeweilige Stellung zu speichern.
 	class Position
@@ -94,7 +98,7 @@ namespace matt
 		void resetBlackCastlingLong();
 	private:
 		/// 8x8 char-Array als Datenobjekt für eine Spielposition
-		mutable std::array<std::array<char, 8>, 8> m_data;
+		mutable std::array<std::array<char, COLUMNS>, ROWS> m_data;
 		/// En Passant möglich?
 		bool m_enPassant;
 		/// En Passant Position

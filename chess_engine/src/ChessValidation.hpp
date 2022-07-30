@@ -8,6 +8,11 @@
 
 namespace matt
 {
+	constexpr char* BLACK_PIECES = "pnbrqk";
+	constexpr char* WHITE_PIECES = "PNBRQK";
+	constexpr char* WHITE_PROMOTION_STR = "NBRQ";
+	constexpr char* BLACK_PROMOTION_STR = "nbrq";
+
 	/// ChessValidation bietet als Hilfsklasse für statische Funktionen zur Überprüfung und Ermittlung legaler Züge.
 	class ChessValidation
 	{
@@ -63,10 +68,10 @@ namespace matt
 		/// <summary>
 		/// Ist die Platzierung x,y im Schach bzw. wird diese Position bedroht? 
 		/// </summary>
-		/// <param name="position"></param>
-		/// <param name="x"></param>
-		/// <param name="y"></param>
-		/// <param name="player"></param>
+		/// <param name="position">Ausgangsposition bzw. Stellung</param>
+		/// <param name="x">Spalte</param>
+		/// <param name="y">Reihe</param>
+		/// <param name="player">Der Spieler für den die Position auf "Schach" überprüft werden soll</param>
 		/// <returns></returns>
 		static bool isPlaceInCheck(const Position& position, int x, int y, short player);
 

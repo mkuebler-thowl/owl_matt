@@ -1,43 +1,45 @@
 #include "ChessValidation.hpp"
 #include "ChessEngine.hpp"
 #include "FENParser.hpp"
+#include "ChessEvaluation.hpp"
 
 #include <string>
+#include <iostream>
 namespace matt
 {
 	std::vector<Move> ChessValidation::getValidMoves(const Position& position, short player, bool sort)
 	{
 		std::vector<Move> moves;
 
-		for (int y = 0; y < 8; y++)
+		for (int y = 0; y < ROWS; y++)
 		{
-			for (int x = 0; x < 8; x++)
+			for (int x = 0; x < COLUMNS; x++)
 			{
 				if (player == PLAYER_WHITE)
 				{
 					switch (position[y][x])
 					{
-					case 'P': {
+					case PAWN_WHITE: {
 						auto pawns = getValidPawnMoves(position, x, y, player);
 						moves.insert(moves.end(), pawns.begin(), pawns.end());
 						break; }
-					case 'N': {
+					case KNIGHT_WHITE: {
 						auto knights = getValidKnightMoves(position, x, y, player);
 						moves.insert(moves.end(), knights.begin(), knights.end());
 						break; }
-					case 'K': {
+					case KING_WHITE: {
 						auto kings = getValidKingMoves(position, x, y, player);
 						moves.insert(moves.end(), kings.begin(), kings.end());
 						break; }
-					case 'R': {
+					case ROOK_WHITE: {
 						auto rooks = getValidRookMoves(position, x, y, player);
 						moves.insert(moves.end(), rooks.begin(), rooks.end());
 						break; }
-					case 'B': {
+					case BISHOP_WHITE: {
 						auto bishops = getValidBishopMoves(position, x, y, player);
 						moves.insert(moves.end(), bishops.begin(), bishops.end());
 						break; }
-					case 'Q': {
+					case QUEEN_WHITE: {
 						auto axis = getValidRookMoves(position, x, y, player);
 						auto diagonal = getValidBishopMoves(position, x, y, player);
 						moves.insert(moves.end(), axis.begin(), axis.end());
@@ -49,27 +51,27 @@ namespace matt
 				{
 					switch (position[y][x])
 					{
-					case 'p': {
+					case PAWN_BLACK: {
 						auto pawns = getValidPawnMoves(position, x, y, player);
 						moves.insert(moves.end(), pawns.begin(), pawns.end());
 						break; }
-					case 'n': {
+					case KNIGHT_BLACK: {
 						auto knights = getValidKnightMoves(position, x, y, player);
 						moves.insert(moves.end(), knights.begin(), knights.end());
 						break; }
-					case 'k': {
+					case KING_BLACK: {
 						auto kings = getValidKingMoves(position, x, y, player);
 						moves.insert(moves.end(), kings.begin(), kings.end());
 						break; }
-					case 'r': {
+					case ROOK_BLACK: {
 						auto rooks = getValidRookMoves(position, x, y, player);
 						moves.insert(moves.end(), rooks.begin(), rooks.end());
 						break; }
-					case 'b': {
+					case BISHOP_BLACK: {
 						auto bishops = getValidBishopMoves(position, x, y, player);
 						moves.insert(moves.end(), bishops.begin(), bishops.end());
 						break; }
-					case 'q': {
+					case QUEEN_BLACK: {
 						auto axis = getValidRookMoves(position, x, y, player);
 						auto diagonal = getValidBishopMoves(position, x, y, player);
 						moves.insert(moves.end(), axis.begin(), axis.end());
@@ -91,35 +93,20 @@ namespace matt
 	{
 		unsigned short count = 0;
 
-		short player = position.getPlayer();
-
 		switch (position[y][x])
 		{
-		case 'P':
-		case 'p':
-			count += getValidPawnMoves(position, x, y, player).size();
-			break;
-		case 'N':
-		case 'n':
-			count += getValidKnightMoves(position, x, y, player).size();
-			break;
-		case 'B':
-		case 'b':
-			count += getValidBishopMoves(position, x, y, player).size();
-			break;
-		case 'R':
-		case 'r':
-			count += getValidRookMoves(position, x, y, player).size();
-			break;
-		case 'Q':
-		case 'q':
-			count += getValidBishopMoves(position, x, y, player).size();
-			count += getValidRookMoves(position, x, y, player).size();
-			break;
-		case 'K':
-		case 'k':
-			count += getValidKingMoves(position, x, y, player).size();
-			break;
+		case PAWN_WHITE: count += getValidPawnMoves(position, x, y, PLAYER_WHITE).size(); break;
+		case PAWN_BLACK: count += getValidPawnMoves(position, x, y, PLAYER_BLACK).size(); break;
+		case KNIGHT_WHITE: count += getValidKnightMoves(position, x, y, PLAYER_WHITE).size(); break;
+		case KNIGHT_BLACK: count += getValidKnightMoves(position, x, y, PLAYER_BLACK).size(); break;
+		case BISHOP_WHITE: count += getValidBishopMoves(position, x, y, PLAYER_WHITE).size(); break;
+		case BISHOP_BLACK: count += getValidBishopMoves(position, x, y, PLAYER_BLACK).size(); break;
+		case ROOK_WHITE: count += getValidRookMoves(position, x, y, PLAYER_WHITE).size(); break;
+		case ROOK_BLACK: count += getValidRookMoves(position, x, y, PLAYER_BLACK).size(); break;
+		case QUEEN_WHITE: count += getValidBishopMoves(position, x, y, PLAYER_WHITE).size() + getValidRookMoves(position, x, y, PLAYER_WHITE).size(); break;
+		case QUEEN_BLACK: count += getValidBishopMoves(position, x, y, PLAYER_BLACK).size() + getValidRookMoves(position, x, y, PLAYER_BLACK).size(); break;
+		case KING_WHITE: count += getValidKingMoves(position, x, y, PLAYER_WHITE).size(); break;
+		case KING_BLACK: count += getValidKingMoves(position, x, y, PLAYER_BLACK).size(); break;
 		}
 		return count;
 	}
@@ -140,8 +127,8 @@ namespace matt
 		}
 		else if (move.castlingShort)
 		{
-			auto rook = position[move.startY][7];
-			pos[move.startY][7] = ' ';
+			auto rook = position[move.startY][COLUMNS-1];
+			pos[move.startY][COLUMNS-1] = ' ';
 			pos[move.startY][5] = rook;
 		}
 
@@ -218,15 +205,15 @@ namespace matt
 		bool king_found = false;
 
 		// König suchen
-		for (int y = 0; y < 8; y++)
+		for (int y = 0; y < ROWS; y++)
 		{
-			for (int x = 0; x < 8; x++)
+			for (int x = 0; x < COLUMNS; x++)
 			{
 				if (position[y][x] == king)
 				{
 					king_x = x;
 					king_y = y;
-					y = 8;
+					y = ROWS; // Grenze überschreiten (outer-break)
 					king_found = true;
 					break;
 				}
@@ -435,8 +422,8 @@ namespace matt
 		std::vector<Move> moves;
 
 		auto pawn_direction = player;
-		std::string enemies = player == PLAYER_WHITE ? "pnbrqk" : "PNBRQK";
-		std::string promotion_str = player == PLAYER_WHITE ? "NBRQ" : "nbrq";
+		std::string enemies = player == PLAYER_WHITE ? BLACK_PIECES : WHITE_PIECES;
+		std::string promotion_str = player == PLAYER_WHITE ? WHITE_PROMOTION_STR : BLACK_PROMOTION_STR;
 
 		if (y > 0 && player == PLAYER_WHITE || y < 7 && player == PLAYER_BLACK)
 		{
@@ -484,35 +471,41 @@ namespace matt
 
 			// Diagonal Schlagen:
 			if (x > 0)
-			{
+			{	
 				// links oben/unten
-				if (enemies.find(position[y - pawn_direction][x - 1]) != std::string::npos)
+				if (isInsideChessboard(x - 1, y - pawn_direction))
 				{
-					Move move;
-					move.startX = x;
-					move.startY = y;
-					move.targetX = x - 1;
-					move.targetY = y - pawn_direction;
-					move.capture = true;
-					move.promotion = 0;
+					if (enemies.find(position[y - pawn_direction][x - 1]) != std::string::npos)
+					{
+						Move move;
+						move.startX = x;
+						move.startY = y;
+						move.targetX = x - 1;
+						move.targetY = y - pawn_direction;
+						move.capture = true;
+						move.promotion = 0;
 
-					if (!isKinginCheckAfterMove(position, player, move))
-						moves.push_back(move);
+						if (!isKinginCheckAfterMove(position, player, move))
+							moves.push_back(move);
+					}
 				}
 
-				// rechts oben/unten
-				if (enemies.find(position[y - pawn_direction][x + 1]) != std::string::npos)
+				if (isInsideChessboard(x + 1, y - pawn_direction))
 				{
-					Move move;
-					move.startX = x;
-					move.startY = y;
-					move.targetX = x + 1;
-					move.targetY = y - pawn_direction;
-					move.capture = true;
-					move.promotion = 0;
+					// rechts oben/unten
+					if (enemies.find(position[y - pawn_direction][x + 1]) != std::string::npos)
+					{
+						Move move;
+						move.startX = x;
+						move.startY = y;
+						move.targetX = x + 1;
+						move.targetY = y - pawn_direction;
+						move.capture = true;
+						move.promotion = 0;
 
-					if (!isKinginCheckAfterMove(position, player, move))
-						moves.push_back(move);
+						if (!isKinginCheckAfterMove(position, player, move))
+							moves.push_back(move);
+					}
 				}
 
 				// En Passant überprüfen
@@ -565,8 +558,9 @@ namespace matt
 	std::vector<Move> ChessValidation::getValidKnightMoves(const Position& position, int x, int y, short player)
 	{
 		std::vector<Move> moves;
-		std::vector<std::pair<int, int>> possible_places = { {1,-2},{2,-1},{2,1},{1,2},{-1,2},{-2,1},{-2,-1} };
-		std::string enemies = player == PLAYER_WHITE ? "pnbrqk" : "PNBRQK";
+
+		std::vector<std::pair<int, int>> possible_places = { {1,-2},{2,-1},{2,1},{1,2},{-1,2},{-2,1},{-2,-1}, {-1,-2} };
+		std::string enemies = player == PLAYER_WHITE ? BLACK_PIECES : WHITE_PIECES;
 
 		for (auto pair : possible_places)
 		{
@@ -595,7 +589,7 @@ namespace matt
 	std::vector<Move> ChessValidation::getValidKingMoves(const Position& position, int x, int y, short player)
 	{
 		std::vector<Move> moves;
-		std::string enemies = player == PLAYER_WHITE ? "pnbrqk" : "PNBRQK";
+		std::string enemies = player == PLAYER_WHITE ? BLACK_PIECES : WHITE_PIECES;
 		std::vector<std::pair<int, int>> possible_places = { {0,-1},{1,-1},{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1} };
 
 		for (auto pair : possible_places)
@@ -624,10 +618,10 @@ namespace matt
 		if (player == PLAYER_WHITE)
 		{
 			if (position.getWhiteCastlingShort() 
-				&& isPlaceInCheck(position, 5, 7, player) 
-				&& isPlaceInCheck(position, 6, 7, player) 
+				&& isPlaceInCheck(position, 5, ROWS - 1, player) 
+				&& isPlaceInCheck(position, 6, ROWS - 1, player)
 				&& position[7][5] == ' '
-				&& position[7][6] == ' ');
+				&& position[7][6] == ' ')
 			{
 				Move move;
 				move.startX = x;
@@ -639,8 +633,8 @@ namespace matt
 				moves.push_back(move);
 			}
 			if (position.getWhiteCastlingLong()
-				&& isPlaceInCheck(position, 2, 7, player)
-				&& isPlaceInCheck(position, 3, 7, player)
+				&& isPlaceInCheck(position, 2, ROWS - 1, player)
+				&& isPlaceInCheck(position, 3, ROWS - 1, player)
 				&& position[7][3] == ' '
 				&& position[7][2] == ' '
 				&& position[7][1] == ' ')
@@ -661,8 +655,9 @@ namespace matt
 				&& isPlaceInCheck(position, 5, 0, player)
 				&& isPlaceInCheck(position, 6, 0, player)
 				&& position[0][5] == ' '
-				&& position[0][6] == ' ');
+				&& position[0][6] == ' ')
 			{
+
 				Move move;
 				move.startX = x;
 				move.startY = y;
@@ -768,6 +763,6 @@ namespace matt
 
 	bool ChessValidation::isInsideChessboard(int x, int y)
 	{
-		return x>=0 && x<8 && y>=0 && y<8;
+		return x>=0 && x<COLUMNS && y>=0 && y<ROWS;
 	}
 }
