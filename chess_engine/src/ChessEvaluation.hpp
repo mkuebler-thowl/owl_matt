@@ -210,6 +210,8 @@ namespace matt
 		/// <param name="evaluationFeatureFlags">Feature-Parameter-Flags für die Komponenten der Bewertungsfunktion</param>
 		/// <returns>Nutzwert der Bewertungsfunktion</returns>
 		static float evaluate(const Position& position, short enginePlayer, unsigned char evaluationFeatureFlags = 0);
+
+		static float getMaterialValueByPiece(char piece);
 	private:
 		/// Doppelte Bauern?
 		static bool isDoublePawn(const Position& position, int x, int y);

@@ -269,6 +269,34 @@ namespace matt
 		// Je nach Spieler score der Spieler voneinander abziehen und zurückgeben
 		return enginePlayer == PLAYER_WHITE ? white_score - black_score : black_score - white_score;
 	}
+	float ChessEvaluation::getMaterialValueByPiece(char piece)
+	{
+		switch (piece)
+		{
+		case PAWN_WHITE:
+		case PAWN_BLACK:
+			return MATERIAL_VALUES[PAWN];
+			break;
+		case KNIGHT_WHITE:
+		case KNIGHT_BLACK:
+			return MATERIAL_VALUES[KNIGHT];
+			break;
+		case BISHOP_WHITE:
+		case BISHOP_BLACK:
+			return MATERIAL_VALUES[BISHOP];
+			break;
+		case ROOK_WHITE:
+		case ROOK_BLACK:
+			return MATERIAL_VALUES[ROOK];
+			break;
+		case QUEEN_WHITE:
+		case QUEEN_BLACK:
+			return MATERIAL_VALUES[QUEEN];
+			break;
+		}
+
+		return 0.00f;
+	}
 	bool ChessEvaluation::isDoublePawn(const Position& position, int x, int y)
 	{
 		if (isPieceEqualOnOffset(position, x, y, 0, 1)) return true;
@@ -341,7 +369,6 @@ namespace matt
 
 		return false;
 	}
-
 	bool ChessEvaluation::isPieceEnemyPawnOnOffset(const Position& position, int x, int y, int xOffset, int yOffset)
 	{
 		auto startPawn = position.getPlayer() == PLAYER_WHITE ? PAWN_WHITE : PAWN_BLACK;
