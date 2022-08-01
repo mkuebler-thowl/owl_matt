@@ -691,8 +691,8 @@ namespace matt
 	std::vector<Move> ChessValidation::getValidRookMoves(const Position& position, int x, int y, short player)
 	{
 		std::vector<Move> moves;
-		std::string enemies = player == PLAYER_WHITE ? "pnbrqk" : "PNBRQK";
-		std::vector<std::pair<int, int>> directions = { {0,-1}, {1,0}, {0,-1}, {-1,0} };
+		std::string enemies = player == PLAYER_WHITE ? BLACK_PIECES : WHITE_PIECES;
+		std::vector<std::pair<int, int>> directions = { {0,-1}, {1,0}, {0,1}, {-1,0} };
 		
 		for (auto direction : directions)
 		{
@@ -706,7 +706,7 @@ namespace matt
 	std::vector<Move> ChessValidation::getValidBishopMoves(const Position& position, int x, int y, short player)
 	{
 		std::vector<Move> moves;
-		std::string enemies = player == PLAYER_WHITE ? "pnbrqk" : "PNBRQK";
+		std::string enemies = player == PLAYER_WHITE ? BLACK_PIECES : WHITE_PIECES;
 		std::vector<std::pair<int, int>> directions = { {-1,-1}, {1,-1}, {1,1}, {-1,1} };
 
 		for (auto direction : directions)
@@ -733,7 +733,7 @@ namespace matt
 
 			if (isInsideChessboard(line_x, line_y))
 			{
-				auto place = position[line_x][line_y];
+				auto place = position[line_y][line_x];
 				auto capture = enemies_string.find(place) != std::string::npos;
 
 				if (place == ' ' || capture)
@@ -744,6 +744,10 @@ namespace matt
 					move.targetX = line_x;
 					move.targetY = line_y;
 					move.capture = capture;
+
+					if (!isKinginCheckAfterMove(position, position.getPlayer(), move))
+						moves.push_back(move);
+
 					if (capture) line_empty = false;
 				}
 				else

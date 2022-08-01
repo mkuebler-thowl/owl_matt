@@ -96,6 +96,8 @@ namespace matt
 		void resetBlackCastlingShort();
 		/// Für Schwarz: Lang-Rochade deaktivieren
 		void resetBlackCastlingLong();
+
+		static void printPosition(const Position& position); 
 	private:
 		/// 8x8 char-Array als Datenobjekt für eine Spielposition
 		mutable std::array<std::array<char, COLUMNS>, ROWS> m_data;

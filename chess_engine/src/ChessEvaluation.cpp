@@ -7,6 +7,13 @@ namespace matt
 {
 	float ChessEvaluation::evaluate(const Position& position, short enginePlayer, unsigned char evaluationFeatureFlags)
 	{
+		// Ist die Position eine Endstellung?
+		if ((position.getGameState() == GameState::PlayerBlackWins && enginePlayer == PLAYER_WHITE)
+			|| position.getGameState() == GameState::PlayerWhiteWins && enginePlayer == PLAYER_BLACK) return -INF;
+		if ((position.getGameState() == GameState::PlayerBlackWins && enginePlayer == PLAYER_BLACK)
+			|| position.getGameState() == GameState::PlayerWhiteWins && enginePlayer == PLAYER_WHITE) return INF;
+		if (position.getGameState() == GameState::Remis) return 0.00f;
+
 		auto white_score = 0.00f;
 		auto black_score = 0.00f;
 
@@ -19,7 +26,6 @@ namespace matt
 		auto black_square_table_score = 0.0f;
 		std::pair<int, int> white_king_pos = { 0.0f, 0.0f };
 		std::pair<int, int> black_king_pos = { 0.0f, 0.0f };
-
 
 		// Anzahl der Figuren
 		unsigned short white_pawns = 0;
@@ -50,7 +56,8 @@ namespace matt
 		possible_moves[KING_BLACK] = 0;
 
 		// Pro Spielfeld Figure zählen und Materialwert hinzutragen
-		// Anmerkung: Der Materialwert der Bauern wird später zu white_score bzw. black_score hinzugetragen!
+		// Anmerkung: Der Materialwert der Bauern wird später zu white_score bzw. black_score hinzugetragen, 
+		// da der Wert für die Berechnung, ob die Position eine Endstellung ist, nicht berücksichtig werden soll
 		for (int y = 0; y < ROWS; y++)
 		{
 			for (int x = 0; x < COLUMNS; x++)
@@ -122,7 +129,7 @@ namespace matt
 					possible_moves[position[y][x]] += ChessValidation::countPossibleMovesOnField(position, x, y);
 				}
 
-				// Square Table addieren (Ohne König)
+				// Square Table addieren (Zunächst ohne König)
 				if (evaluationFeatureFlags & EVAL_FT_PIECE_SQUARE_TABLE)
 				{
 					auto table_index = x + (COLUMNS * y);
@@ -139,7 +146,7 @@ namespace matt
 					case ROOK_BLACK: black_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_ROOK_WEIGHT * MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_ROOK)[table_index]; break;
 					case QUEEN_WHITE: white_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_QUEEN_WEIGHT * PIECE_SQUARE_TABLE_QUEEN[table_index]; break;
 					case QUEEN_BLACK: black_square_table_score += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_QUEEN_WEIGHT * MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_QUEEN)[table_index]; break;
-					// Bestimme die Positionen der Könige, um diese der Square-Table hinzuzufügen, 
+					// Bestimme die Positionen der Könige, um diese nach den terationen der Square-Table hinzuzufügen, 
 					// da die Spielphase erst später bestimmt werden kann und es für Mittel- und Endspiel unterschiedliche Tabellen gibt
 					case KING_WHITE: white_king_pos = {x,y};  break;
 					case KING_BLACK: black_king_pos = {x,y}; break;
@@ -154,7 +161,6 @@ namespace matt
 			// Spielphase bestimmen
 			auto game_phase = position.getMoveNumber() >= MIDGAME_NUMBER ? GAME_PHASE_MID : GAME_PHASE_START;
 			game_phase = game_phase == GAME_PHASE_MID && white_score + black_score <= MINIMUM_BALANCE_FOR_ENDGAME ? GAME_PHASE_END : game_phase;
-
 			switch (game_phase)
 			{
 			case GAME_PHASE_START:
@@ -226,9 +232,15 @@ namespace matt
 			if (white_pawns > MAX_PAWN_COUNT) white_pawns = MAX_PAWN_COUNT;
 			if (black_pawns > MAX_PAWN_COUNT) black_pawns = MAX_PAWN_COUNT;
 
+			// Index Grenzen auf 0-7 festlegen
+			auto white_index = white_pawns;
+			auto black_index = black_pawns;
+			if (white_pawns > 0) white_index--;
+			if (black_pawns > 0) black_index--;
+
 			// Dynamische Bauern addieren
-			white_pawn_score += white_pawns * MATERIAL_DYNAMIC_PAWNS[white_pawns];
-			black_pawn_score += black_pawns * MATERIAL_DYNAMIC_PAWNS[black_pawns];
+			white_pawn_score += white_pawns * MATERIAL_DYNAMIC_PAWNS[white_index];
+			black_pawn_score += black_pawns * MATERIAL_DYNAMIC_PAWNS[black_index];
 		}
 		// Ansonsten normale Bauerneinheit addieren
 		else

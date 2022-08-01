@@ -80,15 +80,7 @@ namespace matt
 
 			if (left.capture && right.capture)
 			{
-				float left_capture_value = 0.00f;
-				float right_capture_value = 0.00f;
-
-				left_capture_value -= ChessEvaluation::getMaterialValueByPiece(position[left.startY][left.startX]);
-				left_capture_value += ChessEvaluation::getMaterialValueByPiece(position[left.targetY][left.targetX]);
-				right_capture_value -= ChessEvaluation::getMaterialValueByPiece(position[right.startY][right.startX]);
-				right_capture_value += ChessEvaluation::getMaterialValueByPiece(position[right.targetY][right.targetX]);
-
-				return left_capture_value > right_capture_value;
+				return getCaptureValue(position[left.startY][left.startX], position[left.targetY][left.targetX]) > getCaptureValue(position[right.startY][right.startX], position[right.targetY][right.targetX]);
 			}
 
 			float left_move_value = ChessEvaluation::evaluate(ChessValidation::applyMove(position, left), -position.getPlayer(), 0);
@@ -164,6 +156,11 @@ namespace matt
 		}
 
 		return Captures::kxP;
+	}
+
+	std::string ChessEngine::getCaptureValueString(Captures capture)
+	{
+		return s_capture_map[static_cast<size_t>(capture)];
 	}
 
 	float ChessEngine::evaluate(const Position& position, bool simple)

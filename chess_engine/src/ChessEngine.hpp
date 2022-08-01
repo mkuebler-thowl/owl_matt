@@ -75,55 +75,31 @@ namespace matt
 		/// <param name="sort:">Züge nach Nutzen sortieren?</param>
 		/// <returns></returns>
 		float alphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort = false);
-
+	public: // TODO: Test
 		void sortMoves(std::vector<Move>* moves, const Position& position);
 
 		enum class Captures
 		{
-			// König schlägt ...
-			kxP = 0,
-			kxN,
-			kxB,
-			kxR,
-			kxQ,
-
-			// Dame schlägt ...
-			qxP,
-			qxN,
-			qxB,
-			qxR,
-			qxQ,
-
-			// Turm schlägt ...
-			rxP,
-			rxN,
-			rxB,
-			rxR,
-			rxQ,
-
-			// Läufer schlägt ...
-			bxP,
-			bxN,
-			bxB,
-			bxR,
-			bxQ,
-
-			// Springer schlägt ...
-			nxP,
-			nxN,
-			nxB,
-			nxR,
-			nxQ,
-
-			// Bauer schlägt ...
-			pxP,
-			pxN,
-			pxB,
-			pxR,
-			pxQ
+			kxP,kxN,kxB,kxR,kxQ,
+			qxP,qxN,qxB,qxR,qxQ,
+			rxP,rxN,rxB,rxR,rxQ,
+			bxP,bxN,bxB,bxR,bxQ,
+			nxP,nxN,nxB,nxR,nxQ,
+			pxP,pxN,pxB,pxR,pxQ
 		};
 	
+		static constexpr std::array<char*, 30> s_capture_map =
+		{
+			"kxP","kxN","kxB","kxR","kxQ",
+			"qxP","qxN","qxB","qxR","qxQ",
+			"rxP","rxN","rxB","rxR","rxQ",
+			"bxP","bxN","bxB","bxR","bxQ",
+			"nxP","nxN","nxB","nxR","nxQ",
+			"pxP","pxN","pxB","pxR","pxQ"
+		};
+
 		static Captures getCaptureValue(char attacker, char victim);
+		static std::string getCaptureValueString(Captures capture);
 	
 	};
 }

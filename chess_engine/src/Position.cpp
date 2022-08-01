@@ -1,6 +1,7 @@
 #include "Position.hpp"
 #include <cassert>
 #include "ChessEngine.hpp"
+#include <iostream>
 
 namespace matt
 {
@@ -128,5 +129,20 @@ namespace matt
 	void Position::resetBlackCastlingLong()
 	{
 		m_blackCastlingLong = false;
+	}
+	void Position::printPosition(const Position& position)
+	{
+		std::string out = "";
+
+		for (auto i = 0; i < ROWS; i++)
+		{
+			for (auto j = 0; j < COLUMNS; j++)
+			{
+				out += position[i][j];
+			}
+			out += "\n";
+		}
+
+		std::cout << out;
 	}
 }
