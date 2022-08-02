@@ -50,35 +50,42 @@ auto main() -> int
 	// auto pos = matt::Position();
 
 
-	std::array<char*, 6> test_fens_evaluation =
+	std::vector<char*> test_fens_evaluation =
 	{
-		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-		"2k5/1p1pp3/8/5P2/6P1/1P6/P7/4K3 w - - 0 20",
-		"4k3/1bb5/8/3n4/8/8/1B6/N1K4N w - - 0 13",
-		"k7/r2p4/2p2b2/8/8/8/1PP3Q1/2B1K3 b - - 0 11",
-		"1B6/5Rp1/p3k2p/8/3P4/1Q6/8/2K5 b - - 0 25",
-		"8/1r6/K5k1/1p6/8/8/nR3q2/1b4P1 w - - 0 20"
+		//"r2qk2r/ppp2ppp/2nbbn2/3pp3/8/P2PP3/NPP2PPP/R1BQKBNR b KQkq - 4 7",
+		//"2k5/4pp2/4p1p1/1Pp3P1/P4P2/4P3/8/4K3 w - - 0 1",
+		//"2r1r2k/5p1p/q4p2/2p5/p1P2R2/P5QP/5PP1/3R2K1 w - - 0 1",
+		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+		//"2k5/1p1pp3/8/5P2/6P1/1P6/P7/4K3 w - - 0 20",
+		//"4k3/1bb5/8/3n4/8/8/1B6/N1K4N w - - 0 20",
+		//"k7/r2p4/2p2b2/8/8/8/1PP3Q1/2B1K3 b - - 0 24",
+		//"1B6/5Rp1/p3k2p/8/3P4/1Q6/8/2K5 b - - 0 25",
 	};
 
 	for (auto fen : test_fens_evaluation)
 	{
-		std::cout << "------------------------------------------------------------\n";
+		std::cout << "------------------------------------------------------------------------\n";
+		std::cout << "\nFEN: " << fen << " pos:" << std::endl;
+		std::cout << "------------------------------------------------------------------------\n";
 		auto pos = matt::FENParser::fenToPosition(fen);
-		float values[] = {
-			matt::ChessEvaluation::evaluate(pos, matt::PLAYER_WHITE, 0),
-			matt::ChessEvaluation::evaluate(pos, matt::PLAYER_WHITE, matt::EVAL_FT_STANDARD), 
-			matt::ChessEvaluation::evaluate(pos, matt::PLAYER_WHITE, matt::EVAL_FT_ALL) 
+		std::string values[] = {
+			"\nMaterial: ",
+			std::to_string(matt::ChessEvaluation::evaluate(pos, matt::PLAYER_WHITE, 0)),
+			"Value: ",
+			std::to_string(matt::ChessEvaluation::evaluate(pos, matt::PLAYER_WHITE, matt::EVAL_FT_STANDARD)), 
+			"DynamicPawnValue: ",
+			std::to_string(matt::ChessEvaluation::evaluate(pos, matt::PLAYER_WHITE, matt::EVAL_FT_ALL)),
+			"GamePhase{0=opening,1=mid,2=end}:",
+			std::to_string((int)pos.getGamePhase())
 		};
 
 		matt::Position::printPosition(pos);
+		std::cout << "------------------------------------------------------------------------\n";
 		std::string out = "";
 
-		out += "\nPlayer\tMaterialOnly\tStandard\t+DynamicPawn\n";
-
-		out += pos.getPlayer() == matt::PLAYER_WHITE ? "w\t" : "b\t";
 		for (auto value : values)
 		{
-			out += std::to_string(value) + "\t";
+			out += value + " ";
 		}
 		out += "\n\n";
 
@@ -96,7 +103,7 @@ auto main() -> int
 
 	//std::string test_capture_list = "8/1r6/K5k1/1p6/8/8/nR3q2/1b4P1 w - - 0 1";
 
-	//pos = matt::FENParser::fenToPosition(test_capture_list);
+	//auto pos = matt::FENParser::fenToPosition(test_capture_list);
 
 	//auto moves = matt::ChessValidation::getValidMoves(pos, pos.getPlayer());
 

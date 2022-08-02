@@ -14,8 +14,24 @@ namespace matt
 		Remis
 	};
 
-	constexpr unsigned short ROWS = 8;
-	constexpr unsigned short COLUMNS = 8;
+	enum class GamePhase
+	{
+		Opening,
+		Mid,
+		End
+	};
+
+	constexpr unsigned short ROWS = 8;						// Zeile
+	constexpr unsigned short COLUMNS = 8;					// Spalten
+	constexpr unsigned short FIRSTROWINDEX = 0;				// Erste Zeile
+	constexpr unsigned short FIRSTCOLINDEX = 0;				// Erste Spalte
+	constexpr unsigned short LASTROWINDEX = ROWS - 1;		// Letzte Zeile
+	constexpr unsigned short LASTCOLINDEX = COLUMNS - 1;	// Letzte Spalte
+
+	constexpr unsigned short MAX_FIELDS_ON_BOARD = ROWS * COLUMNS; // Anzahl der Zellen
+
+	using BoardLine = std::array<char, COLUMNS>;
+	using BoardArray = std::array<BoardLine, ROWS>; // Board
 
 	/// Datenstruktur für eine beliebige Schachposition. 
 	/// Beinhaltet ein 8x8 char-Array, um eine jeweilige Stellung zu speichern.
@@ -38,7 +54,7 @@ namespace matt
 		/// <param name="enPassantPosition:">Übergangenes En passant Feld</param>
 		/// <param name="moveCount:">Anzahl der Halbzüge seitdem kein Bauer bewegt oder eine Figur geschlagen wurde</param>
 		/// <param name="moveNumber:">Aktuelle Zugnummer, die nachdem Schwarz dran war, inkrementiert wird</param>
-		Position(const std::array<std::array<char, 8>, 8> data, short player, 
+		Position(const BoardArray& data, short player, 
 			bool whiteCastlingShort, bool whiteCastlingLong, 
 			bool blackCastlingShort, bool blackCastlingLong, 
 			bool enPassant, std::pair<int, int> enPassantPosition, 
@@ -49,7 +65,7 @@ namespace matt
 		/// </summary>
 		/// <param name="index">Zeilenindex 0-7 bzw. 8-1 im Schachfeld (mit 0=8, 1=7 usw.)</param>
 		/// <returns>Gibt das jeweilige Zeilenarray[index] zurück.</returns>
-		std::array<char, 8>& operator[](int index) const;
+		BoardLine& operator[](int index) const;
 
 		/// En Passant setzen
 		void setEnPassant(int x, int y);
@@ -97,10 +113,17 @@ namespace matt
 		/// Für Schwarz: Lang-Rochade deaktivieren
 		void resetBlackCastlingLong();
 
+		/// Spielphase aktualisieren
+		void enterNextGamePhase() const;
+
+		/// Spielphase abrufen
+		GamePhase getGamePhase() const;
+
 		static void printPosition(const Position& position); 
 	private:
-		/// 8x8 char-Array als Datenobjekt für eine Spielposition
-		mutable std::array<std::array<char, COLUMNS>, ROWS> m_data;
+		/// Datenobjekt für eine Spielposition
+		mutable BoardArray m_data;
+
 		/// En Passant möglich?
 		bool m_enPassant;
 		/// En Passant Position
@@ -123,5 +146,8 @@ namespace matt
 
 		/// Korrespondierender Spielzustand zur Position (Aktiv, Sieg für Weiß/Schwarz oder Remis)
 		mutable GameState m_state;
+
+		/// Spielphase
+		mutable GamePhase m_gamePhase;
 	};
 }

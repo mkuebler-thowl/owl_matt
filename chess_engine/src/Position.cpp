@@ -7,7 +7,8 @@ namespace matt
 {
 	Position::Position()
 		: m_enPassant(false), m_movesCount(0), m_moveNumber(1), m_player(PLAYER_WHITE), m_state(GameState::Active), 
-		m_whiteCastlingShort(true), m_whiteCastlingLong(true), m_blackCastlingShort(true), m_blackCastlingLong(true)
+		m_whiteCastlingShort(true), m_whiteCastlingLong(true), m_blackCastlingShort(true), m_blackCastlingLong(true),
+		m_gamePhase(GamePhase::Opening)
 	{
 		// 2D Array mit 'whitespace' initialisieren
 		for (auto i = 0; i < 8; i++)
@@ -24,7 +25,7 @@ namespace matt
 
 	}
 
-	Position::Position(const std::array<std::array<char, 8>, 8> data, short player, 
+	Position::Position(const BoardArray& data, short player,
 		bool whiteCastlingShort, bool whiteCastlingLong, 
 		bool blackCastlingShort, bool blackCastlingLong, 
 		bool enPassant, std::pair<int, int> enPassantPosition, 
@@ -33,14 +34,14 @@ namespace matt
 		m_whiteCastlingShort(whiteCastlingShort), m_whiteCastlingLong(whiteCastlingLong),
 		m_blackCastlingShort(blackCastlingShort), m_blackCastlingLong(blackCastlingLong),
 		m_enPassant(enPassant), m_enPassantPosition(enPassantPosition), 
-		m_movesCount(moveCount), m_moveNumber(moveNumber)
+		m_movesCount(moveCount), m_moveNumber(moveNumber), m_gamePhase(GamePhase::Opening)
 	{
 
 	}
 
-	std::array<char, 8>& Position::operator[](int index) const
+	matt::BoardLine& Position::operator[](int index) const
 	{
-		assert(index < 8);
+		assert(index < COLUMNS);
 		return m_data[index];
 	}
 	void Position::setEnPassant(int x, int y)
@@ -129,6 +130,16 @@ namespace matt
 	void Position::resetBlackCastlingLong()
 	{
 		m_blackCastlingLong = false;
+	}
+	void Position::enterNextGamePhase() const
+	{
+		if (m_gamePhase == GamePhase::Mid) m_gamePhase = GamePhase::End;
+		else if (m_gamePhase == GamePhase::Opening) m_gamePhase = GamePhase::Mid;
+	}
+
+	GamePhase Position::getGamePhase() const
+	{
+		return m_gamePhase;
 	}
 	void Position::printPosition(const Position& position)
 	{
