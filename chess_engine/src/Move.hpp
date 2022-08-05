@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 
 namespace matt
 {
@@ -34,5 +35,17 @@ namespace matt
 		/// Ist der Zug eine kurze Rochade?
 		/// </summary>
 		bool castlingShort = false;
+
+		static void printMove(const Move& move)
+		{
+			std::cout << "{ start: " << move.startX << ", " << move.startY
+				<< "; target: " << move.targetX << ", " << move.targetY
+				<< "; capture= " << move.capture
+				<< "; promotion= " << move.promotion
+				<< "; enPassantCapture= " << move.enPassantCapture
+				<< "; castlingLong= " << move.castlingLong
+				<< "; castlingShort= " << move.castlingShort
+				<< "}\n";
+		}
 	};
 }

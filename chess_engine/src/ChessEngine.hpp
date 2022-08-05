@@ -45,15 +45,6 @@ namespace matt
 		/// <returns>Der bestmögliche gefundene Zug innerhalb der Suchtiefe</returns>
 		Move searchMove(const Position& position, short player, unsigned short depth, unsigned char parameter_flags, bool random = false);
 	private:
-		// TODO: Vielleicht auslagen (um Klasse kleiner zu halten) Klassename: ChessEvaluation
-		/// <summary>
-		/// Bewertungsfunktion
-		/// </summary>
-		/// <param name="position:">Ausgangsstellung bzw. Spielposition, welche bewertet werden soll.</param>
-		/// <param name="simple:">Wenn aktiv wird nur die einfache Materialbalance berechnet (Bei Sortierung möglicherweise ausreichend)"</param>
-		/// <returns>Nutzwert</returns>
-		float evaluate(const Position& position, bool simple = false);
-
 		/// <summary>
 		/// Klassischer Min-Max-Algorithmus zur Zugfindung
 		/// </summary>
@@ -74,8 +65,13 @@ namespace matt
 		/// <param name="beta:">Beta-Wert</param>
 		/// <param name="sort:">Züge nach Nutzen sortieren?</param>
 		/// <returns></returns>
-		float alphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort = false);
-	public: // TODO: Test
+		MinMaxResult alphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort = false);
+	
+		int m_totalMoveCount = 0;
+		int m_iterationCount = 0;
+		int m_pruneCount = 0;
+
+	public:
 		void sortMoves(std::vector<Move>* moves, const Position& position);
 
 		enum class Captures
