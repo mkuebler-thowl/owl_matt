@@ -12,8 +12,16 @@ namespace matt
 	constexpr unsigned short ALPHA = 1;
 	constexpr unsigned short BETA = 2;
 
+	constexpr unsigned short LOWER = 1;
+	constexpr unsigned short UPPER = 2;
+	constexpr unsigned short NESTED_ALPHA = 3;
+	constexpr unsigned short NESTED_BETA = 4;
+
 	constexpr unsigned short MIN_MAX_VALUE_SIZE = 1;
 	constexpr unsigned short ALPHA_BETA_SIZE = 3;
+
+	constexpr unsigned short NESTED_SIZE = 3;
+	constexpr unsigned short NESTED_ALPHA_BETA_SIZE = 5;
 
 	/// Result-Objekt für die Zugfindung mit dem Min-Max-Algorithmus
 	struct MinMaxResult

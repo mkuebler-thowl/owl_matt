@@ -112,13 +112,18 @@ auto main() -> int
 {
 	auto engine = matt::ChessEngine();
 	
-	auto pos = matt::FENParser::fenToPosition("8/8/2p5/3p4/8/3p4/4P3/2B5 w - - 0 1");
+	//auto pos = matt::FENParser::fenToPosition("8/8/2p5/3p4/8/3p4/4P3/2B5 w - - 0 1");
 
-	auto move = engine.searchMove(pos, pos.getPlayer(), 3, matt::FT_ALPHA_BETA | matt::FT_SORT);
+	auto pos = matt::FENParser::fenToPosition("r1b4r/pppk1Npp/5n2/8/2Bp4/Bn6/P4PPP/4R1K1 w - - 0 1");
+	// lösung muss sein (2,4 : 1,3) -> (4,7 : 4,1)
+	auto move = engine.searchMove(pos, pos.getPlayer(), 3, matt::FT_ALPHA_BETA);
+	
 
 
+	//pos = matt::FENParser::fenToPosition("r1b4r/pp1k1Npp/2p2n2/1B6/3p4/Bn6/P4PPP/4R1K1 w - - 0 3");
+	//move = engine.searchMove(pos, pos.getPlayer(), 3, matt::FT_ALPHA_BETA | matt::FT_SORT);
 
-
+	//std::cout << engine.m_count << std::endl;
 
 
 	//testEvaluationFunction();

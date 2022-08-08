@@ -41,7 +41,7 @@ namespace matt
 		/// <param name="position:">Aktuelle Spielposition bzw. Ausgangsstellung</param>
 		/// <param name="move">Der Zug, der ausgeführt werden soll</param>
 		/// <returns>die neue Spielposition bzw. Ausgangsstellung</returns>
-		static const Position& applyMove(const Position& position, const Move& move);
+		static Position applyMove(const Position& position, const Move& move);
 
 		// TODO: position.getPlayer() macht player:parameter überflüssig?
 		/// <summary>
@@ -100,6 +100,7 @@ namespace matt
 		/// Suche alle Linien ab für Läufer, Türme und Dame
 		static std::vector<Move> continueValidMovesOnLine(const Position& position, int x, int y, const std::string& enemies_string, int xDir, int yDir);
 
-
+		/// Enemy-String nach Spielertyp ausgeben
+		static std::string getEnemyPiecesString(short player);
 	};
 }

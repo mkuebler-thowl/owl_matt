@@ -30,6 +30,16 @@ namespace matt
 		{ 
 			result = alphaBeta(position, player, depth, -INF, INF, sort);
 		}
+		// Nested oder Nested+Sort
+		else if (parameterFlags == FT_NESTED || parameterFlags == (FT_NESTED | FT_SORT))
+		{
+			result = nested(position, player, depth, sort);
+		}
+		// Nested+AlphaBeta oder Nested+AlphaBeta+Sort
+		else if (parameterFlags == (FT_NESTED | FT_ALPHA_BETA) || parameterFlags == (FT_NESTED | FT_ALPHA_BETA | FT_SORT))
+		{
+			result = nestedAlphaBeta(position, player, depth, -INF, INF, sort);
+		}
 
 		//std::cout << (parameter_flags == (FT_ALPHA_BETA | FT_NESTED) || parameter_flags == (FT_ALPHA_BETA | FT_NESTED | FT_SORT)) << std::endl;
 		//std::cout << (parameter_flags == FT_NESTED || parameter_flags == (FT_NESTED | FT_SORT)) << std::endl;
@@ -40,11 +50,12 @@ namespace matt
 	MinMaxResult ChessEngine::minMax(const Position& position, short player, unsigned short depth, bool sort)
 	{
 		auto moves = ChessValidation::getValidMoves(position, player, sort);
-
 		if (sort) sortMoves(&moves, position);
 
 		auto result = MinMaxResult{};
 		result.values.resize(MIN_MAX_VALUE_SIZE);
+
+		result.values[VALUE] = -player * INF;
 
 		if (depth == 0 || moves.empty())
 		{
@@ -53,14 +64,9 @@ namespace matt
 			
 			return result;
 		}
-		else
-		{
-			m_totalMoveCount += moves.size();
-		}
 
 		for (auto move : moves)
 		{
-			m_iterationCount++;
 			auto current_position = ChessValidation::applyMove(position, move);
 			auto new_result = minMax(current_position, -player, depth - 1, sort);
 
@@ -69,84 +75,196 @@ namespace matt
 				result.values[VALUE] = new_result.values[VALUE];
 				result.best = move;
 			}
+			// if empty
+			else if (new_result.values[VALUE] == result.values[VALUE] && result.best.startX == 0 && result.best.startY == 0 && result.best.targetX == 0 && result.best.targetY == 0)
+			{
+				result.best = move;
+			}
 		}
-
 		return result;
 	}
 
 	MinMaxResult ChessEngine::alphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort)
 	{
 		auto moves = ChessValidation::getValidMoves(position, player, sort);
-
 		if (sort) sortMoves(&moves, position);
-
-		// DEBUG:
-		std::cout << "\n";
-
-		for (auto move : moves)
-		{
-			std::cout << "[FOUND]: ";
-			Move::printMove(move);
-		}
-		std::cout << "\n";
 
 		auto is_player_white = player == PLAYER_WHITE;
 
 		auto result = MinMaxResult{};
-		result.values.resize(ALPHA_BETA_SIZE);
+		result.values.resize(MIN_MAX_VALUE_SIZE);
 
 		result.values[VALUE] = -player * INF;
-		result.values[ALPHA] = alpha;
-		result.values[BETA] = beta;
+		//result.values[ALPHA] = alpha;
+		//result.values[BETA] = beta;
 
 		if (depth == 0 || moves.empty())
 		{
 			// TODO: Change Engine Player
 			result.values[VALUE] = ChessEvaluation::evaluate(position, PLAYER_WHITE, EVAL_FT_STANDARD);
 
+			//if (is_player_white) result.values[ALPHA] = result.values[VALUE];
+			//else result.values[BETA] = result.values[VALUE];
+
+			return result;
+		} 
+
+		for (auto move : moves)
+		{
+			auto current_position = ChessValidation::applyMove(position, move);
+
+			std::pair<float, float> alpha_beta = is_player_white ? 
+				std::make_pair(result.values[VALUE], beta) : 
+				std::make_pair(alpha, result.values[VALUE]);
+
+			auto new_result = alphaBeta(current_position, -player, depth - 1, alpha_beta.first, alpha_beta.second, sort);
+
+			if (is_player_white && new_result.values[VALUE] > alpha)
+			{
+				result.values[VALUE] = new_result.values[VALUE];
+				result.best = move;
+
+				if (alpha > beta) { m_count++; break; }
+			}
+			else if (!is_player_white && new_result.values[VALUE] < beta)
+			{
+				result.values[VALUE] = new_result.values[VALUE];
+				result.best = move;
+
+				if (beta < alpha) { m_count++; break; }
+			}
+		}
+
+		return result;
+	}
+
+	MinMaxResult ChessEngine::nested(const Position& position, short player, unsigned short depth, bool sort)
+	{
+		auto moves = ChessValidation::getValidMoves(position, player, sort);
+		if (sort) sortMoves(&moves, position);
+		
+		MinMaxResult result;
+		result.values.resize(NESTED_SIZE);
+
+		if (position.getGameState() != GameState::Active)
+		{
+			auto value = ChessEvaluation::evaluate(position, PLAYER_WHITE, 0);
+
+			result.values[VALUE] = value;
+			result.values[LOWER] = value;
+			result.values[UPPER] = value;
+
+			m_count++;
+
+			return result;
+		}
+
+		auto is_player_white = player == PLAYER_WHITE;
+
+		if (depth == 0 || moves.empty())
+		{
+			// TODO: Change Engine Player
+			result.values[VALUE] = ChessEvaluation::evaluate(position, PLAYER_WHITE, EVAL_FT_STANDARD);
+			result.values[LOWER] = -INF;
+			result.values[UPPER] = INF;
+
+			//if (is_player_white) result.values[ALPHA] = result.values[VALUE];
+			//else result.values[BETA] = result.values[VALUE];
+
+			return result;
+		}
+
+		result.values[VALUE] = -player * INF;
+		result.values[LOWER] = -INF;
+		result.values[UPPER] = -INF;
+
+		for (auto move : moves)
+		{
+			auto current_position = ChessValidation::applyMove(position, move);
+			auto new_result = nested(current_position, -player, depth - 1, sort);
+
+			if (new_result.values[VALUE] > result.values[VALUE] && player == PLAYER_WHITE || new_result.values[VALUE] < result.values[VALUE] && player == PLAYER_BLACK)
+			{
+				result.values[VALUE] = new_result.values[VALUE];
+				result.values[LOWER] = std::max(result.values[LOWER], -new_result.values[UPPER]);
+				result.values[UPPER] = std::max(result.values[UPPER], -new_result.values[LOWER]);
+				result.best = move;
+			}
+			else if (new_result.values[VALUE] == result.values[VALUE] && result.best.startX == 0 && result.best.startY == 0 && result.best.targetX == 0 && result.best.targetY == 0)
+			{
+				result.best = move;
+			}
+		}
+
+		return result;
+	}
+
+	MinMaxResult ChessEngine::nestedAlphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort)
+	{
+		MinMaxResult result;
+		result.values.resize(NESTED_SIZE);
+
+		if (position.getGameState() != GameState::Active)
+		{
+			auto value = ChessEvaluation::evaluate(position, PLAYER_WHITE, 0);
+
+			result.values[VALUE] = value;
+			result.values[LOWER] = value;
+			result.values[UPPER] = value;
+
+			return result;
+		}
+
+		auto moves = ChessValidation::getValidMoves(position, player, sort);
+		if (sort) sortMoves(&moves, position);
+
+		auto is_player_white = player == PLAYER_WHITE;
+
+		if (depth == 0 || moves.empty())
+		{
+			// TODO: Change Engine Player
+			result.values[VALUE] = ChessEvaluation::evaluate(position, PLAYER_WHITE, EVAL_FT_STANDARD);
+			result.values[LOWER] = -INF;
+			result.values[UPPER] = INF;
+
 			if (is_player_white) result.values[ALPHA] = result.values[VALUE];
 			else result.values[BETA] = result.values[VALUE];
 
 			return result;
-		} 
-		else
-		{
-			m_totalMoveCount += moves.size();
 		}
+
+		result.values[VALUE] = -player * INF;
+		result.values[LOWER] = -INF;
+		result.values[UPPER] = -INF;
+		result.values[ALPHA] = alpha;
+		result.values[BETA] = beta;
 
 		for (auto move : moves)
 		{
-			m_iterationCount++;
 			auto current_position = ChessValidation::applyMove(position, move);
-
-			auto new_result = alphaBeta(current_position, -player, depth - 1, result.values[ALPHA], result.values[BETA], sort);
+			auto new_result = nestedAlphaBeta(current_position, -player, depth - 1, result.values[ALPHA], result.values[BETA], sort);
 
 			if (is_player_white && new_result.values[VALUE] > result.values[ALPHA])
 			{
 				result.values[ALPHA] = new_result.values[VALUE];
 				result.values[VALUE] = result.values[ALPHA];
+				result.values[LOWER] = std::max(result.values[LOWER], -new_result.values[UPPER]);
+				result.values[UPPER] = std::max(result.values[UPPER], -new_result.values[LOWER]);
 				result.best = move;
 
-				std::cout << "[NEW BEST white]: ";
-				Move::printMove(move);
-
-				if (alpha > beta) { std::cout << "[-PRUNED a>b]: "; Move::printMove(move); m_pruneCount++; break; }
+				if (alpha > beta) { m_count++;  break; }
 			}
 			else if (!is_player_white && new_result.values[VALUE] < result.values[BETA])
 			{
 				result.values[BETA] = new_result.values[VALUE];
 				result.values[VALUE] = result.values[BETA];
+				result.values[LOWER] = std::max(result.values[LOWER], -new_result.values[UPPER]);
+				result.values[UPPER] = std::max(result.values[UPPER], -new_result.values[LOWER]);
 				result.best = move;
 
-				std::cout << "[NEW BEST black]: ";
-				Move::printMove(move);
-
-				if (beta < alpha) { std::cout << "[-PRUNED b<a]: "; Move::printMove(move); m_pruneCount++; break; }
+				if (beta < alpha) { m_count++;  break; }
 			}
 		}
-	
-		std::cout << "[FINAL BEST result]: ";
-		Move::printMove(result.best);
 
 		return result;
 	}

@@ -311,8 +311,6 @@ namespace matt
 		/// <param name="evaluationFeatureFlags">Feature-Parameter-Flags für die Komponenten der Bewertungsfunktion</param>
 		/// <returns>Nutzwert der Bewertungsfunktion</returns>
 		static float evaluate(const Position& position, short enginePlayer, unsigned char evaluationFeatureFlags = 0);
-
-		static float getMaterialValueByPiece(char piece);
 	private:
 		/// Doppelte Bauern?
 		static bool isDoublePawn(const Position& position, int x, int y);
@@ -328,6 +326,7 @@ namespace matt
 		static bool isPieceEqualOnOffset(const Position& position, int x, int y, int xOffset, int yOffset);
 		/// Hilfsfunktion zur Überprüfung, ob Grenzen eingehalten werden und ob sich ein feindlicher Bauer bei der Position x+xOffset, y+yOffset befindet
 		static bool isPieceEnemyPawnOnOffset(const Position& position, int x, int y, int xOffset, int yOffset);
+	public:
 
 		static unsigned char GetPlayerIndexByPositionPlayer(short currentPlayerOfPosition);
 		static unsigned char GetEnemyPiece(short currentPlayerOfPosition, unsigned short pieceIndex);

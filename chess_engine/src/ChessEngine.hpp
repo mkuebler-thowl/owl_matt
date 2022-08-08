@@ -67,10 +67,9 @@ namespace matt
 		/// <returns></returns>
 		MinMaxResult alphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort = false);
 	
-		int m_totalMoveCount = 0;
-		int m_iterationCount = 0;
-		int m_pruneCount = 0;
+		MinMaxResult nested(const Position& position, short player, unsigned short depth, bool sort = false);
 
+		MinMaxResult nestedAlphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort = false);
 	public:
 		void sortMoves(std::vector<Move>* moves, const Position& position);
 
@@ -97,5 +96,7 @@ namespace matt
 		static Captures getCaptureValue(char attacker, char victim);
 		static std::string getCaptureValueString(Captures capture);
 	
+
+		int m_count = 0;
 	};
 }

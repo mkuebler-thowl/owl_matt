@@ -34,7 +34,7 @@ namespace matt
 		m_whiteCastlingShort(whiteCastlingShort), m_whiteCastlingLong(whiteCastlingLong),
 		m_blackCastlingShort(blackCastlingShort), m_blackCastlingLong(blackCastlingLong),
 		m_enPassant(enPassant), m_enPassantPosition(enPassantPosition), 
-		m_movesCount(moveCount), m_moveNumber(moveNumber), m_gamePhase(GamePhase::Opening)
+		m_movesCount(moveCount), m_moveNumber(moveNumber), m_gamePhase(GamePhase::Opening), m_state(GameState::Active)
 	{
 
 	}

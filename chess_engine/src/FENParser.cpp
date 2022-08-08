@@ -101,6 +101,7 @@ namespace matt {
             en_passant, en_passant_pos, 
             move_count, move_number};
     }
+
     std::string FENParser::positionToFen(const Position& pos)
     {
         auto out = std::string();
