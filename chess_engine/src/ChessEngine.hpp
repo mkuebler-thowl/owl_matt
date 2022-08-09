@@ -52,8 +52,9 @@ namespace matt
 		/// <param name="player:">Spieler, der als erstes bzw. nächstes am Zug ist</param>
 		/// <param name="depth:">maximale Suchtiefe d</param>
 		/// <param name="sort:">Züge nach Nutzen sortieren?</param>
+		/// <param name="killer">Killer-Heuristik verwenden?</param>
 		/// <returns>Nutzwert</returns>
-		MinMaxResult minMax(const Position& position, short player, unsigned short depth, bool sort = false);
+		MinMaxResult minMax(const Position& position, short player, unsigned short depth);
 
 		/// <summary>
 		/// Alpha-Beta-Suche (Erweiterung des Min-Max)
@@ -65,13 +66,15 @@ namespace matt
 		/// <param name="beta:">Beta-Wert</param>
 		/// <param name="sort:">Züge nach Nutzen sortieren?</param>
 		/// <returns></returns>
-		MinMaxResult alphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort = false);
+		MinMaxResult alphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort = false, bool killer = false);
 	
 		MinMaxResult nested(const Position& position, short player, unsigned short depth, bool sort = false);
 
 		MinMaxResult nestedAlphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort = false);
 	public:
-		void sortMoves(std::vector<Move>* moves, const Position& position);
+		void sortMoves(std::vector<Move>* moves, const Position& position, unsigned short depth, MinMaxResult* pResult, bool killer = false);
+
+		static bool killerHeuristics(const Move& move, unsigned short depth, MinMaxResult* pResult);
 
 		enum class Captures
 		{

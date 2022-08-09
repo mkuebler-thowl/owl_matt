@@ -3,6 +3,7 @@
 
 namespace matt
 {
+
 	/// Datenstruktur zur Information eines Spielzugs, der auf eine Spielstellung ausgeführt werden kann.
 	struct Move
 	{
@@ -47,5 +48,32 @@ namespace matt
 				<< "; castlingShort= " << move.castlingShort
 				<< "}\n";
 		}
+
+		/// Ist der Zug an der gleichen Stelle?
+		constexpr bool operator==(const Move& other) const
+		{
+			return startX == other.startX 
+				&& startY == other.startY 
+				&& targetX == other.targetX 
+				&& targetY == other.targetY;
+		}
+
+		/// Ist der Zug nicht an der gleichen Stelle?
+		constexpr bool operator!=(const Move& other) const
+		{
+			return !(operator==(other));
+		}
+
+		struct HashFunction
+		{
+			size_t operator()(const Move& move) const
+			{
+				size_t s_x = std::hash<unsigned short>()(move.startX);
+				size_t s_y = std::hash<unsigned short>()(move.startY) << 1;
+				size_t t_x = std::hash<unsigned short>()(move.targetX) << 2;
+				size_t t_y = std::hash<unsigned short>()(move.targetY) << 3;
+				return (s_x ^ s_y ^ t_x ^ t_y);
+			}
+		};
 	};
 }

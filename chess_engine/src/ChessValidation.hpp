@@ -22,9 +22,8 @@ namespace matt
 		/// </summary>
 		/// <param name="position:">Aktuelle Spielstellung bzw. Ausgangsstellung</param>
 		/// <param name="player:">Aktueller Spieler, der am Zug ist.</param>
-		/// <param name="sort:">Bei Aktivierung wird die Liste zusätzlich nach Nutzen sortiert. (Iterative Deeping)</param>
 		/// <returns>Liste der möglichen bzw. gültigen Züge</returns>
-		static std::vector<Move> getValidMoves(const Position& position, short player, bool sort = false);
+		static std::vector<Move> getValidMoves(const Position& position, short player);
 
 		/// <summary>
 		/// Funktion zur Ermittlung der Anzahl gültiger Züge zu einer bestimmten Position. Wird für die Piece-Mobilty verwendet.

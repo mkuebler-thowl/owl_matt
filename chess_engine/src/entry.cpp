@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <unordered_set>
 
 #include "Move.hpp"
 #include "Position.hpp"
@@ -116,9 +117,37 @@ auto main() -> int
 
 	auto pos = matt::FENParser::fenToPosition("r1b4r/pppk1Npp/5n2/8/2Bp4/Bn6/P4PPP/4R1K1 w - - 0 1");
 	// lösung muss sein (2,4 : 1,3) -> (4,7 : 4,1)
-	auto move = engine.searchMove(pos, pos.getPlayer(), 3, matt::FT_ALPHA_BETA);
-	
+	auto move = engine.searchMove(pos, pos.getPlayer(), 3, matt::FT_ALPHA_BETA | matt::FT_SORT | matt::FT_KILLER);
+	//
+	//matt::Move moves[3];
 
+	//moves[0].startX = 0;
+	//moves[0].startY = 5;
+	//moves[0].targetX = 5;
+	//moves[0].targetY = 0;
+
+	//moves[1].startX = 1;
+	//moves[1].startY = 1;
+	//moves[1].targetX = 0;
+	//moves[1].targetY = 2;
+
+	//moves[2].startX = 5;
+	//moves[2].startY = 2;
+	//moves[2].targetX = 3;
+	//moves[2].targetY = 3;
+
+	//matt::MoveSet s1, s2;
+
+	//s1.insert(moves[0]);
+	//s1.insert(moves[1]);
+
+	//s2.insert(moves[2]);
+
+	//s1.merge(s2);
+
+
+
+	//auto moves = matt::ChessValidation::getValidMoves(pos, matt::PLAYER_WHITE);
 
 	//pos = matt::FENParser::fenToPosition("r1b4r/pp1k1Npp/2p2n2/1B6/3p4/Bn6/P4PPP/4R1K1 w - - 0 3");
 	//move = engine.searchMove(pos, pos.getPlayer(), 3, matt::FT_ALPHA_BETA | matt::FT_SORT);

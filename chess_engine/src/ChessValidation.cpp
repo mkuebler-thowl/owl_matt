@@ -7,7 +7,7 @@
 #include <iostream>
 namespace matt
 {
-	std::vector<Move> ChessValidation::getValidMoves(const Position& position, short player, bool sort)
+	std::vector<Move> ChessValidation::getValidMoves(const Position& position, short player)
 	{
 		std::vector<Move> moves;
 

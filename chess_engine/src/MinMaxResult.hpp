@@ -2,6 +2,8 @@
 
 #include "Move.hpp"
 #include <vector>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace matt
 {
@@ -23,10 +25,13 @@ namespace matt
 	constexpr unsigned short NESTED_SIZE = 3;
 	constexpr unsigned short NESTED_ALPHA_BETA_SIZE = 5;
 
+	using MoveSet = std::unordered_set<Move, Move::HashFunction>;
+
 	/// Result-Objekt für die Zugfindung mit dem Min-Max-Algorithmus
 	struct MinMaxResult
 	{
 		Move best;
 		std::vector<float> values;
+		std::unordered_map<unsigned short, MoveSet> killers;
 	};
 }

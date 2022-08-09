@@ -16,30 +16,32 @@ namespace matt
 
 	Move ChessEngine::searchMove(const Position& position, short player, unsigned short depth, unsigned char parameterFlags, bool random)
 	{
-		auto sort = parameterFlags & FT_SORT;
+		bool sort = parameterFlags & FT_SORT;
+		bool killer = parameterFlags & FT_KILLER;
 
 		MinMaxResult result;
 
 		// MinMax oder MinMax+Sort
 		if (parameterFlags == FT_NULL || parameterFlags == FT_SORT)
 		{
-			result = minMax(position, player, depth, sort);
+			result = minMax(position, player, depth);
 		}
 		// AlphaBeta oder AlphaBeta+Sort
-		else if (parameterFlags == FT_ALPHA_BETA || parameterFlags == (FT_ALPHA_BETA | FT_SORT))
+		else if (parameterFlags & FT_ALPHA_BETA)
 		{ 
-			result = alphaBeta(position, player, depth, -INF, INF, sort);
+			result = alphaBeta(position, player, depth, -INF, INF, sort, killer);
 		}
-		// Nested oder Nested+Sort
-		else if (parameterFlags == FT_NESTED || parameterFlags == (FT_NESTED | FT_SORT))
-		{
-			result = nested(position, player, depth, sort);
-		}
-		// Nested+AlphaBeta oder Nested+AlphaBeta+Sort
-		else if (parameterFlags == (FT_NESTED | FT_ALPHA_BETA) || parameterFlags == (FT_NESTED | FT_ALPHA_BETA | FT_SORT))
-		{
-			result = nestedAlphaBeta(position, player, depth, -INF, INF, sort);
-		}
+
+		//// Nested oder Nested+Sort
+		//else if (parameterFlags == FT_NESTED || parameterFlags == (FT_NESTED | FT_SORT))
+		//{
+		//	result = nested(position, player, depth, sort);
+		//}
+		//// Nested+AlphaBeta oder Nested+AlphaBeta+Sort
+		//else if (parameterFlags == (FT_NESTED | FT_ALPHA_BETA) || parameterFlags == (FT_NESTED | FT_ALPHA_BETA | FT_SORT))
+		//{
+		//	result = nestedAlphaBeta(position, player, depth, -INF, INF, sort);
+		//}
 
 		//std::cout << (parameter_flags == (FT_ALPHA_BETA | FT_NESTED) || parameter_flags == (FT_ALPHA_BETA | FT_NESTED | FT_SORT)) << std::endl;
 		//std::cout << (parameter_flags == FT_NESTED || parameter_flags == (FT_NESTED | FT_SORT)) << std::endl;
@@ -47,10 +49,9 @@ namespace matt
 		return result.best;
 	}
 
-	MinMaxResult ChessEngine::minMax(const Position& position, short player, unsigned short depth, bool sort)
+	MinMaxResult ChessEngine::minMax(const Position& position, short player, unsigned short depth)
 	{
-		auto moves = ChessValidation::getValidMoves(position, player, sort);
-		if (sort) sortMoves(&moves, position);
+		auto moves = ChessValidation::getValidMoves(position, player);
 
 		auto result = MinMaxResult{};
 		result.values.resize(MIN_MAX_VALUE_SIZE);
@@ -68,7 +69,7 @@ namespace matt
 		for (auto move : moves)
 		{
 			auto current_position = ChessValidation::applyMove(position, move);
-			auto new_result = minMax(current_position, -player, depth - 1, sort);
+			auto new_result = minMax(current_position, -player, depth - 1);
 
 			if (new_result.values[VALUE] > result.values[VALUE] && player == PLAYER_WHITE || new_result.values[VALUE] < result.values[VALUE] && player == PLAYER_BLACK)
 			{
@@ -84,54 +85,72 @@ namespace matt
 		return result;
 	}
 
-	MinMaxResult ChessEngine::alphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort)
+	MinMaxResult ChessEngine::alphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort, bool killer)
 	{
-		auto moves = ChessValidation::getValidMoves(position, player, sort);
-		if (sort) sortMoves(&moves, position);
+		auto result = MinMaxResult{};
+
+		auto moves = ChessValidation::getValidMoves(position, player);
+		if (sort) sortMoves(&moves, position, depth, &result, killer);
 
 		auto is_player_white = player == PLAYER_WHITE;
 
-		auto result = MinMaxResult{};
 		result.values.resize(MIN_MAX_VALUE_SIZE);
-
 		result.values[VALUE] = -player * INF;
-		//result.values[ALPHA] = alpha;
-		//result.values[BETA] = beta;
 
 		if (depth == 0 || moves.empty())
 		{
 			// TODO: Change Engine Player
 			result.values[VALUE] = ChessEvaluation::evaluate(position, PLAYER_WHITE, EVAL_FT_STANDARD);
-
-			//if (is_player_white) result.values[ALPHA] = result.values[VALUE];
-			//else result.values[BETA] = result.values[VALUE];
-
 			return result;
 		} 
 
 		for (auto move : moves)
 		{
+			if (depth == 3)
+				std::cout << "d3";
+
 			auto current_position = ChessValidation::applyMove(position, move);
 
 			std::pair<float, float> alpha_beta = is_player_white ? 
 				std::make_pair(result.values[VALUE], beta) : 
 				std::make_pair(alpha, result.values[VALUE]);
 
-			auto new_result = alphaBeta(current_position, -player, depth - 1, alpha_beta.first, alpha_beta.second, sort);
+			auto new_result = alphaBeta(current_position, -player, depth - 1, alpha_beta.first, alpha_beta.second, sort, killer);
+			
+			if (killer)
+			{
+				for (int d = 0; d <= depth; d++)
+				{
+					result.killers[d].merge(new_result.killers[d]);
+				}
+			}
 
 			if (is_player_white && new_result.values[VALUE] > alpha)
 			{
 				result.values[VALUE] = new_result.values[VALUE];
 				result.best = move;
 
-				if (alpha > beta) { m_count++; break; }
+
+				if (alpha >= beta) 
+				{ 
+					if (killer) result.killers[depth].insert(move);
+					Move::printMove(move);
+					m_count++;  
+					break; 
+				}
 			}
 			else if (!is_player_white && new_result.values[VALUE] < beta)
 			{
 				result.values[VALUE] = new_result.values[VALUE];
 				result.best = move;
 
-				if (beta < alpha) { m_count++; break; }
+				if (beta <= alpha) 
+				{
+					if (killer) result.killers[depth].insert(move);
+					Move::printMove(move);
+					m_count++; 
+					break; 
+				}
 			}
 		}
 
@@ -140,8 +159,8 @@ namespace matt
 
 	MinMaxResult ChessEngine::nested(const Position& position, short player, unsigned short depth, bool sort)
 	{
-		auto moves = ChessValidation::getValidMoves(position, player, sort);
-		if (sort) sortMoves(&moves, position);
+		auto moves = ChessValidation::getValidMoves(position, player);
+		//if (sort) sortMoves(&moves, position, depth, result, sort);
 		
 		MinMaxResult result;
 		result.values.resize(NESTED_SIZE);
@@ -215,8 +234,8 @@ namespace matt
 			return result;
 		}
 
-		auto moves = ChessValidation::getValidMoves(position, player, sort);
-		if (sort) sortMoves(&moves, position);
+		auto moves = ChessValidation::getValidMoves(position, player);
+		//if (sort) sortMoves(&moves, position);
 
 		auto is_player_white = player == PLAYER_WHITE;
 
@@ -269,9 +288,9 @@ namespace matt
 		return result;
 	}
 
-	void ChessEngine::sortMoves(std::vector<Move>* moves, const Position& position)
+	void ChessEngine::sortMoves(std::vector<Move>* moves, const Position& position, unsigned short depth, MinMaxResult* pResult, bool killer)
 	{
-		std::sort(moves->begin(), moves->end(), [&position](const Move& left, const Move& right)
+		std::sort(moves->begin(), moves->end(), [&position, depth, pResult, killer](const Move& left, const Move& right)
 		{
 			if (left.capture && !right.capture) return true;
 			if (right.capture && !left.capture) return false;
@@ -281,11 +300,32 @@ namespace matt
 				return getCaptureValue(position[left.startY][left.startX], position[left.targetY][left.targetX]) > getCaptureValue(position[right.startY][right.startX], position[right.targetY][right.targetX]);
 			}
 
+			// Heuristics
+			if (killer)
+			{
+				auto killer_left = killerHeuristics(left, depth, pResult);
+				auto killer_right = killerHeuristics(right, depth, pResult);
+				if (killer_left && !killer_right) return true;
+				else if (!killer_left && killer_right) return false;
+			}
+
 			float left_move_value = ChessEvaluation::evaluate(ChessValidation::applyMove(position, left), -position.getPlayer(), 0);
 			float right_move_value = ChessEvaluation::evaluate(ChessValidation::applyMove(position, right), -position.getPlayer(), 0);
 
 			return left_move_value > right_move_value;
 		});
+	}
+
+	bool ChessEngine::killerHeuristics(const Move& move, unsigned short depth, MinMaxResult* pResult)
+	{
+		if (pResult->killers.find(depth) != pResult->killers.end())
+		{
+			for (Move killer : pResult->killers[depth])
+			{
+				if (killer == move) { std::cout << "killer found\n";  return true; }
+			}
+		}
+		return false;
 	}
 
 	matt::ChessEngine::Captures ChessEngine::getCaptureValue(char attacker, char victim)
