@@ -4,7 +4,7 @@
 
 namespace owl
 {
-	void RepitionMap::addPosition(const Position& position)
+	VOID RepitionMap::addPosition(const Position& position)
 	{
 		auto search = m_data.find(position);
 
@@ -22,7 +22,7 @@ namespace owl
 			m_data[position] = 1;
 		}
 	}
-	bool RepitionMap::isPositionAlreadyLocked(const Position& position) const
+	BOOL RepitionMap::isPositionAlreadyLocked(const Position& position) const
 	{
 		auto search = m_data.find(position);
 		if (search != m_data.end())

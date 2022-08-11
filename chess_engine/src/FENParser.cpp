@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "ChessEvaluation.hpp"
 
 namespace owl {
 
@@ -27,7 +28,7 @@ namespace owl {
 
         auto data = BoardArray();
 
-        int y = 0;
+        INT32 y = 0;
         for (auto row : rows)
         {
             auto x = 0;
@@ -35,7 +36,7 @@ namespace owl {
             {
                 if (std::isdigit(c))
                 {
-                    auto digit = static_cast<int>(c-48);
+                    auto digit = static_cast<INT32>(c-48);
                     for (auto i = 0; i < digit; i++)
                     {
                         data[y][x] = ' ';
@@ -66,9 +67,9 @@ namespace owl {
         auto black_castling_long    = castling_str.find("q") != std::string::npos;
 
         // En Passant Field
-        bool en_passant = false;
+        BOOL en_passant = false;
         std::string passant_pos_str;
-        std::pair<int, int> en_passant_pos = { 0,0 };
+        std::pair<INT32, INT32> en_passant_pos = { 0,0 };
         if (fen[0] == '-')
         {
             fen.replace(0, 2, "");
@@ -89,28 +90,28 @@ namespace owl {
 
         // Halbzüge
         pos = fen.find(" ");
-        auto move_count = std::stoi(fen.substr(0, pos));
+        UINT16 ply_count = static_cast<UINT16>(std::stoi(fen.substr(0, pos)));
         fen.replace(0, pos + 1, "");
 
         // Zugnummer
-        auto move_number = std::stoi(fen);
+        UINT16 move_number = static_cast<UINT16>(std::stoi(fen));
 
         return Position{data, player, 
             white_castling_short, white_castling_long, 
             black_castling_short, black_castling_long, 
             en_passant, en_passant_pos, 
-            move_count, move_number};
+            ply_count, move_number};
     }
 
     std::string FENParser::positionToFen(const Position& pos)
     {
         auto out = std::string();
 
-        // 8x8 char-Array
-        for (int r = 0; r < 8; r++)
+        // 8x8 CHAR-Array
+        for (INT32 r = 0; r < 8; r++)
         {
             auto count = 0;
-            for (int l = 0; l < 8; l++)
+            for (INT32 l = 0; l < 8; l++)
             {
                 if (pos[r][l] == ' ')
                 {
@@ -150,7 +151,7 @@ namespace owl {
         }
 
         // Halbzüge
-        out += std::to_string(pos.getMoveCount());
+        out += std::to_string(pos.getPlyCount());
         out += " ";
 
         // Zugnummer
@@ -159,21 +160,51 @@ namespace owl {
         return out;
     }
 
-    Move FENParser::stringToMove(const std::string& algebraicNotation)
+    Move FENParser::stringToMove(const std::string& algebraicNotation, const Position* position)
     {
         Move move;
 
-        // capture abfragen:
+        // capture vom String abfragen:
         move.capture = algebraicNotation.find("x") != std::string::npos;
 
-        // promotion abfragen:
+        // promotion vom String abfragen:
         move.promotion = algebraicNotation.size() == 6 ? algebraicNotation[5] : 0;
-        
+
         // position setzen
         move.startX = algebraicNotation[0] - 'a';
-        move.startY = 7 - algebraicNotation[1] - '1';
+        move.startY = 7 - (algebraicNotation[1] - '1');
         move.targetX = algebraicNotation[3] - 'a';
-        move.targetY = 7 - algebraicNotation[4] - '1';
+        move.targetY = 7 - (algebraicNotation[4] - '1');
+
+        // Relative Attribute des Zugs in Abhängigkeit zur Position auslesen.
+        if (position != nullptr)
+        {
+            auto&& pos = *position;
+            /// TODO: En Passant & Rochade checken 
+            auto piece = pos[move.startY][move.startX];
+
+            // Capture abfangen:
+            move.capture = (pos[move.targetY][move.targetX] != EMPTY_PLACE);
+
+            // Rochade abfangen:
+            if ((piece == KING_WHITE || piece == KING_BLACK))
+            {
+                if (move.startX == KING_START_X && move.targetX == KING_CASTLING_LONG_X) move.castlingLong = true;
+                else if (move.startX == KING_START_X && move.targetX == KING_CASTLING_SHORT_X) move.castlingShort = true;
+            }
+
+            // En Passant abfangen
+            // Ansatz: Wenn der Zug diagonal ist und das Zielfeld leer ist, muss es sich um ein En Passant-Capture handeln
+            if (pos.isEnPassant() 
+                && pos[move.targetY][move.targetX] == EMPTY_PLACE 
+                && move.startX != move.targetY
+                && ((piece == PAWN_WHITE && move.startY == PAWN_DOUBLE_MOVE_TARGET_BLACK_Y) 
+                    || (piece == PAWN_BLACK && move.startY == PAWN_DOUBLE_MOVE_TARGET_WHITE_Y)))
+            {
+                move.capture = true;
+                move.enPassantCapture = true;
+            }
+        }
 
         return move;
     }

@@ -7,13 +7,13 @@
 #include <iostream>
 namespace owl
 {
-	std::vector<Move> ChessValidation::getValidMoves(const Position& position, short player)
+	MoveList ChessValidation::getValidMoves(const Position& position, short player)
 	{
-		std::vector<Move> moves;
+		MoveList moves;
 
-		for (int y = FIRSTROWINDEX; y < ROWS; y++)
+		for (INT32 y = FIRST_ROW_INDEX; y < ROWS; y++)
 		{
-			for (int x = FIRSTCOLINDEX; x < COLUMNS; x++)
+			for (INT32 x = FIRST_COLUMN_INDEX; x < COLUMNS; x++)
 			{
 				auto piece = position[y][x];
 
@@ -64,9 +64,9 @@ namespace owl
 
 		return moves;
 	}
-	unsigned short ChessValidation::countPossibleMovesOnField(const Position& position, int x, int y)
+	UINT16 ChessValidation::countPossibleMovesOnField(const Position& position, INT32 x, INT32 y)
 	{
-		unsigned short count = 0;
+		UINT16 count = 0;
 
 		switch (position[y][x])
 		{
@@ -96,14 +96,14 @@ namespace owl
 		// Ist der Zug eine Rochade? => Turm bewegen
 		if (move.castlingLong)
 		{
-			auto rook = position[move.startY][FIRSTCOLINDEX];
-			pos[move.startY][FIRSTCOLINDEX] = EMPTY_PLACE;
+			auto rook = position[move.startY][FIRST_COLUMN_INDEX];
+			pos[move.startY][FIRST_COLUMN_INDEX] = EMPTY_PLACE;
 			pos[move.startY][3] = rook;
 		}
 		else if (move.castlingShort)
 		{
 			auto rook = position[move.startY][COLUMNS-1];
-			pos[move.startY][LASTCOLINDEX] = EMPTY_PLACE;
+			pos[move.startY][LAST_COLUMN_INDEX] = EMPTY_PLACE;
 			pos[move.startY][5] = rook;
 		}
 
@@ -113,7 +113,7 @@ namespace owl
 			pos[move.startY][move.targetX] = EMPTY_PLACE;
 		}
 
-		pos.addMoveCount();
+		pos.addPlyCount();
 		pos.changePlayer();
 
 		// En Passant zurücksetzen:
@@ -125,7 +125,7 @@ namespace owl
 		// 50-Züge-Regel: Capture abfragen & Bauernbewegung
 		if (figure == PAWN_WHITE || figure == PAWN_BLACK || move.capture)
 		{
-			pos.resetMoveCount();
+			pos.resetPlyCount();
 		}
 
 		// En passant für die Folgeposition bestimmen:
@@ -137,13 +137,10 @@ namespace owl
 		}
 
 		// 100 Halbzüge woanders informieren; auswerten
-		if (pos.getMoveCount() >= 100) // 100 Halbzüge bzw. 50 Züge
+		if (pos.getPlyCount() >= 100) // 100 Halbzüge bzw. 50 Züge
 		{
 			pos.setGameState(GameState::Remis);
 		}
-
-		// 3x Stellungswiederholung:
-
 
 		// Rochieren gegebenfalls deaktivieren
 		if (pos.getWhiteCastlingShort() || pos.getWhiteCastlingLong() || pos.getBlackCastlingLong() || pos.getBlackCastlingShort())
@@ -159,33 +156,33 @@ namespace owl
 				pos.resetBlackCastlingShort();
 				break;
 			case ROOK_WHITE:
-				if (move.startX == FIRSTCOLINDEX) pos.resetWhiteCastlingLong();
-				else if (move.startX == LASTCOLINDEX) pos.resetWhiteCastlingShort();
+				if (move.startX == FIRST_COLUMN_INDEX) pos.resetWhiteCastlingLong();
+				else if (move.startX == LAST_COLUMN_INDEX) pos.resetWhiteCastlingShort();
 				break;
 			case ROOK_BLACK:
-				if (move.startX == FIRSTCOLINDEX) pos.resetBlackCastlingLong();
-				else if (move.startX == LASTCOLINDEX) pos.resetBlackCastlingShort();
+				if (move.startX == FIRST_COLUMN_INDEX) pos.resetBlackCastlingLong();
+				else if (move.startX == LAST_COLUMN_INDEX) pos.resetBlackCastlingShort();
 			}
 		}
 
 		return pos;
 	}
 
-	bool ChessValidation::isKinginCheckAfterMove(const Position& position, short player, const Move& move)
+	BOOL ChessValidation::isKinginCheckAfterMove(const Position& position, short player, const Move& move)
 	{
 		auto nextPosition = applyMove(position, move);
 		return isKingInCheck(nextPosition, player);
 	}
-	bool ChessValidation::isKingInCheck(const Position& position, short player)
+	BOOL ChessValidation::isKingInCheck(const Position& position, short player)
 	{
-		char king = PIECES[ChessEvaluation::GetPlayerIndexByPositionPlayer(player)][KING];
-		int king_x, king_y;
-		bool king_found = false;
+		CHAR king = PIECES[ChessEvaluation::GetPlayerIndexByPositionPlayer(player)][KING];
+		INT32 king_x, king_y;
+		BOOL king_found = false;
 
 		// König suchen
-		for (int y = FIRSTROWINDEX; y < ROWS; y++)
+		for (INT32 y = FIRST_ROW_INDEX; y < ROWS; y++)
 		{
-			for (int x = FIRSTCOLINDEX; x < COLUMNS; x++)
+			for (INT32 x = FIRST_COLUMN_INDEX; x < COLUMNS; x++)
 			{
 				if (position[y][x] == king)
 				{
@@ -211,7 +208,7 @@ namespace owl
 
 		return false;
 	}
-	bool ChessValidation::isPlaceInCheck(const Position& position, int x, int y, short player)
+	BOOL ChessValidation::isPlaceInCheck(const Position& position, INT32 x, INT32 y, short player)
 	{
 		if (checkKingPawns(x, y, position, player)) return true;
 		if (checkKingAxis(x, y, position, player)) return true;
@@ -221,15 +218,15 @@ namespace owl
 		return false;
 	}
 
-	bool ChessValidation::checkKingDiagonal(int king_x, int king_y, const Position& position, short player)
+	BOOL ChessValidation::checkKingDiagonal(INT32 king_x, INT32 king_y, const Position& position, short player)
 	{
-		char enemy_queen = player == PLAYER_WHITE ? 'q' : 'Q';
-		char enemy_bishop = player == PLAYER_WHITE ? 'b' : 'B';
+		CHAR enemy_queen = player == PLAYER_WHITE ? 'q' : 'Q';
+		CHAR enemy_bishop = player == PLAYER_WHITE ? 'b' : 'B';
 
 		// diagonal links oben:
 		if (king_x > 0 && king_y > 0)
 		{
-			for (int i = std::min(king_x, king_y); i >= 0; i--)
+			for (INT32 i = std::min(king_x, king_y); i >= 0; i--)
 			{
 				auto place = position[king_y - i][king_x - i];
 				if (place == enemy_queen || place == enemy_bishop) return true;
@@ -239,7 +236,7 @@ namespace owl
 		// diagonal rechts unten:
 		if (king_x < 7 && king_y < 7)
 		{
-			for (int i = 1; i <= std::min(7 - king_x, 7 - king_y); i++)
+			for (INT32 i = 1; i <= std::min(7 - king_x, 7 - king_y); i++)
 			{
 				auto place = position[king_y + i][king_x + i];
 				if (place == enemy_queen || place == enemy_bishop) return true;
@@ -249,7 +246,7 @@ namespace owl
 		// diagonal rechts oben:
 		if (king_x < 7 && king_y > 0)
 		{
-			for (int i = 1; i <= std::min(king_y, 7 - king_x); i++)
+			for (INT32 i = 1; i <= std::min(king_y, 7 - king_x); i++)
 			{
 				auto place = position[king_y - i][king_x + i];
 				if (place == enemy_queen || place == enemy_bishop) return true;
@@ -259,7 +256,7 @@ namespace owl
 		// diagonal links unten:
 		if (king_x > 0 && king_y < 7)
 		{
-			for (int i = 1; i <= std::min(7 - king_y, king_x); i++)
+			for (INT32 i = 1; i <= std::min(7 - king_y, king_x); i++)
 			{
 				auto place = position[king_y + i][king_x - i];
 				if (place == enemy_queen || place == enemy_bishop) return true;
@@ -269,16 +266,16 @@ namespace owl
 
 		return false;
 	}
-	bool ChessValidation::checkKingAxis(int king_x, int king_y, const Position& position, short player)
+	BOOL ChessValidation::checkKingAxis(INT32 king_x, INT32 king_y, const Position& position, short player)
 	{
-		char enemy_queen = player == PLAYER_WHITE ? 'q' : 'Q';
-		char enemy_rook = player == PLAYER_WHITE ? 'r' : 'R';
+		CHAR enemy_queen = player == PLAYER_WHITE ? 'q' : 'Q';
+		CHAR enemy_rook = player == PLAYER_WHITE ? 'r' : 'R';
 
 		// horizontal:
 		// links vom König:
 		if (king_x > 0)
 		{
-			for (int x = king_x - 1; x >= 0; x--)
+			for (INT32 x = king_x - 1; x >= 0; x--)
 			{
 				auto place = position[king_y][x];
 				if (place == enemy_queen || place == enemy_rook) return true;
@@ -288,7 +285,7 @@ namespace owl
 		// rechts vom König:
 		if (king_x < 7)
 		{
-			for (int x = king_x + 1; x <= 7; x++)
+			for (INT32 x = king_x + 1; x <= 7; x++)
 			{
 				auto place = position[king_y][x];
 				if (place == enemy_queen || place == enemy_rook) return true;
@@ -300,7 +297,7 @@ namespace owl
 		// oben vom König:
 		if (king_y > 0)
 		{
-			for (int y = king_y - 1; y >= 0; y--)
+			for (INT32 y = king_y - 1; y >= 0; y--)
 			{
 				auto place = position[y][king_x];
 				if (place == enemy_queen || place == enemy_rook) return true;
@@ -310,7 +307,7 @@ namespace owl
 		// unten vom König:
 		if (king_y < 7)
 		{
-			for (int y = king_y + 1; y <= 7; y++)
+			for (INT32 y = king_y + 1; y <= 7; y++)
 			{
 				auto place = position[y][king_x];
 				if (place == enemy_queen || place == enemy_rook) return true;
@@ -319,10 +316,10 @@ namespace owl
 		}
 		return false;
 	}
-	bool ChessValidation::checkKingKnights(int king_x, int king_y, const Position& position, short player)
+	BOOL ChessValidation::checkKingKnights(INT32 king_x, INT32 king_y, const Position& position, short player)
 	{
-		char enemy_knight = player == PLAYER_WHITE ? 'n' : 'N';
-		std::vector<std::pair<int, int>> directions = { {-1,-2}, {2,-1}, {2,1}, {1,2}, {-1,2}, {-2,1}, {-2,-1}, {-1,-2} };
+		CHAR enemy_knight = player == PLAYER_WHITE ? 'n' : 'N';
+		std::vector<std::pair<INT32, INT32>> directions = { {-1,-2}, {2,-1}, {2,1}, {1,2}, {-1,2}, {-2,1}, {-2,-1}, {-1,-2} };
 
 		for (auto direction : directions)
 		{
@@ -337,9 +334,9 @@ namespace owl
 
 		return false;
 	}
-	bool ChessValidation::checkKingPawns(int king_x, int king_y, const Position& position, short player)
+	BOOL ChessValidation::checkKingPawns(INT32 king_x, INT32 king_y, const Position& position, short player)
 	{
-		char enemy_pawn = ChessEvaluation::GetEnemyPiece(player, PAWN);
+		CHAR enemy_pawn = ChessEvaluation::GetEnemyPiece(player, PAWN);
 		constexpr short king_offset = 1;
 
 		// Weißen König auf schwarze Bauern überprüfen:
@@ -348,13 +345,13 @@ namespace owl
 		if (player == PLAYER_WHITE)
 		{
 			// links oben:
-			if (king_y > FIRSTROWINDEX && king_x > FIRSTCOLINDEX)
+			if (king_y > FIRST_ROW_INDEX && king_x > FIRST_COLUMN_INDEX)
 			{
 				auto piece = position[king_y - king_offset][king_x - king_offset];
 				if (piece == enemy_pawn) return true;
 			}
 			// rechts oben:
-			if (king_y > FIRSTROWINDEX && king_x < LASTCOLINDEX)
+			if (king_y > FIRST_ROW_INDEX && king_x < LAST_COLUMN_INDEX)
 			{
 				auto piece = position[king_y - king_offset][king_x + king_offset];
 				if (piece == enemy_pawn) return true;
@@ -363,13 +360,13 @@ namespace owl
 		else if (player == PLAYER_BLACK)
 		{
 			// links unten:
-			if (king_y < LASTROWINDEX && king_x > FIRSTCOLINDEX)
+			if (king_y < LAST_ROW_INDEX && king_x > FIRST_COLUMN_INDEX)
 			{
 				auto piece = position[king_y + king_offset][king_x - king_offset];
 				if (piece == enemy_pawn) return true;
 			}
 			// rechts unten:
-			if (king_y < LASTROWINDEX && king_x < FIRSTCOLINDEX)
+			if (king_y < LAST_ROW_INDEX && king_x < FIRST_COLUMN_INDEX)
 			{
 				auto piece = position[king_y + king_offset][king_x + king_offset];
 				if (piece == enemy_pawn) return true;
@@ -378,7 +375,7 @@ namespace owl
 
 		return false;
 	}
-	void ChessValidation::evaluateCheckmate(const Position& position, short player, bool noValidMoves)
+	VOID ChessValidation::evaluateCheckmate(const Position& position, short player, BOOL noValidMoves)
 	{
 		if (noValidMoves)
 		{
@@ -396,15 +393,15 @@ namespace owl
 		}
 	}
 
-	std::vector<Move> ChessValidation::getValidPawnMoves(const Position& position, int x, int y, short player)
+	MoveList ChessValidation::getValidPawnMoves(const Position& position, INT32 x, INT32 y, short player)
 	{
-		std::vector<Move> moves;
+		MoveList moves;
 
 		auto pawn_direction = player;
 		std::string enemies = getEnemyPiecesString(player);
 		std::string promotion_str = player == PLAYER_WHITE ? WHITE_PROMOTION_STR : BLACK_PROMOTION_STR;
 
-		if (y > FIRSTROWINDEX && player == PLAYER_WHITE || y < LASTROWINDEX && player == PLAYER_BLACK)
+		if (y > FIRST_ROW_INDEX && player == PLAYER_WHITE || y < LAST_ROW_INDEX && player == PLAYER_BLACK)
 		{
 			// Schritt nach vorne 
 			if (position[y - pawn_direction][x] == EMPTY_PLACE)
@@ -449,7 +446,7 @@ namespace owl
 			}
 
 			// Diagonal Schlagen:
-			if (x > FIRSTCOLINDEX)
+			if (x > FIRST_COLUMN_INDEX)
 			{	
 				// links oben/unten
 				if (isInsideChessboard(x - 1, y - pawn_direction))
@@ -534,11 +531,11 @@ namespace owl
 		return moves;
 	}
 
-	std::vector<Move> ChessValidation::getValidKnightMoves(const Position& position, int x, int y, short player)
+	MoveList ChessValidation::getValidKnightMoves(const Position& position, INT32 x, INT32 y, short player)
 	{
-		std::vector<Move> moves;
+		MoveList moves;
 
-		std::vector<std::pair<int, int>> possible_places = { {1,-2},{2,-1},{2,1},{1,2},{-1,2},{-2,1},{-2,-1}, {-1,-2} };
+		std::vector<std::pair<INT32, INT32>> possible_places = { {1,-2},{2,-1},{2,1},{1,2},{-1,2},{-2,1},{-2,-1}, {-1,-2} };
 		std::string enemies = getEnemyPiecesString(player);
 
 		for (auto pair : possible_places)
@@ -565,11 +562,11 @@ namespace owl
 		return moves;
 	}
 
-	std::vector<Move> ChessValidation::getValidKingMoves(const Position& position, int x, int y, short player)
+	MoveList ChessValidation::getValidKingMoves(const Position& position, INT32 x, INT32 y, short player)
 	{
-		std::vector<Move> moves;
+		MoveList moves;
 		std::string enemies = getEnemyPiecesString(player);
-		std::vector<std::pair<int, int>> possible_places = { {0,-1},{1,-1},{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1} };
+		std::vector<std::pair<INT32, INT32>> possible_places = { {0,-1},{1,-1},{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1} };
 
 		for (auto pair : possible_places)
 		{
@@ -597,10 +594,10 @@ namespace owl
 		if (player == PLAYER_WHITE)
 		{
 			if (position.getWhiteCastlingShort() 
-				&& isPlaceInCheck(position, 5, LASTROWINDEX, player)
-				&& isPlaceInCheck(position, 6, LASTROWINDEX, player)
-				&& position[LASTROWINDEX][5] == EMPTY_PLACE
-				&& position[LASTROWINDEX][6] == EMPTY_PLACE)
+				&& isPlaceInCheck(position, 5, LAST_ROW_INDEX, player)
+				&& isPlaceInCheck(position, 6, LAST_ROW_INDEX, player)
+				&& position[LAST_ROW_INDEX][5] == EMPTY_PLACE
+				&& position[LAST_ROW_INDEX][6] == EMPTY_PLACE)
 			{
 				Move move;
 				move.startX = x;
@@ -612,11 +609,11 @@ namespace owl
 				moves.push_back(move);
 			}
 			if (position.getWhiteCastlingLong()
-				&& isPlaceInCheck(position, 2, LASTROWINDEX, player)
-				&& isPlaceInCheck(position, 3, LASTROWINDEX, player)
-				&& position[LASTROWINDEX][3] == EMPTY_PLACE
-				&& position[LASTROWINDEX][2] == EMPTY_PLACE
-				&& position[LASTROWINDEX][1] == EMPTY_PLACE)
+				&& isPlaceInCheck(position, 2, LAST_ROW_INDEX, player)
+				&& isPlaceInCheck(position, 3, LAST_ROW_INDEX, player)
+				&& position[LAST_ROW_INDEX][3] == EMPTY_PLACE
+				&& position[LAST_ROW_INDEX][2] == EMPTY_PLACE
+				&& position[LAST_ROW_INDEX][1] == EMPTY_PLACE)
 			{
 				Move move;
 				move.startX = x;
@@ -631,10 +628,10 @@ namespace owl
 		else if (player == PLAYER_BLACK)
 		{
 			if (position.getBlackCastlingShort()
-				&& isPlaceInCheck(position, 5, FIRSTROWINDEX, player)
-				&& isPlaceInCheck(position, 6, FIRSTROWINDEX, player)
-				&& position[FIRSTROWINDEX][5] == EMPTY_PLACE
-				&& position[FIRSTROWINDEX][6] == EMPTY_PLACE)
+				&& isPlaceInCheck(position, 5, FIRST_ROW_INDEX, player)
+				&& isPlaceInCheck(position, 6, FIRST_ROW_INDEX, player)
+				&& position[FIRST_ROW_INDEX][5] == EMPTY_PLACE
+				&& position[FIRST_ROW_INDEX][6] == EMPTY_PLACE)
 			{
 
 				Move move;
@@ -647,11 +644,11 @@ namespace owl
 				moves.push_back(move);
 			}
 			if (position.getBlackCastlingLong()
-				&& isPlaceInCheck(position, 2, FIRSTROWINDEX, player)
-				&& isPlaceInCheck(position, 3, FIRSTROWINDEX, player)
-				&& position[FIRSTROWINDEX][3] == EMPTY_PLACE
-				&& position[FIRSTROWINDEX][2] == EMPTY_PLACE
-				&& position[FIRSTROWINDEX][1] == EMPTY_PLACE)
+				&& isPlaceInCheck(position, 2, FIRST_ROW_INDEX, player)
+				&& isPlaceInCheck(position, 3, FIRST_ROW_INDEX, player)
+				&& position[FIRST_ROW_INDEX][3] == EMPTY_PLACE
+				&& position[FIRST_ROW_INDEX][2] == EMPTY_PLACE
+				&& position[FIRST_ROW_INDEX][1] == EMPTY_PLACE)
 			{
 				Move move;
 				move.startX = x;
@@ -667,11 +664,11 @@ namespace owl
 		return moves;
 	}
 
-	std::vector<Move> ChessValidation::getValidRookMoves(const Position& position, int x, int y, short player)
+	MoveList ChessValidation::getValidRookMoves(const Position& position, INT32 x, INT32 y, short player)
 	{
-		std::vector<Move> moves;
+		MoveList moves;
 		std::string enemies = getEnemyPiecesString(player);
-		std::vector<std::pair<int, int>> directions = { {0,-1}, {1,0}, {0,1}, {-1,0} };
+		std::vector<std::pair<INT32, INT32>> directions = { {0,-1}, {1,0}, {0,1}, {-1,0} };
 		
 		for (auto direction : directions)
 		{
@@ -682,11 +679,11 @@ namespace owl
 		return moves;
 	}
 
-	std::vector<Move> ChessValidation::getValidBishopMoves(const Position& position, int x, int y, short player)
+	MoveList ChessValidation::getValidBishopMoves(const Position& position, INT32 x, INT32 y, short player)
 	{
-		std::vector<Move> moves;
+		MoveList moves;
 		std::string enemies = getEnemyPiecesString(player);
-		std::vector<std::pair<int, int>> directions = { {-1,-1}, {1,-1}, {1,1}, {-1,1} };
+		std::vector<std::pair<INT32, INT32>> directions = { {-1,-1}, {1,-1}, {1,1}, {-1,1} };
 
 		for (auto direction : directions)
 		{
@@ -697,18 +694,18 @@ namespace owl
 		return moves;
 	}
 
-	std::vector<Move> ChessValidation::continueValidMovesOnLine(const Position& position, int x, int y, const std::string& enemies_string, int xDir, int yDir)
+	MoveList ChessValidation::continueValidMovesOnLine(const Position& position, INT32 x, INT32 y, const std::string& enemies_string, INT32 xDir, INT32 yDir)
 	{
-		std::vector<Move> moves;
+		MoveList moves;
 
-		bool line_empty = true;
+		BOOL line_empty = true;
 
-		int offset = 1;
+		INT32 offset = 1;
 
 		while (line_empty)
 		{
-			int line_x = x + xDir * offset;
-			int line_y = y + yDir * offset;
+			INT32 line_x = x + xDir * offset;
+			INT32 line_y = y + yDir * offset;
 
 			if (isInsideChessboard(line_x, line_y))
 			{
@@ -749,8 +746,8 @@ namespace owl
 		return player == PLAYER_WHITE ? BLACK_PIECES : WHITE_PIECES;
 	}
 
-	bool ChessValidation::isInsideChessboard(int x, int y)
+	BOOL ChessValidation::isInsideChessboard(INT32 x, INT32 y)
 	{
-		return x>=FIRSTROWINDEX && x<COLUMNS && y>=FIRSTROWINDEX && y<ROWS;
+		return x>=FIRST_ROW_INDEX && x<COLUMNS && y>=FIRST_ROW_INDEX && y<ROWS;
 	}
 }

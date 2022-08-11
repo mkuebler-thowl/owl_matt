@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "defines.hpp"
 
 #include "Position.hpp"
 #include "Move.hpp"
@@ -11,21 +12,21 @@
 namespace owl
 {
 	// Feature-Parameter
-	constexpr unsigned char FT_NULL			= 0;
-	constexpr unsigned char FT_ALPHA_BETA	= (1 << 0);
-	constexpr unsigned char FT_SORT			= (1 << 1);
-	constexpr unsigned char FT_NESTED		= (1 << 2);
-	constexpr unsigned char FT_KILLER		= (1 << 3);
+	constexpr UCHAR FT_NULL			= 0;
+	constexpr UCHAR FT_ALPHA_BETA	= (1 << 0);
+	constexpr UCHAR FT_SORT			= (1 << 1);
+	constexpr UCHAR FT_NESTED		= (1 << 2);
+	constexpr UCHAR FT_KILLER		= (1 << 3);
 	// Optionale-Paramater (nicht implementiert):
-	constexpr unsigned char FT_HISTORY		= (1 << 4);
-	constexpr unsigned char FT_PVS			= (1 << 5);
+	constexpr UCHAR FT_HISTORY		= (1 << 4);
+	constexpr UCHAR FT_PVS			= (1 << 5);
 
 	// Spieler
 	constexpr short PLAYER_WHITE = 1;
 	constexpr short PLAYER_BLACK = -1;
 
 	// Maximalwert
-	constexpr float INF = 999.0f;
+	constexpr FLOAT INF = 999.0f;
 
 	/// Schach-Engine-Klasse. Beinhaltet die Logik einer Schach-Engine, wie die Zugfindung und Bewertung eines Zugs usw.
 	class ChessEngine
@@ -44,7 +45,7 @@ namespace owl
 		/// <param name="parameterFlags:">Für Min-Max-Erweiterungen können Feature-Parameter über Bitflags aktiviert werden</param>
 		/// <param name="random:">Bei Aktivierung wird aus einer Menge bestmöglicher Züge (+-Threshold) ein Zug zufällig gewählt</param>
 		/// <returns>Der bestmögliche gefundene Zug innerhalb der Suchtiefe</returns>
-		Move searchMove(const Position& position, short player, unsigned short depth, unsigned char parameter_flags, bool random = false);
+		Move searchMove(Position& position, short player, UINT16 depth, UCHAR parameter_flags, BOOL random = false);
 	private:
 		/// <summary>
 		/// Klassischer Min-Max-Algorithmus zur Zugfindung
@@ -55,7 +56,7 @@ namespace owl
 		/// <param name="sort:">Züge nach Nutzen sortieren?</param>
 		/// <param name="killer">Killer-Heuristik verwenden?</param>
 		/// <returns>Nutzwert</returns>
-		MinMaxResult minMax(const Position& position, short player, unsigned short depth);
+		MinMaxResult minMax(Position& position, short player, UINT16 depth);
 
 		/// <summary>
 		/// Alpha-Beta-Suche (Erweiterung des Min-Max)
@@ -67,15 +68,15 @@ namespace owl
 		/// <param name="beta:">Beta-Wert</param>
 		/// <param name="sort:">Züge nach Nutzen sortieren?</param>
 		/// <returns></returns>
-		MinMaxResult alphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort = false, bool killer = false);
+		MinMaxResult alphaBeta(Position& position, short player, UINT16 depth, FLOAT alpha, FLOAT beta, BOOL sort = false, BOOL killer = false);
 	
-		MinMaxResult nested(const Position& position, short player, unsigned short depth, bool sort = false);
+		MinMaxResult nested(const Position& position, short player, UINT16 depth, BOOL sort = false);
 
-		MinMaxResult nestedAlphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort = false);
+		MinMaxResult nestedAlphaBeta(const Position& position, short player, UINT16 depth, FLOAT alpha, FLOAT beta, BOOL sort = false);
 	public:
-		void sortMoves(std::vector<Move>* moves, const Position& position, unsigned short depth, MinMaxResult* pResult, bool killer = false);
+		VOID sortMoves(MoveList* moves, const Position& position, UINT16 depth, MinMaxResult* pResult, BOOL killer = false);
 
-		static bool killerHeuristics(const Move& move, unsigned short depth, MinMaxResult* pResult);
+		static BOOL killerHeuristics(const Move& move, UINT16 depth, MinMaxResult* pResult);
 
 		enum class Captures
 		{
@@ -87,7 +88,7 @@ namespace owl
 			pxP,pxN,pxB,pxR,pxQ
 		};
 	
-		static constexpr std::array<char*, 30> s_capture_map =
+		static constexpr std::array<CHAR*, 30> s_capture_map =
 		{
 			"kxP","kxN","kxB","kxR","kxQ",
 			"qxP","qxN","qxB","qxR","qxQ",
@@ -97,12 +98,12 @@ namespace owl
 			"pxP","pxN","pxB","pxR","pxQ"
 		};
 
-		static Captures getCaptureValue(char attacker, char victim);
+		static Captures getCaptureValue(CHAR attacker, CHAR victim);
 		static std::string getCaptureValueString(Captures capture);
 	
 
-		int m_v1 = 0;
-		int m_v2 = 0;
+		INT32 m_v1 = 0;
+		INT32 m_v2 = 0;
 
 		RepitionMap m_repitionMap;
 	};

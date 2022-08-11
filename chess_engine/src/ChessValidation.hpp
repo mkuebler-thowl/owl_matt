@@ -3,15 +3,16 @@
 #include <vector>
 #include <map>
 
+#include "defines.hpp"
 #include "Move.hpp"
 #include "Position.hpp"
 
 namespace owl
 {
-	constexpr char* BLACK_PIECES = "pnbrqk";
-	constexpr char* WHITE_PIECES = "PNBRQK";
-	constexpr char* WHITE_PROMOTION_STR = "NBRQ";
-	constexpr char* BLACK_PROMOTION_STR = "nbrq";
+	constexpr CHAR* BLACK_PIECES = "pnbrqk";
+	constexpr CHAR* WHITE_PIECES = "PNBRQK";
+	constexpr CHAR* WHITE_PROMOTION_STR = "NBRQ";
+	constexpr CHAR* BLACK_PROMOTION_STR = "nbrq";
 
 	/// ChessValidation bietet als Hilfsklasse für statische Funktionen zur Überprüfung und Ermittlung legaler Züge.
 	class ChessValidation
@@ -23,7 +24,7 @@ namespace owl
 		/// <param name="position:">Aktuelle Spielstellung bzw. Ausgangsstellung</param>
 		/// <param name="player:">Aktueller Spieler, der am Zug ist.</param>
 		/// <returns>Liste der möglichen bzw. gültigen Züge</returns>
-		static std::vector<Move> getValidMoves(const Position& position, short player);
+		static MoveList getValidMoves(const Position& position, short player);
 
 		/// <summary>
 		/// Funktion zur Ermittlung der Anzahl gültiger Züge zu einer bestimmten Position. Wird für die Piece-Mobilty verwendet.
@@ -32,7 +33,7 @@ namespace owl
 		/// <param name="x">Spalte 0-7 (rechts-links)</param>
 		/// <param name="y">Zeile 0-7 (oben-unten)</param>
 		/// <returns>Anzahl gefundener Züge</returns>
-		static unsigned short countPossibleMovesOnField(const Position& position, int x, int y);
+		static UINT16 countPossibleMovesOnField(const Position& position, INT32 x, INT32 y);
 
 		/// <summary>
 		/// Zug auf eine Position anwenden. Hinweis: Diese Funktion überprüft nicht, ob der Zug auf die Position angwendet werden darf. In der Zugfindung später wichtig, in der Überprüfungphase irrelevant.
@@ -50,10 +51,10 @@ namespace owl
 		/// <param name="player:">Aktueller Spieler</param>
 		/// <param name="move:">Angewendeter Zug</param>
 		/// <returns>Ob der König im Schach stehen würde</returns>
-		static bool isKinginCheckAfterMove(const Position& position, short player, const Move& move);
+		static BOOL isKinginCheckAfterMove(const Position& position, short player, const Move& move);
 
 		/// Überprüfe ob die Stelle x,y die Spielfeldgrenzen überschreitet
-		static bool isInsideChessboard(int x, int y);
+		static BOOL isInsideChessboard(INT32 x, INT32 y);
 	private:
 
 		/// <summary>
@@ -62,7 +63,7 @@ namespace owl
 		/// <param name="position:">Ausgangsstellung</param>
 		/// <param name="player:">Der aktuelle Spieler, der am Zug ist</param>
 		/// <returns>Steht der König des aktuellen Spielers im Schach?</returns>
-		static bool isKingInCheck(const Position& position, short player);
+		static BOOL isKingInCheck(const Position& position, short player);
 
 		/// <summary>
 		/// Ist die Platzierung x,y im Schach bzw. wird diese Position bedroht? 
@@ -72,32 +73,32 @@ namespace owl
 		/// <param name="y">Reihe</param>
 		/// <param name="player">Der Spieler für den die Position auf "Schach" überprüft werden soll</param>
 		/// <returns></returns>
-		static bool isPlaceInCheck(const Position& position, int x, int y, short player);
+		static BOOL isPlaceInCheck(const Position& position, INT32 x, INT32 y, short player);
 
 		/// Überprüfe alle diagonalen Felder vom König ausgesehen
-		static bool checkKingDiagonal(int king_x, int king_y, const Position& position, short player);
+		static BOOL checkKingDiagonal(INT32 king_x, INT32 king_y, const Position& position, short player);
 		/// Überprüfe alle horizontalen und vertikalen Felder vom König ausgesehen
-		static bool checkKingAxis(int king_x, int king_y, const Position& position, short player);
+		static BOOL checkKingAxis(INT32 king_x, INT32 king_y, const Position& position, short player);
 		/// Überprüfe alle möglichen Springerbedrohungen vom König ausgesehen
-		static bool checkKingKnights(int king_x, int king_y, const Position& position, short player);
+		static BOOL checkKingKnights(INT32 king_x, INT32 king_y, const Position& position, short player);
 		/// Überprüfe alle möglichen Bauerbedrohungen vom König ausgesehen
-		static bool checkKingPawns(int king_x, int king_y, const Position& position, short player);
+		static BOOL checkKingPawns(INT32 king_x, INT32 king_y, const Position& position, short player);
 
 		/// Schachmatt überprüfen
-		static void evaluateCheckmate(const Position& position, short player, bool noValidMoves);
+		static VOID evaluateCheckmate(const Position& position, short player, BOOL noValidMoves);
 
 		/// Suche alle legalen Bauerbewegungen
-		static std::vector<Move> getValidPawnMoves(const Position& position, int x, int y, short player);
+		static MoveList getValidPawnMoves(const Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Springerbewegungen
-		static std::vector<Move> getValidKnightMoves(const Position& position, int x, int y, short player);
+		static MoveList getValidKnightMoves(const Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Königbewegungen
-		static std::vector<Move> getValidKingMoves(const Position& position, int x, int y, short player);
+		static MoveList getValidKingMoves(const Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Turmbewegungen
-		static std::vector<Move> getValidRookMoves(const Position& position, int x, int y, short player);
+		static MoveList getValidRookMoves(const Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Läuferbewegungen
-		static std::vector<Move> getValidBishopMoves(const Position& position, int x, int y, short player);
+		static MoveList getValidBishopMoves(const Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle Linien ab für Läufer, Türme und Dame
-		static std::vector<Move> continueValidMovesOnLine(const Position& position, int x, int y, const std::string& enemies_string, int xDir, int yDir);
+		static MoveList continueValidMovesOnLine(const Position& position, INT32 x, INT32 y, const std::string& enemies_string, INT32 xDir, INT32 yDir);
 
 		/// Enemy-String nach Spielertyp ausgeben
 		static std::string getEnemyPiecesString(short player);

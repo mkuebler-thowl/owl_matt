@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "defines.hpp"
 #include "Position.hpp"
 #include "Move.hpp"
 
@@ -29,7 +30,7 @@ namespace owl
 		/// </summary>
 		/// <param name="algebraicNotation:">Notation</param>
 		/// <returns>Move-Objekt (Zug)</returns>
-		static Move stringToMove(const std::string& algebraicNotation);
+		static Move stringToMove(const std::string& algebraicNotation, const Position* pos = nullptr);
 		/// <summary>
 		/// Ein Move-Objekt (Zug) in die Algebraische Notation umwandeln.
 		/// </summary>

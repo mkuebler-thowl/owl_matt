@@ -9,31 +9,31 @@ namespace owl
 {
 	/// <summary>
 	/// Datenstruktur zur Überprüfung der Stellungswiederholung. Diese verwendet ein Dictionary-Datenstruktur.
-	/// - Diese besteht aus String-Schlüssel (64-char Feldinformation)
+	/// - Diese besteht aus String-Schlüssel (64-CHAR Feldinformation)
 	/// - Jeder Schlüssel verweist auf die Anzahl der Wiederholungen der korrespondierenden Schachstellung.
 	/// </summary>
 	class RepitionMap
 	{
 	public:
-		// TODO: lange fen-form durch einfachen 64-char-String ersetzen
+		// TODO: lange fen-form durch einfachen 64-CHAR-String ersetzen
 		/// <summary>
 		/// Neu Spielposition zur Repition Map hinzufügen. Wird für die dreimalige Stellungswiederholung verwendet.
 		/// </summary>
 		/// <param name="position:">Die jeweilige Stellung</param>
-		void addPosition(const Position& position);
+		VOID addPosition(const Position& position);
 
-		bool isPositionAlreadyLocked(const Position& position) const;
+		BOOL isPositionAlreadyLocked(const Position& position) const;
 
 		struct HashFunction
 		{
-			size_t operator()(const Position& position) const
+			UINT64 operator()(const Position& position) const
 			{
-				size_t rows[ROWS];
+				UINT64 rows[ROWS];
 
-				for (auto y = FIRSTROWINDEX; y < ROWS; y++)
+				for (auto y = FIRST_ROW_INDEX; y < ROWS; y++)
 				{
 					std::string pos_str = "";
-					for (auto x = FIRSTCOLINDEX; x < COLUMNS; x++)
+					for (auto x = FIRST_COLUMN_INDEX; x < COLUMNS; x++)
 					{
 						pos_str += position[y][x];
 					}
@@ -41,7 +41,7 @@ namespace owl
 					rows[y] = std::hash<std::string>()(pos_str);
 				}
 				
-				size_t result = 0;
+				UINT64 result = 0;
 				for (auto row : rows)
 				{
 					result ^= row;
@@ -55,9 +55,9 @@ namespace owl
 		/// <summary>
 		/// Stellungswiederholung-Dictionary
 		/// string: Zusammensetzung aus 64 Felder bzw. Characters
-		/// int: Die Anzahl der sich wiederholenden Stellung
+		/// INT32: Die Anzahl der sich wiederholenden Stellung
 		/// </summary>
-		mutable std::unordered_map<Position, int, HashFunction> m_data;
+		mutable std::unordered_map<Position, INT32, HashFunction> m_data;
 
 	};
 }

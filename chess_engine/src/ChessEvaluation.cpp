@@ -5,7 +5,7 @@
 
 namespace owl
 {
-	float ChessEvaluation::evaluate(const Position& position, short enginePlayer, unsigned char evaluationFeatureFlags)
+	FLOAT ChessEvaluation::evaluate(const Position& position, short enginePlayer, UCHAR evaluationFeatureFlags)
 	{
 		// Ist die Position eine Endstellung?
 		if ((position.getGameState() == GameState::PlayerBlackWins && enginePlayer == PLAYER_WHITE)
@@ -14,21 +14,21 @@ namespace owl
 			|| position.getGameState() == GameState::PlayerWhiteWins && enginePlayer == PLAYER_WHITE) return INF;
 		if (position.getGameState() == GameState::Remis) return 0.00f;
 
-		float score[PLAYER_COUNT] = { 0.0f };					// Score
-		float extra_pawn_score[PLAYER_COUNT] = { 0.0f };		// Bauernscore (Wird nachträglich zum Score addiert)
-		float square_table_score[PLAYER_COUNT] = { 0.0f };		// Square-Table Score
+		FLOAT score[PLAYER_COUNT] = { 0.0f };					// Score
+		FLOAT extra_pawn_score[PLAYER_COUNT] = { 0.0f };		// Bauernscore (Wird nachträglich zum Score addiert)
+		FLOAT square_table_score[PLAYER_COUNT] = { 0.0f };		// Square-Table Score
 
-		std::pair<int, int> king_pos[PLAYER_COUNT] = {{0, 0}};
+		std::pair<INT32, INT32> king_pos[PLAYER_COUNT] = {{0, 0}};
 
-		unsigned short piece_count[PLAYER_COUNT][MAX_PIECE_TYPES] = { {0} };	 // Figurenanzahl
-		unsigned short possible_moves[PLAYER_COUNT][MAX_PIECE_TYPES] = { {0} }; // Piece Mobility Count
+		UINT16 piece_count[PLAYER_COUNT][MAX_PIECE_TYPES] = { {0} };	 // Figurenanzahl
+		UINT16 possible_moves[PLAYER_COUNT][MAX_PIECE_TYPES] = { {0} }; // Piece Mobility Count
 
 		// Pro Spielfeld Figure zählen und Materialwert hinzutragen
 		// Anmerkung: Der Materialwert der Bauern wird später zu white_score bzw. black_score hinzugetragen, 
 		// da der Wert für die Berechnung, ob die Position eine Endstellung ist, nicht berücksichtig werden soll
-		for (int y = FIRSTROWINDEX; y < ROWS; y++)
+		for (INT32 y = FIRST_ROW_INDEX; y < ROWS; y++)
 		{
-			for (int x = FIRSTCOLINDEX; x < COLUMNS; x++)
+			for (INT32 x = FIRST_COLUMN_INDEX; x < COLUMNS; x++)
 			{
 				auto piece = position[y][x];
 
@@ -112,9 +112,9 @@ namespace owl
 		// Dynamischer Bonus für den Materialwert je Spielphase
 		if (evaluationFeatureFlags & EVAL_FT_MATERIAL_DYNAMIC_GAME_PHASE)
 		{
-			for (int color_index = FIRST_PLAYER_INDEX; color_index < PLAYER_COUNT; color_index++)
+			for (INT32 color_index = FIRST_PLAYER_INDEX; color_index < PLAYER_COUNT; color_index++)
 			{
-				for (int type_index = FIRST_PIECE_TYPES_INDEX; type_index < MAX_PIECE_TYPES; type_index++)
+				for (INT32 type_index = FIRST_PIECE_TYPES_INDEX; type_index < MAX_PIECE_TYPES; type_index++)
 				{
 					auto factor = 1.0f;
 					switch (game_phase)
@@ -157,9 +157,9 @@ namespace owl
 		// Piece Mobility hinzufügen:
 		if (evaluationFeatureFlags & EVAL_FT_PIECE_MOBILITY)
 		{
-			for (int color_index = FIRST_PLAYER_INDEX; color_index < PLAYER_COUNT; color_index++)
+			for (INT32 color_index = FIRST_PLAYER_INDEX; color_index < PLAYER_COUNT; color_index++)
 			{
-				for (int type_index = FIRST_PIECE_TYPES_INDEX; type_index < MAX_PIECE_TYPES; type_index++)
+				for (INT32 type_index = FIRST_PIECE_TYPES_INDEX; type_index < MAX_PIECE_TYPES; type_index++)
 				{
 					auto factor = 1.0f;
 					switch (type_index)
@@ -177,7 +177,7 @@ namespace owl
 		}
 
 		// Materialwerte summieren
-		for (int color_index = FIRST_PLAYER_INDEX; color_index < PLAYER_COUNT; color_index++)
+		for (INT32 color_index = FIRST_PLAYER_INDEX; color_index < PLAYER_COUNT; color_index++)
 		{
 			score[color_index] += extra_pawn_score[color_index] + square_table_score[color_index];
 		}
@@ -189,14 +189,14 @@ namespace owl
 		return final_score;
 	}
 
-	bool ChessEvaluation::isDoublePawn(const Position& position, int x, int y)
+	BOOL ChessEvaluation::isDoublePawn(const Position& position, INT32 x, INT32 y)
 	{
 		if (isPieceEqualOnOffset(position, x, y, 0, 1)) return true;
 		if (isPieceEqualOnOffset(position, x, y, 0, -1)) return true;
 
 		return false;
 	}
-	bool ChessEvaluation::isConnectedPawn(const Position& position, int x, int y)
+	BOOL ChessEvaluation::isConnectedPawn(const Position& position, INT32 x, INT32 y)
 	{
 		if (isPieceEqualOnOffset(position, x, y, 1, 0)) return true;		
 		if (isPieceEqualOnOffset(position, x, y, -1, 0)) return true;
@@ -204,7 +204,7 @@ namespace owl
 		return false;
 	}
 
-	bool ChessEvaluation::isBackwardsPawn(const Position& position, int x, int y)
+	BOOL ChessEvaluation::isBackwardsPawn(const Position& position, INT32 x, INT32 y)
 	{
 		// Hinweis: isConnectedPawn(...) muss vorher false sein
 		auto dir = position.getPlayer();
@@ -216,11 +216,11 @@ namespace owl
 
 		return false;
 	}
-	bool ChessEvaluation::isPassedPawn(const Position& position, int x, int y)
+	BOOL ChessEvaluation::isPassedPawn(const Position& position, INT32 x, INT32 y)
 	{
 		auto enemy_pawn = GetEnemyPiece(position.getPlayer(), PAWN);
 
-		for (int i = 0; i < ROWS; i++)
+		for (INT32 i = 0; i < ROWS; i++)
 		{
 			if (i == y) continue; // Eigenes Feld ignorieren
 			if (ChessValidation::isInsideChessboard(x, i))
@@ -231,7 +231,7 @@ namespace owl
 
 		return true;
 	}
-	bool ChessEvaluation::isChainPawn(const Position& position, int x, int y)
+	BOOL ChessEvaluation::isChainPawn(const Position& position, INT32 x, INT32 y)
 	{
 		if (isPieceEqualOnOffset(position, x, y, 1, 1)) return true;
 		if (isPieceEqualOnOffset(position, x, y, 1, -1)) return true;
@@ -241,7 +241,7 @@ namespace owl
 		return false;
 	}
 
-	bool ChessEvaluation::isPieceEqualOnOffset(const Position& position, int x, int y, int xOffset, int yOffset)
+	BOOL ChessEvaluation::isPieceEqualOnOffset(const Position& position, INT32 x, INT32 y, INT32 xOffset, INT32 yOffset)
 	{
 		if (ChessValidation::isInsideChessboard(x + xOffset, y + yOffset))
 		{
@@ -250,7 +250,7 @@ namespace owl
 
 		return false;
 	}
-	bool ChessEvaluation::isPieceEnemyPawnOnOffset(const Position& position, int x, int y, int xOffset, int yOffset)
+	BOOL ChessEvaluation::isPieceEnemyPawnOnOffset(const Position& position, INT32 x, INT32 y, INT32 xOffset, INT32 yOffset)
 	{
 		auto start_color = GetPlayerIndexByPositionPlayer(position.getPlayer());
 		auto target_color = start_color + 1 % PLAYER_COUNT;
@@ -265,11 +265,11 @@ namespace owl
 
 		return false;
 	}
-	unsigned char ChessEvaluation::GetPlayerIndexByPositionPlayer(short currentPlayerOfPosition)
+	UCHAR ChessEvaluation::GetPlayerIndexByPositionPlayer(short currentPlayerOfPosition)
 	{
 		return currentPlayerOfPosition == PLAYER_WHITE ? WHITE : BLACK;
 	}
-	unsigned char ChessEvaluation::GetEnemyPiece(short currentPlayerOfPosition, unsigned short pieceIndex)
+	UCHAR ChessEvaluation::GetEnemyPiece(short currentPlayerOfPosition, UINT16 pieceIndex)
 	{
 		auto&& enemy_color = GetPlayerIndexByPositionPlayer(-currentPlayerOfPosition);
 		return PIECES[enemy_color][pieceIndex];

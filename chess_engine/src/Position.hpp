@@ -2,6 +2,10 @@
 
 #include <string>
 #include <array>
+#include <stack>
+
+#include "defines.hpp"
+#include "Move.hpp"
 
 namespace owl
 {
@@ -21,20 +25,11 @@ namespace owl
 		End
 	};
 
-	constexpr unsigned short ROWS = 8;								// Zeile
-	constexpr unsigned short COLUMNS = 8;							// Spalten
-	constexpr unsigned short FIRSTROWINDEX = 0;						// Erste Zeile
-	constexpr unsigned short FIRSTCOLINDEX = 0;						// Erste Spalte
-	constexpr unsigned short LASTROWINDEX = ROWS - 1;				// Letzte Zeile
-	constexpr unsigned short LASTCOLINDEX = COLUMNS - 1;			// Letzte Spalte
 
-	constexpr unsigned short MAX_FIELDS_ON_BOARD = ROWS * COLUMNS;	// Anzahl der Zellen
-
-	using BoardLine = std::array<char, COLUMNS>;
-	using BoardArray = std::array<BoardLine, ROWS>; // Board
+ // Board
 
 	/// Datenstruktur für eine beliebige Schachposition. 
-	/// Beinhaltet ein 8x8 char-Array, um eine jeweilige Stellung zu speichern.
+	/// Beinhaltet ein 8x8 CHAR-Array, um eine jeweilige Stellung zu speichern.
 	class Position
 	{
 	public:
@@ -54,78 +49,81 @@ namespace owl
 		/// <param name="enPassantPosition:">Übergangenes En passant Feld</param>
 		/// <param name="moveCount:">Anzahl der Halbzüge seitdem kein Bauer bewegt oder eine Figur geschlagen wurde</param>
 		/// <param name="moveNumber:">Aktuelle Zugnummer, die nachdem Schwarz dran war, inkrementiert wird</param>
-		Position(const BoardArray& data, short player, 
-			bool whiteCastlingShort, bool whiteCastlingLong, 
-			bool blackCastlingShort, bool blackCastlingLong, 
-			bool enPassant, std::pair<int, int> enPassantPosition, 
-			int moveCount, int moveNumber);
+		Position(const BoardArray& data, INT16 player,
+			BOOL whiteCastlingShort, BOOL whiteCastlingLong, 
+			BOOL blackCastlingShort, BOOL blackCastlingLong, 
+			BOOL enPassant, std::pair<UINT16, UINT16> enPassantPosition,
+			UINT16 moveCount, UINT16 moveNumber);
 
 		/// <summary>
-		/// Operatorüberladung [index], so dass über Position[x][y] auf die jeweilige Zelle bzw. Feld zugegriffen werden kann.
+		/// Operatorüberladungs [index], so dass über Position[x][y] auf die jeweilige Zelle bzw. Feld zugegriffen werden kann.
 		/// </summary>
 		/// <param name="index">Zeilenindex 0-7 bzw. 8-1 im Schachfeld (mit 0=8, 1=7 usw.)</param>
 		/// <returns>Gibt das jeweilige Zeilenarray[index] zurück.</returns>
-		BoardLine& operator[](int index) const;
+		BoardLine& operator[](INT32 index) const;
+
+		VOID applyMove(const Move& move);
+		VOID undoLastMove();
 
 		/// En Passant setzen
-		void setEnPassant(int x, int y);
+		VOID setEnPassant(INT32 x, INT32 y);
 		/// En Passant zurücksetzen
-		void resetEnPassant();
+		VOID resetEnPassant();
 		/// En Passant auslesen
-		bool isEnPassant() const;
+		BOOL isEnPassant() const;
 
 		/// En Passant-Position auslesen
-		const std::pair<int, int>& getEnPassant() const;
+		const std::pair<INT32, INT32>& getEnPassant() const;
 
 		/// Halbzug hinzutragen
-		void addMoveCount();
+		VOID addPlyCount();
 		/// Halbzüge auf 0 zurücksetzen
-		void resetMoveCount();
+		VOID resetPlyCount();
 		/// aktuelle Halbzüge abfragen
-		int getMoveCount() const;
+		UINT16 getPlyCount() const;
 		/// aktuelle Zugnummer abfragen
-		int getMoveNumber() const;
+		UINT16 getMoveNumber() const;
 
 		/// Wechsel den aktuellen Spieler
-		void changePlayer();
+		VOID changePlayer(BOOL undoMove = false);
 		/// Gibt den aktuellen Spieler zurück (Der dran ist)
-		int getPlayer() const;
+		INT16 getPlayer() const;
 
 		/// GameState ändern
-		void setGameState(GameState state) const;
+		VOID setGameState(GameState state) const;
 		/// GameState abrufen
 		GameState getGameState() const;
 
 		/// Kann Weiß noch kurz rochieren?
-		bool getWhiteCastlingShort() const;
+		BOOL getWhiteCastlingShort() const;
 		/// Kann Weiß noch lang rochieren?
-		bool getWhiteCastlingLong() const;
+		BOOL getWhiteCastlingLong() const;
 		/// Kann Schwarz noch kurz rochieren?
-		bool getBlackCastlingShort() const;
+		BOOL getBlackCastlingShort() const;
 		/// Kann Schwarz noch lang rochieren?
-		bool getBlackCastlingLong() const;
+		BOOL getBlackCastlingLong() const;
 		/// Für Weiß: Kurz-Rochade deaktivieren
-		void resetWhiteCastlingShort();
+		VOID resetWhiteCastlingShort();
 		/// Für Weiß: Lang-Rochade deaktivieren
-		void resetWhiteCastlingLong();
+		VOID resetWhiteCastlingLong();
 		/// Für Schwarz: Kurz-Rochade deaktivieren
-		void resetBlackCastlingShort();
+		VOID resetBlackCastlingShort();
 		/// Für Schwarz: Lang-Rochade deaktivieren
-		void resetBlackCastlingLong();
+		VOID resetBlackCastlingLong();
 
 		/// Spielphase aktualisieren
-		void enterNextGamePhase() const;
+		VOID enterNextGamePhase() const;
 
 		/// Spielphase abrufen
 		GamePhase getGamePhase() const;
 
-		static void printPosition(const Position& position); 
+		static VOID printPosition(const Position& position); 
 
-		constexpr bool operator==(const Position& other) const
+		constexpr BOOL operator==(const Position& other) const
 		{
-			for (auto y = FIRSTROWINDEX; y < ROWS; y++)
+			for (auto y = FIRST_ROW_INDEX; y < ROWS; y++)
 			{
-				for (auto x = FIRSTCOLINDEX; x < COLUMNS; x++)
+				for (auto x = FIRST_COLUMN_INDEX; x < COLUMNS; x++)
 				{
 					if (m_data[y][x] != other[y][x]) return false;
 				}
@@ -133,29 +131,54 @@ namespace owl
 			return true;
 		}
 
+		struct MoveData
+		{
+			Move move; // Der Zug
+			CHAR piece; // Figur des Zugs
+			CHAR capturedPiece; // Mögliche geschlagene Figur (Zur Wiederbelebung)
+			BOOL enPassantFlag; // War der Zug zuvor ein En Passant
+			std::pair<UINT16, UINT16> enPassantPos; // Position des vorherigen En Passants
+			std::pair<BOOL, UINT16> plyCountReset; // Halbzüge-Reset? und vorheriger Halbzug-Wert
+			UCHAR movedFirstTimeFlag; // Bitflags: Haben sich Turm oder König das erste mal bewegt
+		};
 	private:
+
 		/// Datenobjekt für eine Spielposition
 		mutable BoardArray m_data;
+		std::stack<MoveData> m_moveDataStack;
 
 		/// En Passant möglich?
-		bool m_enPassant;
+		BOOL m_enPassant;
+
 		/// En Passant Position
-		std::pair<int,int> m_enPassantPosition;
+		std::pair<UINT16, UINT16> m_enPassantPosition;
 		/// Anzahl der Halbszüge zur Bestimmung der 50-Züge-Regel
-		int m_movesCount;
+		UINT16 m_plyCount;
 		/// Nummerierung der Folgezüge. Beginnt bei 1 und wird nachdem Schwarz dran war, um eins erhöht.
-		int m_moveNumber;
+		UINT16 m_moveNumber;
 
 		/// Aktueller Spieler
-		int m_player;
+		INT16 m_player;
 		/// Kann Weiß noch kurz rochieren?
-		bool m_whiteCastlingShort;
+		BOOL m_whiteCastlingShort;
 		/// Kann Weiß noch lang rochieren?
-		bool m_whiteCastlingLong;
+		BOOL m_whiteCastlingLong;
 		/// Kann Schwarz noch kurz rochieren?
-		bool m_blackCastlingShort;
+		BOOL m_blackCastlingShort;
 		/// Kann Schwarz noch lang rochieren?
-		bool m_blackCastlingLong;
+		BOOL m_blackCastlingLong;
+
+		UCHAR m_movedFirstTime;
+
+		constexpr static UCHAR HAS_NOT_MOVED_BIT = 0;
+		constexpr static UCHAR HAS_WHITE_KING_MOVED_BIT = (1 << 0);
+		constexpr static UCHAR HAS_WHITE_ROOK_R_MOVED_BIT = (1 << 1);
+		constexpr static UCHAR HAS_WHITE_ROOK_L_MOVED_BIT = (1 << 2);
+		constexpr static UCHAR HAS_BLACK_KING_MOVED_BIT = (1 << 3);
+		constexpr static UCHAR HAS_BLACK_ROOK_R_MOVED_BIT = (1 << 4);
+		constexpr static UCHAR HAS_BLACK_ROOK_L_MOVED_BIT = (1 << 5);
+
+		VOID checkFirstMovement(UCHAR check, UCHAR& movedFirstTime);
 
 		/// Korrespondierender Spielzustand zur Position (Aktiv, Sieg für Weiß/Schwarz oder Remis)
 		mutable GameState m_state;

@@ -21,7 +21,7 @@ namespace owl
 		return clock::now();
 	}
 
-	inline int CALCULATE_MILLISECONDS(time_point start)
+	inline INT32 CALCULATE_MILLISECONDS(time_point start)
 	{
 		return std::chrono::duration_cast<milliseconds>(clock::now() - start).count();
 	}
@@ -39,13 +39,13 @@ namespace owl
 	{
 	}
 
-	Move ChessEngine::searchMove(const Position& position, short player, unsigned short depth, unsigned char parameterFlags, bool random)
+	Move ChessEngine::searchMove(Position& position, short player, UINT16 depth, UCHAR parameterFlags, BOOL random)
 	{
 		// Die Position des generischen Zugs zur RepitionMap hinzufügen
 		m_repitionMap.addPosition(position);
 
-		bool sort = parameterFlags & FT_SORT;
-		bool killer = parameterFlags & FT_KILLER;
+		BOOL sort = parameterFlags & FT_SORT;
+		BOOL killer = parameterFlags & FT_KILLER;
 
 		MinMaxResult result;
 
@@ -79,9 +79,8 @@ namespace owl
 		return result.best;
 	}
 
-	MinMaxResult ChessEngine::minMax(const Position& position, short player, unsigned short depth)
+	MinMaxResult ChessEngine::minMax(Position& position, short player, UINT16 depth)
 	{
-
 
 		auto result = MinMaxResult{};
 		result.values.resize(MIN_MAX_VALUE_SIZE);
@@ -129,7 +128,7 @@ namespace owl
 		return result;
 	}
 
-	MinMaxResult ChessEngine::alphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort, bool killer)
+	MinMaxResult ChessEngine::alphaBeta(Position& position, short player, UINT16 depth, FLOAT alpha, FLOAT beta, BOOL sort, BOOL killer)
 	{
 		auto result = MinMaxResult{};		
 		auto is_player_white = player == PLAYER_WHITE;
@@ -144,7 +143,7 @@ namespace owl
 			return result;
 		} 
 
-		std::vector<Move> moves = ChessValidation::getValidMoves(position, player);
+		MoveList moves = ChessValidation::getValidMoves(position, player);
 
 		if (moves.empty())
 		{
@@ -159,20 +158,24 @@ namespace owl
 
 		for (auto move : moves)
 		{
-			auto current_position = ChessValidation::applyMove(position, move);
+			//auto current_position = ChessValidation::applyMove(position, move);
 			
+			position.applyMove(move);
+
 			//// Stellungen wegen 3x Stellungswiederholung überspringen
 			//if (m_repitionMap.isPositionAlreadyLocked(current_position)) continue;
 
-			std::pair<float, float> alpha_beta = is_player_white ? 
+			std::pair<FLOAT, FLOAT> alpha_beta = is_player_white ? 
 				std::make_pair(result.values[VALUE], beta) : 
 				std::make_pair(alpha, result.values[VALUE]);
 
-			auto new_result = alphaBeta(current_position, -player, depth - 1, alpha_beta.first, alpha_beta.second, sort, killer);
-			
+			auto new_result = alphaBeta(position, -player, depth - 1, alpha_beta.first, alpha_beta.second, sort, killer);
+
+			position.undoLastMove();
+
 			if (killer)
 			{
-				for (int d = 0; d <= depth; d++)
+				for (INT32 d = 0; d <= depth; d++)
 				{
 					result.killers[d].merge(new_result.killers[d]);
 				}
@@ -208,7 +211,7 @@ namespace owl
 		return result;
 	}
 
-	MinMaxResult ChessEngine::nested(const Position& position, short player, unsigned short depth, bool sort)
+	MinMaxResult ChessEngine::nested(const Position& position, short player, UINT16 depth, BOOL sort)
 	{
 		auto moves = ChessValidation::getValidMoves(position, player);
 		//if (sort) sortMoves(&moves, position, depth, result, sort);
@@ -267,7 +270,7 @@ namespace owl
 		return result;
 	}
 
-	MinMaxResult ChessEngine::nestedAlphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort)
+	MinMaxResult ChessEngine::nestedAlphaBeta(const Position& position, short player, UINT16 depth, FLOAT alpha, FLOAT beta, BOOL sort)
 	{
 		MinMaxResult result;
 		result.values.resize(NESTED_SIZE);
@@ -337,7 +340,7 @@ namespace owl
 		return result;
 	}
 
-	void ChessEngine::sortMoves(std::vector<Move>* moves, const Position& position, unsigned short depth, MinMaxResult* pResult, bool killer)
+	VOID ChessEngine::sortMoves(MoveList* moves, const Position& position, UINT16 depth, MinMaxResult* pResult, BOOL killer)
 	{
 
 		std::sort(moves->begin(), moves->end(), [&position, depth, pResult, killer](const Move& left, const Move& right)
@@ -362,14 +365,14 @@ namespace owl
 				else if (!killer_left && killer_right) return false;
 			}
 
-			float left_move_value = ChessEvaluation::evaluate(ChessValidation::applyMove(position, left), -position.getPlayer(), 0);
-			float right_move_value = ChessEvaluation::evaluate(ChessValidation::applyMove(position, right), -position.getPlayer(), 0);
+			FLOAT left_move_value = ChessEvaluation::evaluate(ChessValidation::applyMove(position, left), -position.getPlayer(), 0);
+			FLOAT right_move_value = ChessEvaluation::evaluate(ChessValidation::applyMove(position, right), -position.getPlayer(), 0);
 
 			return left_move_value > right_move_value;
 		});
 	}
 
-	bool ChessEngine::killerHeuristics(const Move& move, unsigned short depth, MinMaxResult* pResult)
+	BOOL ChessEngine::killerHeuristics(const Move& move, UINT16 depth, MinMaxResult* pResult)
 	{
 		if (pResult->killers.find(depth) != pResult->killers.end())
 		{
@@ -381,7 +384,7 @@ namespace owl
 		return false;
 	}
 
-	owl::ChessEngine::Captures ChessEngine::getCaptureValue(char attacker, char victim)
+	owl::ChessEngine::Captures ChessEngine::getCaptureValue(CHAR attacker, CHAR victim)
 	{
 		attacker = std::tolower(attacker);
 		victim = std::toupper(victim);
@@ -450,6 +453,6 @@ namespace owl
 
 	std::string ChessEngine::getCaptureValueString(Captures capture)
 	{
-		return s_capture_map[static_cast<size_t>(capture)];
+		return s_capture_map[static_cast<UINT64>(capture)];
 	}
 }

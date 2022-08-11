@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_set>
 
+#include "defines.hpp"
 #include "Move.hpp"
 #include "Position.hpp"
 #include "ChessEngine.hpp"
@@ -12,11 +13,11 @@
 #include "FENParser.hpp"
 
 // Test: Print move list
-auto printMoves(std::vector<owl::Move> moves, const owl::Position& pos) -> void
+auto printMoves(std::vector<owl::Move> moves, const owl::Position& pos) -> owl::VOID
 {
 	std::string out = "";
 
-	int index = 0;
+	owl::INT32 index = 0;
 
 	for (auto move : moves)
 	{
@@ -31,7 +32,7 @@ auto printMoves(std::vector<owl::Move> moves, const owl::Position& pos) -> void
 		auto piece_target = pos[move.targetY][move.targetX];
 		auto capture = owl::ChessEngine::getCaptureValue(piece_start, piece_target);
 
-		out += "capture_val= " + std::to_string((int)capture) + ": ";
+		out += "capture_val= " + std::to_string((owl::INT32)capture) + ": ";
 
 		if (move.capture) out += owl::ChessEngine::getCaptureValueString(capture);
 		else out += "-";
@@ -48,7 +49,7 @@ auto printMoves(std::vector<owl::Move> moves, const owl::Position& pos) -> void
 auto testEvaluationFunction()
 {
 
-	std::vector<char*> test_fens_evaluation =
+	std::vector<owl::CHAR*> test_fens_evaluation =
 	{
 		"r2qk2r/ppp2ppp/2nbbn2/3pp3/8/P2PP3/NPP2PPP/R1BQKBNR b KQkq - 4 7", // 1
 		"2k5/4pp2/4p1p1/1Pp3P1/P4P2/4P3/8/4K3 w - - 0 1",					// 2
@@ -88,14 +89,14 @@ auto testEvaluationFunction()
 			"DynamicPawnValue: ",
 			std::to_string(owl::ChessEvaluation::evaluate(pos, owl::PLAYER_WHITE, owl::EVAL_FT_ALL)),
 			"GamePhase{0=opening,1=mid,2=end}:",
-			std::to_string((int)pos.getGamePhase())
+			std::to_string((owl::INT32)pos.getGamePhase())
 		};
 
 		owl::Position::printPosition(pos);
 		std::cout << "------------------------------------------------------------------------\n";
 		std::string out = "";
 
-		int index = 0;
+		owl::INT32 index = 0;
 
 		for (auto value : values)
 		{
@@ -109,13 +110,13 @@ auto testEvaluationFunction()
 	}
 }
 
-auto main() -> int
+auto main() -> owl::INT32
 {
 	auto engine = owl::ChessEngine();
 	
 	auto pos = owl::FENParser::fenToPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-	auto move = engine.searchMove(pos, pos.getPlayer(),5, 0);
+	auto move = engine.searchMove(pos, pos.getPlayer(),5, owl::FT_ALPHA_BETA | owl::FT_SORT | owl::FT_KILLER);
 
 	std::cout << "exit" << std::endl;
 }

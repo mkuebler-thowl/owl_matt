@@ -1,46 +1,48 @@
 #pragma once
 
+#include "defines.hpp"
+
 #include <array>
 #include "Position.hpp"
 
 namespace owl
 {
 	// Notwendige Konstanten
-	constexpr unsigned short WHITE = 0;
-	constexpr unsigned short BLACK = 1;
+	constexpr UINT16 WHITE = 0;
+	constexpr UINT16 BLACK = 1;
 
-	constexpr unsigned short PLAYER_COUNT = 2;
-	constexpr unsigned short FIRST_PLAYER_INDEX = 0;
-	constexpr unsigned short LAST_PLAYER_INDEX = PLAYER_COUNT - 1;
+	constexpr UINT16 PLAYER_COUNT = 2;
+	constexpr UINT16 FIRST_PLAYER_INDEX = 0;
+	constexpr UINT16 LAST_PLAYER_INDEX = PLAYER_COUNT - 1;
 
 	// Zuordung bzw. Index für MATERIAL_VALUES und weitere:
-	constexpr unsigned short EMPTY = -1; // Leeres Feld
+	constexpr UINT16 EMPTY = -1; // Leeres Feld
 
-	constexpr unsigned short PAWN = 0; // Bauer-Index
-	constexpr unsigned short KNIGHT = 1; // Springer-Index
-	constexpr unsigned short BISHOP = 2; // Läufer-Index
-	constexpr unsigned short ROOK = 3; // Turm-Index
-	constexpr unsigned short QUEEN = 4; // Dame-Index
-	constexpr unsigned short KING = 5; // König-Index
+	constexpr UINT16 PAWN = 0; // Bauer-Index
+	constexpr UINT16 KNIGHT = 1; // Springer-Index
+	constexpr UINT16 BISHOP = 2; // Läufer-Index
+	constexpr UINT16 ROOK = 3; // Turm-Index
+	constexpr UINT16 QUEEN = 4; // Dame-Index
+	constexpr UINT16 KING = 5; // König-Index
 
-	constexpr unsigned short MAX_PIECE_TYPES = 6;
-	constexpr unsigned short FIRST_PIECE_TYPES_INDEX = 0;
-	constexpr unsigned short LAST_PIECE_TYPES_INDEX = MAX_PIECE_TYPES - 1;
+	constexpr UINT16 MAX_PIECE_TYPES = 6;
+	constexpr UINT16 FIRST_PIECE_TYPES_INDEX = 0;
+	constexpr UINT16 LAST_PIECE_TYPES_INDEX = MAX_PIECE_TYPES - 1;
 
-	constexpr unsigned short MAX_PAWN_COUNT = 8;
-	constexpr unsigned short MIN_BISHOP_COUNT_PRECONDITION_BONUS = 2;
+	constexpr UINT16 MAX_PAWN_COUNT = 8;
+	constexpr UINT16 MIN_BISHOP_COUNT_PRECONDITION_BONUS = 2;
 
 	// Bewertungsfunktions-Feature
-	constexpr unsigned char EVAL_FT_MATERIAL_DYNAMIC_GAME_PHASE = (1 << 0); // Materialwerte abhängig von der Spielphase (Eröffnung, Mittel- und Endspiel)
-	constexpr unsigned char EVAL_FT_PIECE_SQUARE_TABLE			= (1 << 1); // Piece-Square-Tabelle
-	constexpr unsigned char EVAL_FT_PIECE_MOBILITY				= (1 << 2); // Piece-Mobility
-	constexpr unsigned char EVAL_FT_PAWN_STRUCTURE				= (1 << 3); // Bauernstruktur (Double, Isolated, Connected, Backwards, Chain, Passed)
-	constexpr unsigned char EVAL_FT_BISHOP_PAIR					= (1 << 4); // Läuferpaar
+	constexpr UCHAR EVAL_FT_MATERIAL_DYNAMIC_GAME_PHASE = (1 << 0); // Materialwerte abhängig von der Spielphase (Eröffnung, Mittel- und Endspiel)
+	constexpr UCHAR EVAL_FT_PIECE_SQUARE_TABLE			= (1 << 1); // Piece-Square-Tabelle
+	constexpr UCHAR EVAL_FT_PIECE_MOBILITY				= (1 << 2); // Piece-Mobility
+	constexpr UCHAR EVAL_FT_PAWN_STRUCTURE				= (1 << 3); // Bauernstruktur (Double, Isolated, Connected, Backwards, Chain, Passed)
+	constexpr UCHAR EVAL_FT_BISHOP_PAIR					= (1 << 4); // Läuferpaar
 	// optionale/weitere Featuers
-	constexpr unsigned char EVAL_FT_DYNAMIC_PAWNS = (1 << 5);	// Dynamische Bauern
+	constexpr UCHAR EVAL_FT_DYNAMIC_PAWNS = (1 << 5);	// Dynamische Bauern
 
 	// Alle Standard Bewertungsfunktions-Features
-	constexpr unsigned char EVAL_FT_STANDARD = 
+	constexpr UCHAR EVAL_FT_STANDARD = 
 		EVAL_FT_MATERIAL_DYNAMIC_GAME_PHASE | 
 		EVAL_FT_PIECE_SQUARE_TABLE | 
 		EVAL_FT_PIECE_MOBILITY | 
@@ -48,26 +50,26 @@ namespace owl
 		EVAL_FT_BISHOP_PAIR;
 
 	// Alle Bewertungsfunktions-Features
-	constexpr unsigned char EVAL_FT_ALL = 0xff;
+	constexpr UCHAR EVAL_FT_ALL = 0xff;
 
 	// Faktoren (Mit welcher Gewichtung die Features Einfluss auf die Bewertung haben 0.0 = 0% und 1.0 = 100%)
 
-	constexpr float MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT	= 1.00f; // Materialwerte zu Spielphase (Faktor)
-	constexpr float PIECE_SQUARE_TABLE_WEIGHT			= 1.00f; // Piece-Square-Tabelle (Faktor)
-	constexpr float PIECE_MOBILITY_WEIGHT				= 1.00f; // Piece-Mobility (Faktor)
-	constexpr float BISHOP_PAIR_BONUS_WEIGHT			= 1.00f; // Läuferpaar (Faktor)
-	constexpr float PAWN_STRUCTURE_WEIGHT				= 1.00f; // Bauernstruktur (Faktor)
+	constexpr FLOAT MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT	= 1.00f; // Materialwerte zu Spielphase (Faktor)
+	constexpr FLOAT PIECE_SQUARE_TABLE_WEIGHT			= 1.00f; // Piece-Square-Tabelle (Faktor)
+	constexpr FLOAT PIECE_MOBILITY_WEIGHT				= 1.00f; // Piece-Mobility (Faktor)
+	constexpr FLOAT BISHOP_PAIR_BONUS_WEIGHT			= 1.00f; // Läuferpaar (Faktor)
+	constexpr FLOAT PAWN_STRUCTURE_WEIGHT				= 1.00f; // Bauernstruktur (Faktor)
 
 
 	// Materialwert + Addition für die jeweilige Spielphase								//  P	   N	  B		 R		Q		K
-	constexpr std::array<float, MAX_PIECE_TYPES> MATERIAL_VALUES						= { 1.00f, 3.00f, 3.00f, 5.00f, 9.00f,	0.00f }; // Materialwert
-	constexpr std::array<float, MAX_PIECE_TYPES> MATERIAL_ADDITION_BEGIN_GAME_PHASE		= { 0.00f, 0.25f, 0.25f, 0.00f, 0.00f,	0.00f }; // Materialwert-Addition in der Eröffnung
-	constexpr std::array<float, MAX_PIECE_TYPES> MATERIAL_ADDITION_MID_GAME_PHASE		= { 0.00f, 0.50f, 0.50f, 0.50f, 0.50f,	0.00f }; // Materialwert-Addition im Mittelspiel
-	constexpr std::array<float, MAX_PIECE_TYPES> MATERIAL_ADDITION_END_GAME_PHASE		= { 0.00f, 0.50f, 0.50f, 0.75f, 0.75f,	0.00f }; // Materialwert-Addition im Endspiel
+	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_VALUES						= { 1.00f, 3.00f, 3.00f, 5.00f, 9.00f,	0.00f }; // Materialwert
+	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_ADDITION_BEGIN_GAME_PHASE		= { 0.00f, 0.25f, 0.25f, 0.00f, 0.00f,	0.00f }; // Materialwert-Addition in der Eröffnung
+	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_ADDITION_MID_GAME_PHASE		= { 0.00f, 0.50f, 0.50f, 0.50f, 0.50f,	0.00f }; // Materialwert-Addition im Mittelspiel
+	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_ADDITION_END_GAME_PHASE		= { 0.00f, 0.50f, 0.50f, 0.75f, 0.75f,	0.00f }; // Materialwert-Addition im Endspiel
 
 	// Spielphase Material Balance
-	constexpr std::array<unsigned short, MAX_PIECE_TYPES> START_PIECE_COUNT				= { 8,	   2,	  2,	 2,		1,		1	  }; // Anzahl der Figuren beim Start (Für 100% Materialwertberechnung)
-	constexpr float GET_MAX_MATERIAL_SUM(float ratio) {
+	constexpr std::array<UINT16, MAX_PIECE_TYPES> START_PIECE_COUNT				= { 8,	   2,	  2,	 2,		1,		1	  }; // Anzahl der Figuren beim Start (Für 100% Materialwertberechnung)
+	constexpr FLOAT GET_MAX_MATERIAL_SUM(FLOAT ratio) {
 		auto value = 0.0f;
 		for (auto type_index = 0; type_index < MAX_PIECE_TYPES; type_index++)
 		{
@@ -76,40 +78,40 @@ namespace owl
 		return ratio * PLAYER_COUNT * value;
 	};
 
-	constexpr float MATERIAL_RATIO_FULL		= 1.00f;
-	constexpr float MATERIAL_RATIO_MID_GAME = 0.85f;
-	constexpr float MATERIAL_RATIO_END_GAME = 0.50f;
+	constexpr FLOAT MATERIAL_RATIO_FULL		= 1.00f;
+	constexpr FLOAT MATERIAL_RATIO_MID_GAME = 0.85f;
+	constexpr FLOAT MATERIAL_RATIO_END_GAME = 0.50f;
 
-	constexpr float MAX_MATERIAL_SUM			= GET_MAX_MATERIAL_SUM(MATERIAL_RATIO_FULL);		// Eröffnungs-Material-Summe
-	constexpr float MAX_MATERIAL_SUM_MID_GAME	= GET_MAX_MATERIAL_SUM(MATERIAL_RATIO_MID_GAME);	// Mittelspiel-Material-Summe
-	constexpr float MAX_MATERIAL_SUM_END_GAME	= GET_MAX_MATERIAL_SUM(MATERIAL_RATIO_END_GAME);	// Endspiel-Material-Summe
+	constexpr FLOAT MAX_MATERIAL_SUM			= GET_MAX_MATERIAL_SUM(MATERIAL_RATIO_FULL);		// Eröffnungs-Material-Summe
+	constexpr FLOAT MAX_MATERIAL_SUM_MID_GAME	= GET_MAX_MATERIAL_SUM(MATERIAL_RATIO_MID_GAME);	// Mittelspiel-Material-Summe
+	constexpr FLOAT MAX_MATERIAL_SUM_END_GAME	= GET_MAX_MATERIAL_SUM(MATERIAL_RATIO_END_GAME);	// Endspiel-Material-Summe
 
 	// Weiße Figuren:
-	constexpr unsigned char PAWN_WHITE = 'P';
-	constexpr unsigned char KNIGHT_WHITE = 'N';
-	constexpr unsigned char BISHOP_WHITE = 'B';
-	constexpr unsigned char ROOK_WHITE = 'R';
-	constexpr unsigned char QUEEN_WHITE = 'Q';
-	constexpr unsigned char KING_WHITE = 'K';
+	constexpr UCHAR PAWN_WHITE = 'P';
+	constexpr UCHAR KNIGHT_WHITE = 'N';
+	constexpr UCHAR BISHOP_WHITE = 'B';
+	constexpr UCHAR ROOK_WHITE = 'R';
+	constexpr UCHAR QUEEN_WHITE = 'Q';
+	constexpr UCHAR KING_WHITE = 'K';
 
 	// Schwarze Figuren:
-	constexpr unsigned char PAWN_BLACK = 'p';
-	constexpr unsigned char KNIGHT_BLACK = 'n';
-	constexpr unsigned char BISHOP_BLACK = 'b';
-	constexpr unsigned char ROOK_BLACK = 'r';
-	constexpr unsigned char QUEEN_BLACK = 'q';
-	constexpr unsigned char KING_BLACK = 'k';
+	constexpr UCHAR PAWN_BLACK = 'p';
+	constexpr UCHAR KNIGHT_BLACK = 'n';
+	constexpr UCHAR BISHOP_BLACK = 'b';
+	constexpr UCHAR ROOK_BLACK = 'r';
+	constexpr UCHAR QUEEN_BLACK = 'q';
+	constexpr UCHAR KING_BLACK = 'k';
 
 	// Sonstige Eigenschaften
-	constexpr unsigned char EMPTY_PLACE = ' ';
+	constexpr UCHAR EMPTY_PLACE = ' ';
 
-	constexpr unsigned char PIECES[PLAYER_COUNT][MAX_PIECE_TYPES] =
+	constexpr UCHAR PIECES[PLAYER_COUNT][MAX_PIECE_TYPES] =
 	{
 		{PAWN_WHITE, KNIGHT_WHITE, BISHOP_WHITE,  ROOK_WHITE, QUEEN_WHITE, KING_WHITE},
 		{PAWN_BLACK, KNIGHT_BLACK, BISHOP_BLACK, ROOK_BLACK, QUEEN_BLACK, KING_BLACK}
 	};
 
-	constexpr unsigned short GET_PIECE_INDEX_BY_TYPE(unsigned char piece)
+	constexpr UINT16 GET_PIECE_INDEX_BY_TYPE(UCHAR piece)
 	{
 		switch (piece)
 		{
@@ -143,7 +145,7 @@ namespace owl
 		}
 	}
 
-	constexpr unsigned short GET_PIECE_COLOR_BY_TYPE(unsigned char piece)
+	constexpr UINT16 GET_PIECE_COLOR_BY_TYPE(UCHAR piece)
 	{
 		switch (piece)
 		{
@@ -170,42 +172,42 @@ namespace owl
 	}
 
 	// Bonus
-	constexpr float BISHOP_PAIR_BONUS = 0.50f; // Läuferpaar-Bonus
+	constexpr FLOAT BISHOP_PAIR_BONUS = 0.50f; // Läuferpaar-Bonus
 
 	// Figurenbewegung (Gewichtung)
-	constexpr float PIECE_MOBILITY_PAWN_WEIGHT		= 0.10f; // Bauern-Figurbewegung (Faktor)
-	constexpr float PIECE_MOBILITY_KNIGHT_WEIGHT	= 0.10f; // Springer-Figurenbewegung (Faktor)
-	constexpr float PIECE_MOBILITY_BISHOP_WEIGHT	= 0.10f; // Läufer-Figurenbewegung (Faktor)
-	constexpr float PIECE_MOBILITY_ROOK_WEIGHT		= 0.10f; // Turm-Figurenbewegung (Faktor)
-	constexpr float PIECE_MOBILITY_QUEEN_WEIGHT		= 0.10f; // Dame-Figurenbewegung (Faktor)
-	constexpr float PIECE_MOBILITY_KING_WEIGHT		= 0.10f; // König-Figurenbewegung (Faktor)
+	constexpr FLOAT PIECE_MOBILITY_PAWN_WEIGHT		= 0.10f; // Bauern-Figurbewegung (Faktor)
+	constexpr FLOAT PIECE_MOBILITY_KNIGHT_WEIGHT	= 0.10f; // Springer-Figurenbewegung (Faktor)
+	constexpr FLOAT PIECE_MOBILITY_BISHOP_WEIGHT	= 0.10f; // Läufer-Figurenbewegung (Faktor)
+	constexpr FLOAT PIECE_MOBILITY_ROOK_WEIGHT		= 0.10f; // Turm-Figurenbewegung (Faktor)
+	constexpr FLOAT PIECE_MOBILITY_QUEEN_WEIGHT		= 0.10f; // Dame-Figurenbewegung (Faktor)
+	constexpr FLOAT PIECE_MOBILITY_KING_WEIGHT		= 0.10f; // König-Figurenbewegung (Faktor)
 
 	// Zusätzliche Dynamische Bauerngewichtung
-	constexpr unsigned short MAX_DYNAMIC_PAWNS = MAX_PAWN_COUNT;
-	constexpr unsigned short DYNAMIC_PAWNS_LAST_INDEX = MAX_DYNAMIC_PAWNS - 1;
+	constexpr UINT16 MAX_DYNAMIC_PAWNS = MAX_PAWN_COUNT;
+	constexpr UINT16 DYNAMIC_PAWNS_LAST_INDEX = MAX_DYNAMIC_PAWNS - 1;
 
-	constexpr std::array<float, MAX_DYNAMIC_PAWNS> MATERIAL_DYNAMIC_PAWNS = { 0.05f, 0.03f, 0.01f, 0.00f, -0.01f, -0.02f, -0.03f, -0.05f };
+	constexpr std::array<FLOAT, MAX_DYNAMIC_PAWNS> MATERIAL_DYNAMIC_PAWNS = { 0.05f, 0.03f, 0.01f, 0.00f, -0.01f, -0.02f, -0.03f, -0.05f };
 
 	// Bauernstruktur Malus
-	constexpr float PAWN_STRUCTURE_DOUBLE_PAWNS_PENALTY		= -0.200f;	// Doppelte Bauern Malus
-	constexpr float PAWN_STRUCTURE_ISOLATED_PAWNS_PENALTY	= -0.100f;	// Isolierte Bauern Malus
-	constexpr float PAWN_STRUCTURE_BACKWARDS_PAWNS_PENALTY	= -0.125f;	// Rückständige Bauern Malus
+	constexpr FLOAT PAWN_STRUCTURE_DOUBLE_PAWNS_PENALTY		= -0.200f;	// Doppelte Bauern Malus
+	constexpr FLOAT PAWN_STRUCTURE_ISOLATED_PAWNS_PENALTY	= -0.100f;	// Isolierte Bauern Malus
+	constexpr FLOAT PAWN_STRUCTURE_BACKWARDS_PAWNS_PENALTY	= -0.125f;	// Rückständige Bauern Malus
 	// Bauernstruktur Bonus
-	constexpr float PAWN_STRUCTURE_CONNECTED_PAWNS_BONUS	= 0.100f;	// Verbundene Bauern Bonus
-	constexpr float PAWN_STRUCTURE_CHAIN_PAWNS_BONUS		=  0.100f;	// Bauernkette Bonus
-	constexpr float PAWN_STRUCTURE_PASSED_PAWNS_BONUS		=  0.200f;	// Freibauern Bonus
+	constexpr FLOAT PAWN_STRUCTURE_CONNECTED_PAWNS_BONUS	= 0.100f;	// Verbundene Bauern Bonus
+	constexpr FLOAT PAWN_STRUCTURE_CHAIN_PAWNS_BONUS		=  0.100f;	// Bauernkette Bonus
+	constexpr FLOAT PAWN_STRUCTURE_PASSED_PAWNS_BONUS		=  0.200f;	// Freibauern Bonus
 
 	// Piece Square Tables
 
-	constexpr float PIECE_SQUARE_TABLE_PAWN_WEIGHT			= 1.0f;	// Bauern-Tabellen-Gewicht (Faktor)
-	constexpr float PIECE_SQUARE_TABLE_KNIGHT_WEIGHT		= 1.0f;	// Springer-Tabellen-Gewicht (Faktor)
-	constexpr float PIECE_SQUARE_TABLE_BISHOP_WEIGHT		= 1.0f;	// Läufer-Tabellen-Gewicht (Faktor)
-	constexpr float PIECE_SQUARE_TABLE_ROOK_WEIGHT			= 1.0f;	// Turm-Tabellen-Gewicht (Faktor)
-	constexpr float PIECE_SQUARE_TABLE_QUEEN_WEIGHT			= 1.0f;	// Dame-Tabellen-Gewicht (Faktor)
-	constexpr float PIECE_SQUARE_TABLE_KING_MID_GAME_WEIGHT	= 1.0f;	// König-Tabellen-Mittelspiel-Gewicht (Faktor)
-	constexpr float PIECE_SQUARE_TABLE_KING_END_GAME_WEIGHT	= 1.0f;	// König-Tabellen-Endspiel-Gewicht (Faktor)
+	constexpr FLOAT PIECE_SQUARE_TABLE_PAWN_WEIGHT			= 1.0f;	// Bauern-Tabellen-Gewicht (Faktor)
+	constexpr FLOAT PIECE_SQUARE_TABLE_KNIGHT_WEIGHT		= 1.0f;	// Springer-Tabellen-Gewicht (Faktor)
+	constexpr FLOAT PIECE_SQUARE_TABLE_BISHOP_WEIGHT		= 1.0f;	// Läufer-Tabellen-Gewicht (Faktor)
+	constexpr FLOAT PIECE_SQUARE_TABLE_ROOK_WEIGHT			= 1.0f;	// Turm-Tabellen-Gewicht (Faktor)
+	constexpr FLOAT PIECE_SQUARE_TABLE_QUEEN_WEIGHT			= 1.0f;	// Dame-Tabellen-Gewicht (Faktor)
+	constexpr FLOAT PIECE_SQUARE_TABLE_KING_MID_GAME_WEIGHT	= 1.0f;	// König-Tabellen-Mittelspiel-Gewicht (Faktor)
+	constexpr FLOAT PIECE_SQUARE_TABLE_KING_END_GAME_WEIGHT	= 1.0f;	// König-Tabellen-Endspiel-Gewicht (Faktor)
 
-	constexpr std::array<float, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_PAWN = {
+	constexpr std::array<FLOAT, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_PAWN = {
 		0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f,
 		0.50f, 0.50f, 0.50f, 0.50f, 0.50f, 0.50f, 0.50f, 0.50f,
 		0.10f, 0.10f, 0.20f, 0.30f, 0.30f, 0.20f, 0.10f, 0.10f,
@@ -216,7 +218,7 @@ namespace owl
 		0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f
 	};
 
-	constexpr std::array<float, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_KNIGHT = {
+	constexpr std::array<FLOAT, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_KNIGHT = {
 		-0.50f,-0.40f,-0.30f,-0.30f,-0.30f,-0.30f,-0.40f,-0.50f,
 		-0.00f,-0.20f, 0.00f, 0.00f, 0.00f, 0.00f,-0.20f,-0.40f,
 		-0.00f, 0.00f, 0.10f, 0.15f, 0.15f, 0.10f, 0.00f,-0.30f,
@@ -227,7 +229,7 @@ namespace owl
 		-0.50f,-0.40f,-0.30f,-0.30f,-0.30f,-0.30f,-0.40f,-0.50f
 	};
 
-	constexpr std::array<float, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_BISHOP = {
+	constexpr std::array<FLOAT, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_BISHOP = {
 		-0.20f,-0.10f,-0.10f,-0.10f,-0.10f,-0.10f,-0.10f,-0.20f,
 		-0.10f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f,-0.10f,
 		-0.10f, 0.00f, 0.05f, 0.10f, 0.10f, 0.05f, 0.00f,-0.10f,
@@ -238,7 +240,7 @@ namespace owl
 		-0.20f,-0.10f,-0.10f,-0.10f,-0.10f,-0.10f,-0.10f,-0.20f
 	};
 
-	constexpr std::array<float, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_ROOK = {
+	constexpr std::array<FLOAT, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_ROOK = {
 		 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f,  0.00f,
 		 0.05f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f, 0.10f,  0.05f,
 		-0.05f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, -0.05f,
@@ -249,7 +251,7 @@ namespace owl
 		 0.00f, 0.00f, 0.00f, 0.05f, 0.05f, 0.00f, 0.00f,  0.00f
 	};
 
-	constexpr std::array<float, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_QUEEN = {
+	constexpr std::array<FLOAT, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_QUEEN = {
 		-0.20f,-0.10f,-0.10f, -0.05, -0.05f,-0.10f,-0.10f,-0.20f,
 		-0.10f, 0.00f, 0.00f,  0.00,  0.00f, 0.00f, 0.00f,-0.10f,
 		-0.10f, 0.00f, 0.05f,  0.05,  0.05f, 0.05f, 0.00f,-0.10f,
@@ -260,7 +262,7 @@ namespace owl
 		-0.20f,-0.10f,-0.10f, -0.05, -0.05f,-0.10f,-0.10f,-0.20f
 	};
 
-	constexpr std::array<float, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_KING_MID_GAME = {
+	constexpr std::array<FLOAT, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_KING_MID_GAME = {
 		-0.30f,-0.40f,-0.40f,-0.50f,-0.50f,-0.40f,-0.40f,-0.30f,
 		-0.30f,-0.40f,-0.40f,-0.50f,-0.50f,-0.40f,-0.40f,-0.30f,
 		-0.30f,-0.40f,-0.40f,-0.50f,-0.50f,-0.40f,-0.40f,-0.30f,
@@ -271,7 +273,7 @@ namespace owl
 		 0.20f, 0.30f, 0.10f, 0.00f, 0.00f, 0.10f, 0.30f, 0.20f
 	};
 
-	constexpr std::array<float, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_KING_END_GAME = {
+	constexpr std::array<FLOAT, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_KING_END_GAME = {
 		-0.50f,-0.40f,-0.30f,-0.20f,-0.20f,-0.30f,-0.40f,-0.50f,
 		-0.30f,-0.20f,-0.10f, 0.00f, 0.00f,-0.10f,-0.20f,-0.30f,
 		-0.30f,-0.10f, 0.20f, 0.30f, 0.30f, 0.20f,-0.10f,-0.30f,
@@ -282,9 +284,9 @@ namespace owl
 		-0.50f,-0.30f,-0.30f,-0.30f,-0.30f,-0.30f,-0.30f,-0.50f
 	};
 
-	constexpr std::array<float, MAX_FIELDS_ON_BOARD> MIRROR_PIECE_SQUARE_TABLE(const std::array<float, MAX_FIELDS_ON_BOARD> t)
+	constexpr std::array<FLOAT, MAX_FIELDS_ON_BOARD> MIRROR_PIECE_SQUARE_TABLE(const std::array<FLOAT, MAX_FIELDS_ON_BOARD> t)
 	{
-		std::array<float, MAX_FIELDS_ON_BOARD>&& sort_table =
+		std::array<FLOAT, MAX_FIELDS_ON_BOARD>&& sort_table =
 		{
 			t[56], t[57], t[58], t[59], t[60], t[61], t[62], t[63],
 			t[48], t[49], t[50], t[51], t[52], t[53], t[54], t[55],
@@ -309,25 +311,25 @@ namespace owl
 		/// <param name="enginePlayer">Der Spieler (Weiß/Schwarz), welcher von der Schach-Engine gespielt wird</param>
 		/// <param name="evaluationFeatureFlags">Feature-Parameter-Flags für die Komponenten der Bewertungsfunktion</param>
 		/// <returns>Nutzwert der Bewertungsfunktion</returns>
-		static float evaluate(const Position& position, short enginePlayer, unsigned char evaluationFeatureFlags = 0);
+		static FLOAT evaluate(const Position& position, short enginePlayer, UCHAR evaluationFeatureFlags = 0);
 	private:
 		/// Doppelte Bauern?
-		static bool isDoublePawn(const Position& position, int x, int y);
+		static BOOL isDoublePawn(const Position& position, INT32 x, INT32 y);
 		/// Verbundene Bauern?
-		static bool isConnectedPawn(const Position& position, int x, int y);
+		static BOOL isConnectedPawn(const Position& position, INT32 x, INT32 y);
 		/// Backwards Bauern?
-		static bool isBackwardsPawn(const Position& position, int x, int y);
+		static BOOL isBackwardsPawn(const Position& position, INT32 x, INT32 y);
 		/// Passierte Bauern?
-		static bool isPassedPawn(const Position& position, int x, int y);
+		static BOOL isPassedPawn(const Position& position, INT32 x, INT32 y);
 		/// Verkettete Bauern? 
-		static bool isChainPawn(const Position& position, int x, int y);
+		static BOOL isChainPawn(const Position& position, INT32 x, INT32 y);
 		/// Hilfsfunktion zur Überprüfung, ob Grenzen eingehalten werden und ob sich ein freundlicher Bauer bei der Position x+xOffset, y+yOffset befindet
-		static bool isPieceEqualOnOffset(const Position& position, int x, int y, int xOffset, int yOffset);
+		static BOOL isPieceEqualOnOffset(const Position& position, INT32 x, INT32 y, INT32 xOffset, INT32 yOffset);
 		/// Hilfsfunktion zur Überprüfung, ob Grenzen eingehalten werden und ob sich ein feindlicher Bauer bei der Position x+xOffset, y+yOffset befindet
-		static bool isPieceEnemyPawnOnOffset(const Position& position, int x, int y, int xOffset, int yOffset);
+		static BOOL isPieceEnemyPawnOnOffset(const Position& position, INT32 x, INT32 y, INT32 xOffset, INT32 yOffset);
 	public:
 
-		static unsigned char GetPlayerIndexByPositionPlayer(short currentPlayerOfPosition);
-		static unsigned char GetEnemyPiece(short currentPlayerOfPosition, unsigned short pieceIndex);
+		static UCHAR GetPlayerIndexByPositionPlayer(short currentPlayerOfPosition);
+		static UCHAR GetEnemyPiece(short currentPlayerOfPosition, UINT16 pieceIndex);
 	};
 }
