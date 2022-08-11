@@ -3,7 +3,7 @@
 #include <string>
 #include <array>
 
-namespace matt
+namespace owl
 {
 	/// Enumeration für mögliche Spielzustände einer Schachposition.
 	enum class GameState
@@ -21,14 +21,14 @@ namespace matt
 		End
 	};
 
-	constexpr unsigned short ROWS = 8;						// Zeile
-	constexpr unsigned short COLUMNS = 8;					// Spalten
-	constexpr unsigned short FIRSTROWINDEX = 0;				// Erste Zeile
-	constexpr unsigned short FIRSTCOLINDEX = 0;				// Erste Spalte
-	constexpr unsigned short LASTROWINDEX = ROWS - 1;		// Letzte Zeile
-	constexpr unsigned short LASTCOLINDEX = COLUMNS - 1;	// Letzte Spalte
+	constexpr unsigned short ROWS = 8;								// Zeile
+	constexpr unsigned short COLUMNS = 8;							// Spalten
+	constexpr unsigned short FIRSTROWINDEX = 0;						// Erste Zeile
+	constexpr unsigned short FIRSTCOLINDEX = 0;						// Erste Spalte
+	constexpr unsigned short LASTROWINDEX = ROWS - 1;				// Letzte Zeile
+	constexpr unsigned short LASTCOLINDEX = COLUMNS - 1;			// Letzte Spalte
 
-	constexpr unsigned short MAX_FIELDS_ON_BOARD = ROWS * COLUMNS; // Anzahl der Zellen
+	constexpr unsigned short MAX_FIELDS_ON_BOARD = ROWS * COLUMNS;	// Anzahl der Zellen
 
 	using BoardLine = std::array<char, COLUMNS>;
 	using BoardArray = std::array<BoardLine, ROWS>; // Board
@@ -120,6 +120,19 @@ namespace matt
 		GamePhase getGamePhase() const;
 
 		static void printPosition(const Position& position); 
+
+		constexpr bool operator==(const Position& other) const
+		{
+			for (auto y = FIRSTROWINDEX; y < ROWS; y++)
+			{
+				for (auto x = FIRSTCOLINDEX; x < COLUMNS; x++)
+				{
+					if (m_data[y][x] != other[y][x]) return false;
+				}
+			}
+			return true;
+		}
+
 	private:
 		/// Datenobjekt für eine Spielposition
 		mutable BoardArray m_data;

@@ -1,5 +1,5 @@
 -- premake5.lua
-workspace "SchwachMatt"
+workspace "OWL-Matt"
    configurations { "Debug", "Release" }
    platforms { "Win64"}
 
@@ -12,7 +12,7 @@ project "chess_engine"
    objdir "bin-int/%{cfg.buildcfg}"
 
    buildoptions {
-      "-gdwarf-3"
+
    }
 
    files { 
@@ -45,7 +45,7 @@ project "benchmark"
    objdir "bin-int/%{cfg.buildcfg}"
 
    buildoptions {
-      "-gdwarf-3"
+
    }
 
    files {

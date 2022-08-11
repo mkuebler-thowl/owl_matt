@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace matt
+namespace owl
 {
 	// TODO: Für random eine Liste benutzen mit best moves? 
 

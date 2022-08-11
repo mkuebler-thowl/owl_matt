@@ -5,7 +5,7 @@
 
 #include <string>
 #include <iostream>
-namespace matt
+namespace owl
 {
 	std::vector<Move> ChessValidation::getValidMoves(const Position& position, short player)
 	{
@@ -141,6 +141,9 @@ namespace matt
 		{
 			pos.setGameState(GameState::Remis);
 		}
+
+		// 3x Stellungswiederholung:
+
 
 		// Rochieren gegebenfalls deaktivieren
 		if (pos.getWhiteCastlingShort() || pos.getWhiteCastlingLong() || pos.getBlackCastlingLong() || pos.getBlackCastlingShort())

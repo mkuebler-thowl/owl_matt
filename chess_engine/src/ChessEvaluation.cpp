@@ -3,7 +3,7 @@
 #include "ChessEngine.hpp"
 #include <unordered_map>
 
-namespace matt
+namespace owl
 {
 	float ChessEvaluation::evaluate(const Position& position, short enginePlayer, unsigned char evaluationFeatureFlags)
 	{

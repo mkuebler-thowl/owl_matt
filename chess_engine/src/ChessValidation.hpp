@@ -6,7 +6,7 @@
 #include "Move.hpp"
 #include "Position.hpp"
 
-namespace matt
+namespace owl
 {
 	constexpr char* BLACK_PIECES = "pnbrqk";
 	constexpr char* WHITE_PIECES = "PNBRQK";

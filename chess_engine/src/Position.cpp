@@ -3,7 +3,7 @@
 #include "ChessEngine.hpp"
 #include <iostream>
 
-namespace matt
+namespace owl
 {
 	Position::Position()
 		: m_enPassant(false), m_movesCount(0), m_moveNumber(1), m_player(PLAYER_WHITE), m_state(GameState::Active), 
@@ -39,7 +39,7 @@ namespace matt
 
 	}
 
-	matt::BoardLine& Position::operator[](int index) const
+	owl::BoardLine& Position::operator[](int index) const
 	{
 		assert(index < COLUMNS);
 		return m_data[index];

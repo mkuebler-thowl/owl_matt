@@ -3,7 +3,7 @@
 #include <array>
 #include "Position.hpp"
 
-namespace matt
+namespace owl
 {
 	// Notwendige Konstanten
 	constexpr unsigned short WHITE = 0;
@@ -55,8 +55,8 @@ namespace matt
 	constexpr float MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT	= 1.00f; // Materialwerte zu Spielphase (Faktor)
 	constexpr float PIECE_SQUARE_TABLE_WEIGHT			= 1.00f; // Piece-Square-Tabelle (Faktor)
 	constexpr float PIECE_MOBILITY_WEIGHT				= 1.00f; // Piece-Mobility (Faktor)
-	constexpr float BISHOP_PAIR_BONUS_WEIGHT			= 1.00f; // Bauernstruktur (Faktor)
-	constexpr float PAWN_STRUCTURE_WEIGHT				= 1.00f; // Läuferpaar (Faktor)
+	constexpr float BISHOP_PAIR_BONUS_WEIGHT			= 1.00f; // Läuferpaar (Faktor)
+	constexpr float PAWN_STRUCTURE_WEIGHT				= 1.00f; // Bauernstruktur (Faktor)
 
 
 	// Materialwert + Addition für die jeweilige Spielphase								//  P	   N	  B		 R		Q		K
@@ -185,7 +185,6 @@ namespace matt
 	constexpr unsigned short DYNAMIC_PAWNS_LAST_INDEX = MAX_DYNAMIC_PAWNS - 1;
 
 	constexpr std::array<float, MAX_DYNAMIC_PAWNS> MATERIAL_DYNAMIC_PAWNS = { 0.05f, 0.03f, 0.01f, 0.00f, -0.01f, -0.02f, -0.03f, -0.05f };
-
 
 	// Bauernstruktur Malus
 	constexpr float PAWN_STRUCTURE_DOUBLE_PAWNS_PENALTY		= -0.200f;	// Doppelte Bauern Malus

@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-namespace matt {
+namespace owl {
 
     Position FENParser::fenToPosition(std::string fen)
     {

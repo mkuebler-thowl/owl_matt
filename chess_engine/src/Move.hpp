@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 
-namespace matt
+namespace owl
 {
 
 	/// Datenstruktur zur Information eines Spielzugs, der auf eine Spielstellung ausgeführt werden kann.

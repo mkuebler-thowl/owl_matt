@@ -6,8 +6,9 @@
 #include "Move.hpp"
 #include "MinMaxResult.hpp"
 #include "ChessValidation.hpp"
+#include "RepitionMap.hpp"
 
-namespace matt
+namespace owl
 {
 	// Feature-Parameter
 	constexpr unsigned char FT_NULL			= 0;
@@ -100,6 +101,9 @@ namespace matt
 		static std::string getCaptureValueString(Captures capture);
 	
 
-		int m_count = 0;
+		int m_v1 = 0;
+		int m_v2 = 0;
+
+		RepitionMap m_repitionMap;
 	};
 }

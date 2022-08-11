@@ -5,7 +5,7 @@
 #include "Position.hpp"
 #include "Move.hpp"
 
-namespace matt
+namespace owl
 {
 	/// FENParser ist eine Hilfsklasse zur Umwandlung von FEN-Strings in Positionen, Algebraische Notationen in Züge und umgekehrt.
 	class FENParser

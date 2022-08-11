@@ -12,7 +12,7 @@
 #include "FENParser.hpp"
 
 // Test: Print move list
-auto printMoves(std::vector<matt::Move> moves, const matt::Position& pos) -> void
+auto printMoves(std::vector<owl::Move> moves, const owl::Position& pos) -> void
 {
 	std::string out = "";
 
@@ -29,14 +29,14 @@ auto printMoves(std::vector<matt::Move> moves, const matt::Position& pos) -> voi
 
 		auto piece_start = pos[move.startY][move.startX];
 		auto piece_target = pos[move.targetY][move.targetX];
-		auto capture = matt::ChessEngine::getCaptureValue(piece_start, piece_target);
+		auto capture = owl::ChessEngine::getCaptureValue(piece_start, piece_target);
 
 		out += "capture_val= " + std::to_string((int)capture) + ": ";
 
-		if (move.capture) out += matt::ChessEngine::getCaptureValueString(capture);
+		if (move.capture) out += owl::ChessEngine::getCaptureValueString(capture);
 		else out += "-";
 
-		out += "; simple_evaluation_val= " + std::to_string(matt::ChessEvaluation::evaluate(matt::ChessValidation::applyMove(pos, move), matt::PLAYER_WHITE, 0)) + "; ";
+		out += "; simple_evaluation_val= " + std::to_string(owl::ChessEvaluation::evaluate(owl::ChessValidation::applyMove(pos, move), owl::PLAYER_WHITE, 0)) + "; ";
 		out += "index= " + std::to_string(index);
 		out += ")\n";
 		index++;
@@ -79,19 +79,19 @@ auto testEvaluationFunction()
 		std::cout << "------------------------------------------------------------------------\n";
 		std::cout << "\nFEN: " << fen << " pos:" << std::endl;
 		std::cout << "------------------------------------------------------------------------\n";
-		auto pos = matt::FENParser::fenToPosition(fen);
+		auto pos = owl::FENParser::fenToPosition(fen);
 		std::string values[] = {
 			"\nMaterial: ",
-			std::to_string(matt::ChessEvaluation::evaluate(pos, matt::PLAYER_WHITE, 0)),
+			std::to_string(owl::ChessEvaluation::evaluate(pos, owl::PLAYER_WHITE, 0)),
 			"Value: ",
-			std::to_string(matt::ChessEvaluation::evaluate(pos, matt::PLAYER_WHITE, matt::EVAL_FT_STANDARD)),
+			std::to_string(owl::ChessEvaluation::evaluate(pos, owl::PLAYER_WHITE, owl::EVAL_FT_STANDARD)),
 			"DynamicPawnValue: ",
-			std::to_string(matt::ChessEvaluation::evaluate(pos, matt::PLAYER_WHITE, matt::EVAL_FT_ALL)),
+			std::to_string(owl::ChessEvaluation::evaluate(pos, owl::PLAYER_WHITE, owl::EVAL_FT_ALL)),
 			"GamePhase{0=opening,1=mid,2=end}:",
 			std::to_string((int)pos.getGamePhase())
 		};
 
-		matt::Position::printPosition(pos);
+		owl::Position::printPosition(pos);
 		std::cout << "------------------------------------------------------------------------\n";
 		std::string out = "";
 
@@ -111,74 +111,11 @@ auto testEvaluationFunction()
 
 auto main() -> int
 {
-	auto engine = matt::ChessEngine();
+	auto engine = owl::ChessEngine();
 	
-	//auto pos = matt::FENParser::fenToPosition("8/8/2p5/3p4/8/3p4/4P3/2B5 w - - 0 1");
+	auto pos = owl::FENParser::fenToPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-	auto pos = matt::FENParser::fenToPosition("r1b4r/pppk1Npp/5n2/8/2Bp4/Bn6/P4PPP/4R1K1 w - - 0 1");
-	// lösung muss sein (2,4 : 1,3) -> (4,7 : 4,1)
-	auto move = engine.searchMove(pos, pos.getPlayer(), 3, matt::FT_ALPHA_BETA | matt::FT_SORT | matt::FT_KILLER);
-	//
-	//matt::Move moves[3];
-
-	//moves[0].startX = 0;
-	//moves[0].startY = 5;
-	//moves[0].targetX = 5;
-	//moves[0].targetY = 0;
-
-	//moves[1].startX = 1;
-	//moves[1].startY = 1;
-	//moves[1].targetX = 0;
-	//moves[1].targetY = 2;
-
-	//moves[2].startX = 5;
-	//moves[2].startY = 2;
-	//moves[2].targetX = 3;
-	//moves[2].targetY = 3;
-
-	//matt::MoveSet s1, s2;
-
-	//s1.insert(moves[0]);
-	//s1.insert(moves[1]);
-
-	//s2.insert(moves[2]);
-
-	//s1.merge(s2);
-
-
-
-	//auto moves = matt::ChessValidation::getValidMoves(pos, matt::PLAYER_WHITE);
-
-	//pos = matt::FENParser::fenToPosition("r1b4r/pp1k1Npp/2p2n2/1B6/3p4/Bn6/P4PPP/4R1K1 w - - 0 3");
-	//move = engine.searchMove(pos, pos.getPlayer(), 3, matt::FT_ALPHA_BETA | matt::FT_SORT);
-
-	//std::cout << engine.m_count << std::endl;
-
-
-	//testEvaluationFunction();
-
-	// Testen
-	//engine.searchMove(pos, matt::PLAYER_WHITE, 4, matt::FT_ALPHA_BETA | matt::FT_NESTED | matt::FT_SORT, false);
-	//pos = matt::FENParser::fenToPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-
-	//auto str = matt::FENParser::positionToFen(pos);
-	//pos = matt::FENParser::fenToPosition(str);
-
-	//float value = matt::ChessEvaluation::evaluate(pos, matt::PLAYER_WHITE, matt::EVAL_FT_STANDARD);
-
-	//std::string test_capture_list = "8/1r6/K5k1/1p6/8/8/nR3q2/1b4P1 w - - 0 1";
-
-	//auto pos = matt::FENParser::fenToPosition(test_capture_list);
-
-	//auto moves = matt::ChessValidation::getValidMoves(pos, pos.getPlayer());
-
-	//std::cout << "before sort: " << std::endl;
-	//printMoves(moves, pos);
-
-	//engine.sortMoves(&moves, pos);
-
-	//std::cout << "after sort: " << std::endl;
-	//printMoves(moves, pos);
+	auto move = engine.searchMove(pos, pos.getPlayer(),5, 0);
 
 	std::cout << "exit" << std::endl;
 }

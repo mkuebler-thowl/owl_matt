@@ -3,9 +3,34 @@
 #include "ChessEvaluation.hpp"
 
 #include <algorithm>
+#include <chrono>
 
-namespace matt
+
+
+
+
+namespace owl
 {
+	using clock = std::chrono::steady_clock;
+	using time_point = std::chrono::steady_clock::time_point;
+	using milliseconds = std::chrono::milliseconds;
+	using microseconds = std::chrono::microseconds;
+
+	inline time_point START_CLOCK()
+	{
+		return clock::now();
+	}
+
+	inline int CALCULATE_MILLISECONDS(time_point start)
+	{
+		return std::chrono::duration_cast<milliseconds>(clock::now() - start).count();
+	}
+
+	inline auto CALCULATE_MICROSECONDS(time_point start)
+	{
+		return std::chrono::duration_cast<microseconds>(clock::now() - start).count();
+	}
+
 	ChessEngine::ChessEngine()
 	{
 
@@ -16,6 +41,9 @@ namespace matt
 
 	Move ChessEngine::searchMove(const Position& position, short player, unsigned short depth, unsigned char parameterFlags, bool random)
 	{
+		// Die Position des generischen Zugs zur RepitionMap hinzufügen
+		m_repitionMap.addPosition(position);
+
 		bool sort = parameterFlags & FT_SORT;
 		bool killer = parameterFlags & FT_KILLER;
 
@@ -46,19 +74,21 @@ namespace matt
 		//std::cout << (parameter_flags == (FT_ALPHA_BETA | FT_NESTED) || parameter_flags == (FT_ALPHA_BETA | FT_NESTED | FT_SORT)) << std::endl;
 		//std::cout << (parameter_flags == FT_NESTED || parameter_flags == (FT_NESTED | FT_SORT)) << std::endl;
 
+		m_repitionMap.addPosition(ChessValidation::applyMove(position, result.best));
+
 		return result.best;
 	}
 
 	MinMaxResult ChessEngine::minMax(const Position& position, short player, unsigned short depth)
 	{
-		auto moves = ChessValidation::getValidMoves(position, player);
+
 
 		auto result = MinMaxResult{};
 		result.values.resize(MIN_MAX_VALUE_SIZE);
 
 		result.values[VALUE] = -player * INF;
 
-		if (depth == 0 || moves.empty())
+		if (depth == 0)
 		{
 			// TODO: Change Engine Player
 			result.values[VALUE] = ChessEvaluation::evaluate(position, PLAYER_WHITE, EVAL_FT_STANDARD);
@@ -66,9 +96,23 @@ namespace matt
 			return result;
 		}
 
+		auto moves = ChessValidation::getValidMoves(position, player);
+
+		if (moves.empty())
+		{
+			// TODO: Change Engine Player
+			result.values[VALUE] = ChessEvaluation::evaluate(position, PLAYER_WHITE, EVAL_FT_STANDARD);
+
+			return result;
+		}
+
 		for (auto move : moves)
 		{
 			auto current_position = ChessValidation::applyMove(position, move);
+
+			// Stellungen wegen 3x Stellungswiederholung überspringen
+			if (m_repitionMap.isPositionAlreadyLocked(current_position)) continue;
+
 			auto new_result = minMax(current_position, -player, depth - 1);
 
 			if (new_result.values[VALUE] > result.values[VALUE] && player == PLAYER_WHITE || new_result.values[VALUE] < result.values[VALUE] && player == PLAYER_BLACK)
@@ -87,29 +131,38 @@ namespace matt
 
 	MinMaxResult ChessEngine::alphaBeta(const Position& position, short player, unsigned short depth, float alpha, float beta, bool sort, bool killer)
 	{
-		auto result = MinMaxResult{};
-
-		auto moves = ChessValidation::getValidMoves(position, player);
-		if (sort) sortMoves(&moves, position, depth, &result, killer);
-
+		auto result = MinMaxResult{};		
 		auto is_player_white = player == PLAYER_WHITE;
 
 		result.values.resize(MIN_MAX_VALUE_SIZE);
 		result.values[VALUE] = -player * INF;
 
-		if (depth == 0 || moves.empty())
+		if (depth == 0)
 		{
 			// TODO: Change Engine Player
 			result.values[VALUE] = ChessEvaluation::evaluate(position, PLAYER_WHITE, EVAL_FT_STANDARD);
 			return result;
 		} 
 
+		std::vector<Move> moves = ChessValidation::getValidMoves(position, player);
+
+		if (moves.empty())
+		{
+			result.values[VALUE] = ChessEvaluation::evaluate(position, PLAYER_WHITE, EVAL_FT_STANDARD);
+			return result;
+		}
+
+		auto start = START_CLOCK();
+		if (sort) sortMoves(&moves, position, depth, &result, killer);
+		m_v1 += CALCULATE_MICROSECONDS(start);
+		m_v2++;
+
 		for (auto move : moves)
 		{
-			if (depth == 3)
-				std::cout << "d3";
-
 			auto current_position = ChessValidation::applyMove(position, move);
+			
+			//// Stellungen wegen 3x Stellungswiederholung überspringen
+			//if (m_repitionMap.isPositionAlreadyLocked(current_position)) continue;
 
 			std::pair<float, float> alpha_beta = is_player_white ? 
 				std::make_pair(result.values[VALUE], beta) : 
@@ -134,8 +187,7 @@ namespace matt
 				if (alpha >= beta) 
 				{ 
 					if (killer) result.killers[depth].insert(move);
-					Move::printMove(move);
-					m_count++;  
+					//m_count++;  
 					break; 
 				}
 			}
@@ -147,8 +199,7 @@ namespace matt
 				if (beta <= alpha) 
 				{
 					if (killer) result.killers[depth].insert(move);
-					Move::printMove(move);
-					m_count++; 
+					//m_count++;
 					break; 
 				}
 			}
@@ -172,8 +223,6 @@ namespace matt
 			result.values[VALUE] = value;
 			result.values[LOWER] = value;
 			result.values[UPPER] = value;
-
-			m_count++;
 
 			return result;
 		}
@@ -271,7 +320,7 @@ namespace matt
 				result.values[UPPER] = std::max(result.values[UPPER], -new_result.values[LOWER]);
 				result.best = move;
 
-				if (alpha > beta) { m_count++;  break; }
+				if (alpha > beta) {  break; }
 			}
 			else if (!is_player_white && new_result.values[VALUE] < result.values[BETA])
 			{
@@ -281,7 +330,7 @@ namespace matt
 				result.values[UPPER] = std::max(result.values[UPPER], -new_result.values[LOWER]);
 				result.best = move;
 
-				if (beta < alpha) { m_count++;  break; }
+				if (beta < alpha) {  break; }
 			}
 		}
 
@@ -290,6 +339,7 @@ namespace matt
 
 	void ChessEngine::sortMoves(std::vector<Move>* moves, const Position& position, unsigned short depth, MinMaxResult* pResult, bool killer)
 	{
+
 		std::sort(moves->begin(), moves->end(), [&position, depth, pResult, killer](const Move& left, const Move& right)
 		{
 			if (left.capture && !right.capture) return true;
@@ -303,6 +353,9 @@ namespace matt
 			// Heuristics
 			if (killer)
 			{
+				if (pResult->killers.size() > 0)
+					std::cout << "huh" << std::endl;
+
 				auto killer_left = killerHeuristics(left, depth, pResult);
 				auto killer_right = killerHeuristics(right, depth, pResult);
 				if (killer_left && !killer_right) return true;
@@ -328,7 +381,7 @@ namespace matt
 		return false;
 	}
 
-	matt::ChessEngine::Captures ChessEngine::getCaptureValue(char attacker, char victim)
+	owl::ChessEngine::Captures ChessEngine::getCaptureValue(char attacker, char victim)
 	{
 		attacker = std::tolower(attacker);
 		victim = std::toupper(victim);
