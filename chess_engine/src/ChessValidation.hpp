@@ -19,7 +19,7 @@ namespace owl
 		/// <param name="position:">Aktuelle Spielstellung bzw. Ausgangsstellung</param>
 		/// <param name="player:">Aktueller Spieler, der am Zug ist.</param>
 		/// <returns>Liste der möglichen bzw. gültigen Züge</returns>
-		static MoveList getValidMoves(Position& position, short player);
+		static MOVE_LIST getValidMoves(Position& position, short player);
 
 		/// <summary>
 		/// Funktion zur Ermittlung der Anzahl gültiger Züge zu einer bestimmten Position. Wird für die Piece-Mobilty verwendet.
@@ -83,17 +83,17 @@ namespace owl
 		static VOID evaluateCheckmate(Position& position, short player, BOOL noValidMoves);
 
 		/// Suche alle legalen Bauerbewegungen
-		static MoveList getValidPawnMoves(Position& position, INT32 x, INT32 y, short player);
+		static MOVE_LIST getValidPawnMoves(Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Springerbewegungen
-		static MoveList getValidKnightMoves(Position& position, INT32 x, INT32 y, short player);
+		static MOVE_LIST getValidKnightMoves(Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Königbewegungen
-		static MoveList getValidKingMoves(Position& position, INT32 x, INT32 y, short player);
+		static MOVE_LIST getValidKingMoves(Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Turmbewegungen
-		static MoveList getValidRookMoves(Position& position, INT32 x, INT32 y, short player);
+		static MOVE_LIST getValidRookMoves(Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Läuferbewegungen
-		static MoveList getValidBishopMoves(Position& position, INT32 x, INT32 y, short player);
+		static MOVE_LIST getValidBishopMoves(Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle Linien ab für Läufer, Türme und Dame
-		static MoveList continueValidMovesOnLine(Position& position, INT32 x, INT32 y, const std::string& enemies_string, INT32 xDir, INT32 yDir);
+		static MOVE_LIST continueValidMovesOnLine(Position& position, INT32 x, INT32 y, const std::string& enemies_string, INT32 xDir, INT32 yDir);
 
 		/// Enemy-String nach Spielertyp ausgeben
 		static std::string getEnemyPiecesString(short player);

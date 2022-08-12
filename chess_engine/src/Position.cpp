@@ -29,10 +29,10 @@ namespace owl
 
 	}
 
-	Position::Position(const BoardArray& data, INT16 player,
+	Position::Position(const BOARD_ARRAY& data, INT16 player,
 		BOOL whiteCastlingShort, BOOL whiteCastlingLong, 
 		BOOL blackCastlingShort, BOOL blackCastlingLong, 
-		BOOL enPassant, std::pair<UINT16, UINT16> enPassantPosition,
+		BOOL enPassant, PAIR<UINT16, UINT16> enPassantPosition,
 		UINT16 moveCount, UINT16 moveNumber)
 		: m_data(data), m_player(player), 
 		m_whiteCastlingShort(whiteCastlingShort), m_whiteCastlingLong(whiteCastlingLong),
@@ -51,7 +51,7 @@ namespace owl
 		m_moveDataStack.push({ Move{}, EMPTY_FIELD, EMPTY_FIELD, false, m_enPassantPosition, {false,0}, m_movedFirstTime });
 	}
 
-	owl::BoardLine& Position::operator[](INT32 index) const
+	owl::BOARD_LINE& Position::operator[](INT32 index) const
 	{
 		assert(index < COLUMNS);
 		return m_data[index];
@@ -161,7 +161,7 @@ namespace owl
 
 		// Promotion 
 		if (move_data.move.promotion > 0) m_data[move_data.move.targetY][move_data.move.targetX] = m_player == PLAYER_WHITE ? 
-			move_data.move.promotion : 
+			std::toupper(move_data.move.promotion) : 
 			std::tolower(move_data.move.promotion);
 
 		// Spieler für Halbzug ändern
@@ -304,7 +304,7 @@ namespace owl
 	{
 		return m_enPassant;
 	}
-	const std::pair<INT32, INT32>& Position::getEnPassant() const
+	const PAIR<INT32, INT32>& Position::getEnPassant() const
 	{
 		return m_enPassantPosition;
 	}

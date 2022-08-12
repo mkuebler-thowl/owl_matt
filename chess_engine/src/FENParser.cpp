@@ -26,7 +26,7 @@ namespace owl {
         rows.push_back(fen.substr(0, pos));
         fen.replace(0, pos + 1, "");
 
-        auto data = BoardArray();
+        auto data = BOARD_ARRAY();
 
         INT32 y = 0;
         for (auto row : rows)
@@ -69,7 +69,7 @@ namespace owl {
         // En Passant Field
         BOOL en_passant = false;
         std::string passant_pos_str;
-        std::pair<INT32, INT32> en_passant_pos = { 0,0 };
+        PAIR<INT32, INT32> en_passant_pos = { 0,0 };
         if (fen[0] == '-')
         {
             fen.replace(0, 2, "");
@@ -173,8 +173,11 @@ namespace owl {
         // position setzen
         move.startX = algebraicNotation[0] - 'a';
         move.startY = 7 - (algebraicNotation[1] - '1');
-        move.targetX = algebraicNotation[3] - 'a';
-        move.targetY = 7 - (algebraicNotation[4] - '1');
+
+        INT16 index_offset = (algebraicNotation[2] >= 'a' && algebraicNotation[2] <= 'h') ? 0 : 1;
+
+        move.targetX = algebraicNotation[2+index_offset] - 'a';
+        move.targetY = 7 - (algebraicNotation[3+index_offset] - '1');
 
         // Relative Attribute des Zugs in Abhängigkeit zur Position auslesen.
         if (position != nullptr)

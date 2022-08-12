@@ -18,7 +18,7 @@ namespace owl
 		FLOAT extra_pawn_score[PLAYER_COUNT] = { 0.0f };		// Bauernscore (Wird nachträglich zum Score addiert)
 		FLOAT square_table_score[PLAYER_COUNT] = { 0.0f };		// Square-Table Score
 
-		std::pair<INT32, INT32> king_pos[PLAYER_COUNT] = {{0, 0}};
+		PAIR<INT32, INT32> king_pos[PLAYER_COUNT] = {{0, 0}};
 
 		UINT16 piece_count[PLAYER_COUNT][MAX_PIECE_TYPES] = { {0} };	 // Figurenanzahl
 		UINT16 possible_moves[PLAYER_COUNT][MAX_PIECE_TYPES] = { {0} }; // Piece Mobility Count

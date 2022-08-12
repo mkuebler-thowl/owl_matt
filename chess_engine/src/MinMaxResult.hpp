@@ -32,6 +32,5 @@ namespace owl
 	{
 		Move best;
 		std::vector<FLOAT> values;
-		std::unordered_map<UINT16, MoveSet> killers;
 	};
 }

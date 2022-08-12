@@ -66,6 +66,12 @@ namespace owl
 			return !(operator==(other));
 		}
 
+		BOOL isMoveInvalid()
+		{
+			return startX == targetX
+				&& startY == targetY;
+		}
+
 		struct HashFunction
 		{
 			UINT64 operator()(const Move& move) const
@@ -78,4 +84,6 @@ namespace owl
 			}
 		};
 	};
+
+	constexpr Move INVALID_MOVE = { 0,0,0,0 };
 }

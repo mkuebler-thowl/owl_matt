@@ -7,9 +7,9 @@
 #include <iostream>
 namespace owl
 {
-	MoveList ChessValidation::getValidMoves(Position& position, short player)
+	MOVE_LIST ChessValidation::getValidMoves(Position& position, short player)
 	{
-		MoveList moves;
+		MOVE_LIST moves;
 
 		for (INT32 y = FIRST_ROW_INDEX; y < ROWS; y++)
 		{
@@ -332,7 +332,7 @@ namespace owl
 	BOOL ChessValidation::checkKingKnights(INT32 king_x, INT32 king_y, const Position& position, short player)
 	{
 		CHAR enemy_knight = player == PLAYER_WHITE ? 'n' : 'N';
-		std::vector<std::pair<INT32, INT32>> directions = { {-1,-2}, {2,-1}, {2,1}, {1,2}, {-1,2}, {-2,1}, {-2,-1}, {-1,-2} };
+		std::vector<PAIR<INT32, INT32>> directions = { {-1,-2}, {2,-1}, {2,1}, {1,2}, {-1,2}, {-2,1}, {-2,-1}, {-1,-2} };
 
 		for (auto direction : directions)
 		{
@@ -406,9 +406,9 @@ namespace owl
 		}
 	}
 
-	MoveList ChessValidation::getValidPawnMoves(Position& position, INT32 x, INT32 y, short player)
+	MOVE_LIST ChessValidation::getValidPawnMoves(Position& position, INT32 x, INT32 y, short player)
 	{
-		MoveList moves;
+		MOVE_LIST moves;
 		auto pawn_direction = player;
 		std::string enemies = getEnemyPiecesString(player);
 		std::string promotion_str = std::string(player == PLAYER_WHITE ? WHITE_PROMOTION_PIECES : BLACK_PROMOTION_PIECES);
@@ -541,10 +541,10 @@ namespace owl
 		return moves;
 	}
 
-	MoveList ChessValidation::getValidKnightMoves(Position& position, INT32 x, INT32 y, short player)
+	MOVE_LIST ChessValidation::getValidKnightMoves(Position& position, INT32 x, INT32 y, short player)
 	{
-		MoveList moves;
-		std::vector<std::pair<INT32, INT32>> possible_places = { {1,-2},{2,-1},{2,1},{1,2},{-1,2},{-2,1},{-2,-1}, {-1,-2} };
+		MOVE_LIST moves;
+		std::vector<PAIR<INT32, INT32>> possible_places = { {1,-2},{2,-1},{2,1},{1,2},{-1,2},{-2,1},{-2,-1}, {-1,-2} };
 		std::string enemies = getEnemyPiecesString(player);
 
 		for (auto pair : possible_places)
@@ -572,11 +572,11 @@ namespace owl
 		return moves;
 	}
 
-	MoveList ChessValidation::getValidKingMoves(Position& position, INT32 x, INT32 y, short player)
+	MOVE_LIST ChessValidation::getValidKingMoves(Position& position, INT32 x, INT32 y, short player)
 	{
-		MoveList moves;
+		MOVE_LIST moves;
 		std::string enemies = getEnemyPiecesString(player);
-		std::vector<std::pair<INT32, INT32>> possible_places = { {0,-1},{1,-1},{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1} };
+		std::vector<PAIR<INT32, INT32>> possible_places = { {0,-1},{1,-1},{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1} };
 
 		for (auto pair : possible_places)
 		{
@@ -674,11 +674,11 @@ namespace owl
 		return moves;
 	}
 
-	MoveList ChessValidation::getValidRookMoves(Position& position, INT32 x, INT32 y, short player)
+	MOVE_LIST ChessValidation::getValidRookMoves(Position& position, INT32 x, INT32 y, short player)
 	{
-		MoveList moves;
+		MOVE_LIST moves;
 		std::string enemies = getEnemyPiecesString(player);
-		std::vector<std::pair<INT32, INT32>> directions = { {0,-1}, {1,0}, {0,1}, {-1,0} };
+		std::vector<PAIR<INT32, INT32>> directions = { {0,-1}, {1,0}, {0,1}, {-1,0} };
 		
 		for (auto direction : directions)
 		{
@@ -689,11 +689,11 @@ namespace owl
 		return moves;
 	}
 
-	MoveList ChessValidation::getValidBishopMoves(Position& position, INT32 x, INT32 y, short player)
+	MOVE_LIST ChessValidation::getValidBishopMoves(Position& position, INT32 x, INT32 y, short player)
 	{
-		MoveList moves;
+		MOVE_LIST moves;
 		std::string enemies = getEnemyPiecesString(player);
-		std::vector<std::pair<INT32, INT32>> directions = { {-1,-1}, {1,-1}, {1,1}, {-1,1} };
+		std::vector<PAIR<INT32, INT32>> directions = { {-1,-1}, {1,-1}, {1,1}, {-1,1} };
 
 		for (auto direction : directions)
 		{
@@ -704,9 +704,9 @@ namespace owl
 		return moves;
 	}
 
-	MoveList ChessValidation::continueValidMovesOnLine(Position& position, INT32 x, INT32 y, const std::string& enemies_string, INT32 xDir, INT32 yDir)
+	MOVE_LIST ChessValidation::continueValidMovesOnLine(Position& position, INT32 x, INT32 y, const std::string& enemies_string, INT32 xDir, INT32 yDir)
 	{
-		MoveList moves;
+		MOVE_LIST moves;
 		BOOL line_empty = true;
 
 		INT32 offset = 1;

@@ -12,6 +12,11 @@ namespace owl
 	class ChessValidation;
 	class RepitionMap;
 	class FenParser;
+	class IChessInterface;
+	class UniversalChessInterface;
+	class Command;
+	class CommandBuilder;
+	class EngineOptions;
 
 	struct Move;
 	struct MinMaxResult;
@@ -42,12 +47,28 @@ namespace owl
 	// Engine: Feature-Parameter
 	constexpr UCHAR FT_NULL = 0;
 	constexpr UCHAR FT_ALPHA_BETA = BIT_1;
-	constexpr UCHAR FT_SORT = BIT_2;
-	constexpr UCHAR FT_KILLER = BIT_3;
+	// Sotierungs-Parameter
+	constexpr UCHAR FT_SRT_MATERIAL = BIT_2;
+	constexpr UCHAR FT_SRT_MVV_LVA = BIT_3;
+	constexpr UCHAR FT_SRT_KILLER = BIT_4;
+
 	// Optionale-Paramater (nicht implementiert):
-	constexpr UCHAR FT_HISTORY = BIT_4;
-	constexpr UCHAR FT_NESTED = BIT_5;
+	constexpr UCHAR FT_HISTORY = BIT_5;
 	constexpr UCHAR FT_PVS = BIT_6;
+	constexpr UCHAR FT_NESTED = BIT_7;
+
+	// Grenzen für Feature-Parameter:
+	// Achtung: Features die nicht für die Sortierung relevant sind müssen vor FT_BIT_SORT_BEGIN liegen
+	// Sollten optionale parameter implementiert werden, bitte diese entsprechend vorher einfügen und < FT_BIT_SORT_BEGIN halten
+	constexpr UCHAR FT_BIT_SORT_BEGIN = FT_SRT_MATERIAL;
+	constexpr UCHAR FT_BIT_NOT_IMPLEMENTED_BEGIN = FT_HISTORY;
+
+	constexpr CHAR* ENGINE_ID = "OWL-Matt 1.0";		// Schach-Engine-ID für UCI
+	constexpr CHAR* ENGINE_AUTHOR = "TH-OWL";		// Autor:in der Schach-Engine (Hochschule)
+
+	constexpr UCHAR FT_STANDARD = FT_ALPHA_BETA | FT_SRT_MATERIAL | FT_SRT_MVV_LVA | FT_SRT_KILLER; // OWL-Matt Standard Features
+
+	constexpr BOOL USE_RANDOM = false;
 
 	// Spieler
 	constexpr short PLAYER_WHITE = 1;
@@ -55,6 +76,17 @@ namespace owl
 
 	// Maximalwert für Endstellung
 	constexpr FLOAT INF = 999.0f;
+
+	// Parameter-Konstanten
+	constexpr UINT16 KILLER_SIZE = 2;
+	constexpr UINT16 FIRST_KILLER_INDEX = 0;
+	constexpr UINT16 LAST_KILLER_INDEX = KILLER_SIZE-1;
+
+	constexpr UINT16 KILLER_PRIO_1 = 2;
+	constexpr UINT16 KILLER_PRIO_2 = 1;
+	constexpr UINT16 KILLER_NO_PRIO = 0;
+
+	constexpr UINT16 MAX_DEPTH = 10; // Später auf maximale erreichbare Suchtiefe anpassen
 
 	// Positionsbezogen:
 	constexpr UINT16 EN_PASSANT_WHITE_Y = 5; // Übergangene Zeile y bei En Passant für Spieler Weiß
@@ -85,12 +117,22 @@ namespace owl
 	constexpr UINT16 LAST_COLUMN_INDEX = COLUMNS - 1;		// Letzte Spalte
 	constexpr UINT16 MAX_FIELDS_ON_BOARD = ROWS * COLUMNS;	// Anzahl der Zellen
 
-	// Using für Container
-	using BoardLine = std::array<CHAR, COLUMNS>;	// Liste aller Elemente einer Reihe in einer Zeile
-	using BoardArray = std::array<BoardLine, ROWS>; // Liste aller Zeilen des Spielfelds 
-	using MoveList = std::vector<Move>; // Liste an Zügen
+	constexpr CHAR* STARTPOS_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-		// Notwendige Konstanten
+	// Using für Container
+	using BOARD_LINE = std::array<CHAR, COLUMNS>;	// Liste aller Elemente einer Reihe in einer Zeile
+	using BOARD_ARRAY = std::array<BOARD_LINE, ROWS>; // Liste aller Zeilen des Spielfelds 
+	using MOVE_LIST = std::vector<Move>; // Liste an Zügen
+	using KILLER_LIST = Move[KILLER_SIZE][MAX_DEPTH]; // Killer-Liste für Killer-Heuristik
+
+	template <class A,class B>
+	using PAIR = std::pair<A, B>; // Paar
+
+	// Für die Sortierung
+	constexpr BOOL CHOOSE_LEFT = true;
+	constexpr BOOL CHOOSE_RIGHT = false;
+
+	// Notwendige Konstanten
 	constexpr UINT16 WHITE_INDEX = 0;
 	constexpr UINT16 BLACK_INDEX = 1;
 
@@ -116,13 +158,13 @@ namespace owl
 	constexpr UINT16 MIN_BISHOP_COUNT_PRECONDITION_BONUS = 2;
 
 	// Bewertungsfunktions-Feature
-	constexpr UCHAR EVAL_FT_MATERIAL_DYNAMIC_GAME_PHASE = (1 << 0); // Materialwerte abhängig von der Spielphase (Eröffnung, Mittel- und Endspiel)
-	constexpr UCHAR EVAL_FT_PIECE_SQUARE_TABLE = (1 << 1); // Piece-Square-Tabelle
-	constexpr UCHAR EVAL_FT_PIECE_MOBILITY = (1 << 2); // Piece-Mobility
-	constexpr UCHAR EVAL_FT_PAWN_STRUCTURE = (1 << 3); // Bauernstruktur (Double, Isolated, Connected, Backwards, Chain, Passed)
-	constexpr UCHAR EVAL_FT_BISHOP_PAIR = (1 << 4); // Läuferpaar
+	constexpr UCHAR EVAL_FT_MATERIAL_DYNAMIC_GAME_PHASE = BIT_1; // Materialwerte abhängig von der Spielphase (Eröffnung, Mittel- und Endspiel)
+	constexpr UCHAR EVAL_FT_PIECE_SQUARE_TABLE = BIT_2; // Piece-Square-Tabelle
+	constexpr UCHAR EVAL_FT_PIECE_MOBILITY = BIT_3; // Piece-Mobility
+	constexpr UCHAR EVAL_FT_PAWN_STRUCTURE = BIT_4; // Bauernstruktur (Double, Isolated, Connected, Backwards, Chain, Passed)
+	constexpr UCHAR EVAL_FT_BISHOP_PAIR = BIT_5; // Läuferpaar
 	// optionale/weitere Featuers
-	constexpr UCHAR EVAL_FT_DYNAMIC_PAWNS = (1 << 5);	// Dynamische Bauern
+	constexpr UCHAR EVAL_FT_DYNAMIC_PAWNS = BIT_6;	// Dynamische Bauern
 
 	// Alle Standard Bewertungsfunktions-Features
 	constexpr UCHAR EVAL_FT_STANDARD =
@@ -219,10 +261,6 @@ namespace owl
 		{WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN, WHITE_KING},
 		{BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN, BLACK_KING}
 	};
-
-
-
-
 
 	constexpr UINT16 GET_PIECE_INDEX_BY_TYPE(CHAR piece)
 	{
@@ -410,8 +448,26 @@ namespace owl
 			 t[0],  t[1],  t[2],  t[3],  t[4],  t[5],  t[6],  t[7]
 		};
 
-
-
 		return sort_table;
 	}
+
+	enum class Captures
+	{
+		kxP, kxN, kxB, kxR, kxQ,
+		qxP, qxN, qxB, qxR, qxQ,
+		rxP, rxN, rxB, rxR, rxQ,
+		bxP, bxN, bxB, bxR, bxQ,
+		nxP, nxN, nxB, nxR, nxQ,
+		pxP, pxN, pxB, pxR, pxQ
+	};
+
+	static constexpr std::array<CHAR*, MAX_PIECE_TYPES* (MAX_PIECE_TYPES - 1)> s_capture_map =
+	{
+		"kxP","kxN","kxB","kxR","kxQ",
+		"qxP","qxN","qxB","qxR","qxQ",
+		"rxP","rxN","rxB","rxR","rxQ",
+		"bxP","bxN","bxB","bxR","bxQ",
+		"nxP","nxN","nxB","nxR","nxQ",
+		"pxP","pxN","pxB","pxR","pxQ"
+	};
 }
