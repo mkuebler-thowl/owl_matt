@@ -1,13 +1,8 @@
 #include "ChessEngine.hpp"
 #include "ChessValidation.hpp"
 #include "ChessEvaluation.hpp"
-
 #include <algorithm>
 #include <chrono>
-
-
-
-
 
 namespace owl
 {
@@ -143,7 +138,10 @@ namespace owl
 			return result;
 		} 
 
+		auto start = START_CLOCK();
 		MoveList moves = ChessValidation::getValidMoves(position, player);
+		m_v1 += CALCULATE_MICROSECONDS(start);
+		m_v2++;
 
 		if (moves.empty())
 		{
@@ -151,10 +149,9 @@ namespace owl
 			return result;
 		}
 
-		auto start = START_CLOCK();
+
 		if (sort) sortMoves(&moves, position, depth, &result, killer);
-		m_v1 += CALCULATE_MICROSECONDS(start);
-		m_v2++;
+
 
 		for (auto move : moves)
 		{
@@ -186,7 +183,6 @@ namespace owl
 				result.values[VALUE] = new_result.values[VALUE];
 				result.best = move;
 
-
 				if (alpha >= beta) 
 				{ 
 					if (killer) result.killers[depth].insert(move);
@@ -208,10 +204,11 @@ namespace owl
 			}
 		}
 
+		
 		return result;
 	}
 
-	MinMaxResult ChessEngine::nested(const Position& position, short player, UINT16 depth, BOOL sort)
+	MinMaxResult ChessEngine::nested(Position& position, short player, UINT16 depth, BOOL sort)
 	{
 		auto moves = ChessValidation::getValidMoves(position, player);
 		//if (sort) sortMoves(&moves, position, depth, result, sort);
@@ -270,7 +267,7 @@ namespace owl
 		return result;
 	}
 
-	MinMaxResult ChessEngine::nestedAlphaBeta(const Position& position, short player, UINT16 depth, FLOAT alpha, FLOAT beta, BOOL sort)
+	MinMaxResult ChessEngine::nestedAlphaBeta(Position& position, short player, UINT16 depth, FLOAT alpha, FLOAT beta, BOOL sort)
 	{
 		MinMaxResult result;
 		result.values.resize(NESTED_SIZE);
@@ -340,7 +337,7 @@ namespace owl
 		return result;
 	}
 
-	VOID ChessEngine::sortMoves(MoveList* moves, const Position& position, UINT16 depth, MinMaxResult* pResult, BOOL killer)
+	VOID ChessEngine::sortMoves(MoveList* moves, Position& position, UINT16 depth, MinMaxResult* pResult, BOOL killer)
 	{
 
 		std::sort(moves->begin(), moves->end(), [&position, depth, pResult, killer](const Move& left, const Move& right)
@@ -391,59 +388,59 @@ namespace owl
 
 		switch (victim)
 		{
-		case PAWN_WHITE:
+		case WHITE_PAWN:
 			switch (attacker)
 			{
-			case PAWN_BLACK: return Captures::pxP; break;
-			case KNIGHT_BLACK: return Captures::nxP; break;
-			case BISHOP_BLACK: return Captures::bxP; break;
-			case ROOK_BLACK: return Captures::rxP; break;
-			case QUEEN_BLACK: return Captures::qxP; break;
-			case KING_BLACK: return Captures::kxP; break;
+			case BLACK_PAWN: return Captures::pxP; break;
+			case BLACK_KNIGHT: return Captures::nxP; break;
+			case BLACK_BISHOP: return Captures::bxP; break;
+			case BLACK_ROOK: return Captures::rxP; break;
+			case BLACK_QUEEN: return Captures::qxP; break;
+			case BLACK_KING: return Captures::kxP; break;
 			}
 			break;
-		case KNIGHT_WHITE:
+		case WHITE_KNIGHT:
 			switch (attacker)
 			{
-			case PAWN_BLACK: return Captures::pxN; break;
-			case KNIGHT_BLACK: return Captures::nxN; break;
-			case BISHOP_BLACK: return Captures::bxN; break;
-			case ROOK_BLACK: return Captures::rxN; break;
-			case QUEEN_BLACK: return Captures::qxN; break;
-			case KING_BLACK: return Captures::kxN; break;
+			case BLACK_PAWN: return Captures::pxN; break;
+			case BLACK_KNIGHT: return Captures::nxN; break;
+			case BLACK_BISHOP: return Captures::bxN; break;
+			case BLACK_ROOK: return Captures::rxN; break;
+			case BLACK_QUEEN: return Captures::qxN; break;
+			case BLACK_KING: return Captures::kxN; break;
 			}
 			break;
-		case BISHOP_WHITE:
+		case WHITE_BISHOP:
 			switch (attacker)
 			{
-			case PAWN_BLACK: return Captures::pxB; break;
-			case KNIGHT_BLACK: return Captures::nxB; break;
-			case BISHOP_BLACK: return Captures::bxB; break;
-			case ROOK_BLACK: return Captures::rxB; break;
-			case QUEEN_BLACK: return Captures::qxB; break;
-			case KING_BLACK: return Captures::kxB; break;
+			case BLACK_PAWN: return Captures::pxB; break;
+			case BLACK_KNIGHT: return Captures::nxB; break;
+			case BLACK_BISHOP: return Captures::bxB; break;
+			case BLACK_ROOK: return Captures::rxB; break;
+			case BLACK_QUEEN: return Captures::qxB; break;
+			case BLACK_KING: return Captures::kxB; break;
 			}
 			break;
-		case ROOK_WHITE:
+		case WHITE_ROOK:
 			switch (attacker)
 			{
-			case PAWN_BLACK: return Captures::pxR; break;
-			case KNIGHT_BLACK: return Captures::nxR; break;
-			case BISHOP_BLACK: return Captures::bxR; break;
-			case ROOK_BLACK: return Captures::rxR; break;
-			case QUEEN_BLACK: return Captures::qxR; break;
-			case KING_BLACK: return Captures::kxR; break;
+			case BLACK_PAWN: return Captures::pxR; break;
+			case BLACK_KNIGHT: return Captures::nxR; break;
+			case BLACK_BISHOP: return Captures::bxR; break;
+			case BLACK_ROOK: return Captures::rxR; break;
+			case BLACK_QUEEN: return Captures::qxR; break;
+			case BLACK_KING: return Captures::kxR; break;
 			}
 			break;
-		case QUEEN_WHITE:
+		case WHITE_QUEEN:
 			switch (attacker)
 			{
-			case PAWN_BLACK: return Captures::pxQ; break;
-			case KNIGHT_BLACK: return Captures::nxQ; break;
-			case BISHOP_BLACK: return Captures::bxQ; break;
-			case ROOK_BLACK: return Captures::rxQ; break;
-			case QUEEN_BLACK: return Captures::qxQ; break;
-			case KING_BLACK: return Captures::kxQ; break;
+			case BLACK_PAWN: return Captures::pxQ; break;
+			case BLACK_KNIGHT: return Captures::nxQ; break;
+			case BLACK_BISHOP: return Captures::bxQ; break;
+			case BLACK_ROOK: return Captures::rxQ; break;
+			case BLACK_QUEEN: return Captures::qxQ; break;
+			case BLACK_KING: return Captures::kxQ; break;
 			}
 			break;
 		}

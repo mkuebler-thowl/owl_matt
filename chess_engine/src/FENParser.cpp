@@ -184,10 +184,10 @@ namespace owl {
             auto piece = pos[move.startY][move.startX];
 
             // Capture abfangen:
-            move.capture = (pos[move.targetY][move.targetX] != EMPTY_PLACE);
+            move.capture = (pos[move.targetY][move.targetX] != EMPTY_FIELD);
 
             // Rochade abfangen:
-            if ((piece == KING_WHITE || piece == KING_BLACK))
+            if ((piece == WHITE_KING || piece == BLACK_KING))
             {
                 if (move.startX == KING_START_X && move.targetX == KING_CASTLING_LONG_X) move.castlingLong = true;
                 else if (move.startX == KING_START_X && move.targetX == KING_CASTLING_SHORT_X) move.castlingShort = true;
@@ -196,10 +196,10 @@ namespace owl {
             // En Passant abfangen
             // Ansatz: Wenn der Zug diagonal ist und das Zielfeld leer ist, muss es sich um ein En Passant-Capture handeln
             if (pos.isEnPassant() 
-                && pos[move.targetY][move.targetX] == EMPTY_PLACE 
+                && pos[move.targetY][move.targetX] == EMPTY_FIELD 
                 && move.startX != move.targetY
-                && ((piece == PAWN_WHITE && move.startY == PAWN_DOUBLE_MOVE_TARGET_BLACK_Y) 
-                    || (piece == PAWN_BLACK && move.startY == PAWN_DOUBLE_MOVE_TARGET_WHITE_Y)))
+                && ((piece == WHITE_PAWN && move.startY == PAWN_DOUBLE_MOVE_TARGET_BLACK_Y) 
+                    || (piece == BLACK_PAWN && move.startY == PAWN_DOUBLE_MOVE_TARGET_WHITE_Y)))
             {
                 move.capture = true;
                 move.enPassantCapture = true;

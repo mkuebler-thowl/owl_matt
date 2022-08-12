@@ -9,11 +9,6 @@
 
 namespace owl
 {
-	constexpr CHAR* BLACK_PIECES = "pnbrqk";
-	constexpr CHAR* WHITE_PIECES = "PNBRQK";
-	constexpr CHAR* WHITE_PROMOTION_STR = "NBRQ";
-	constexpr CHAR* BLACK_PROMOTION_STR = "nbrq";
-
 	/// ChessValidation bietet als Hilfsklasse für statische Funktionen zur Überprüfung und Ermittlung legaler Züge.
 	class ChessValidation
 	{
@@ -24,7 +19,7 @@ namespace owl
 		/// <param name="position:">Aktuelle Spielstellung bzw. Ausgangsstellung</param>
 		/// <param name="player:">Aktueller Spieler, der am Zug ist.</param>
 		/// <returns>Liste der möglichen bzw. gültigen Züge</returns>
-		static MoveList getValidMoves(const Position& position, short player);
+		static MoveList getValidMoves(Position& position, short player);
 
 		/// <summary>
 		/// Funktion zur Ermittlung der Anzahl gültiger Züge zu einer bestimmten Position. Wird für die Piece-Mobilty verwendet.
@@ -33,7 +28,7 @@ namespace owl
 		/// <param name="x">Spalte 0-7 (rechts-links)</param>
 		/// <param name="y">Zeile 0-7 (oben-unten)</param>
 		/// <returns>Anzahl gefundener Züge</returns>
-		static UINT16 countPossibleMovesOnField(const Position& position, INT32 x, INT32 y);
+		static UINT16 countPossibleMovesOnField(Position& position, INT32 x, INT32 y);
 
 		/// <summary>
 		/// Zug auf eine Position anwenden. Hinweis: Diese Funktion überprüft nicht, ob der Zug auf die Position angwendet werden darf. In der Zugfindung später wichtig, in der Überprüfungphase irrelevant.
@@ -41,7 +36,7 @@ namespace owl
 		/// <param name="position:">Aktuelle Spielposition bzw. Ausgangsstellung</param>
 		/// <param name="move">Der Zug, der ausgeführt werden soll</param>
 		/// <returns>die neue Spielposition bzw. Ausgangsstellung</returns>
-		static Position applyMove(const Position& position, const Move& move);
+		static Position applyMove(Position& position, const Move& move);
 
 		// TODO: position.getPlayer() macht player:parameter überflüssig?
 		/// <summary>
@@ -51,7 +46,7 @@ namespace owl
 		/// <param name="player:">Aktueller Spieler</param>
 		/// <param name="move:">Angewendeter Zug</param>
 		/// <returns>Ob der König im Schach stehen würde</returns>
-		static BOOL isKinginCheckAfterMove(const Position& position, short player, const Move& move);
+		static BOOL isKinginCheckAfterMove(Position& position, short player, const Move& move);
 
 		/// Überprüfe ob die Stelle x,y die Spielfeldgrenzen überschreitet
 		static BOOL isInsideChessboard(INT32 x, INT32 y);
@@ -63,7 +58,7 @@ namespace owl
 		/// <param name="position:">Ausgangsstellung</param>
 		/// <param name="player:">Der aktuelle Spieler, der am Zug ist</param>
 		/// <returns>Steht der König des aktuellen Spielers im Schach?</returns>
-		static BOOL isKingInCheck(const Position& position, short player);
+		static BOOL isKingInCheck(Position& position, short player);
 
 		/// <summary>
 		/// Ist die Platzierung x,y im Schach bzw. wird diese Position bedroht? 
@@ -85,20 +80,20 @@ namespace owl
 		static BOOL checkKingPawns(INT32 king_x, INT32 king_y, const Position& position, short player);
 
 		/// Schachmatt überprüfen
-		static VOID evaluateCheckmate(const Position& position, short player, BOOL noValidMoves);
+		static VOID evaluateCheckmate(Position& position, short player, BOOL noValidMoves);
 
 		/// Suche alle legalen Bauerbewegungen
-		static MoveList getValidPawnMoves(const Position& position, INT32 x, INT32 y, short player);
+		static MoveList getValidPawnMoves(Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Springerbewegungen
-		static MoveList getValidKnightMoves(const Position& position, INT32 x, INT32 y, short player);
+		static MoveList getValidKnightMoves(Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Königbewegungen
-		static MoveList getValidKingMoves(const Position& position, INT32 x, INT32 y, short player);
+		static MoveList getValidKingMoves(Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Turmbewegungen
-		static MoveList getValidRookMoves(const Position& position, INT32 x, INT32 y, short player);
+		static MoveList getValidRookMoves(Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Läuferbewegungen
-		static MoveList getValidBishopMoves(const Position& position, INT32 x, INT32 y, short player);
+		static MoveList getValidBishopMoves(Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle Linien ab für Läufer, Türme und Dame
-		static MoveList continueValidMovesOnLine(const Position& position, INT32 x, INT32 y, const std::string& enemies_string, INT32 xDir, INT32 yDir);
+		static MoveList continueValidMovesOnLine(Position& position, INT32 x, INT32 y, const std::string& enemies_string, INT32 xDir, INT32 yDir);
 
 		/// Enemy-String nach Spielertyp ausgeben
 		static std::string getEnemyPiecesString(short player);

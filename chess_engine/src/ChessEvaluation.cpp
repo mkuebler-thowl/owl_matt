@@ -5,7 +5,7 @@
 
 namespace owl
 {
-	FLOAT ChessEvaluation::evaluate(const Position& position, short enginePlayer, UCHAR evaluationFeatureFlags)
+	FLOAT ChessEvaluation::evaluate(Position& position, short enginePlayer, UCHAR evaluationFeatureFlags)
 	{
 		// Ist die Position eine Endstellung?
 		if ((position.getGameState() == GameState::PlayerBlackWins && enginePlayer == PLAYER_WHITE)
@@ -33,16 +33,16 @@ namespace owl
 				auto piece = position[y][x];
 
 				// Leere Felder überspringen:
-				if (piece == EMPTY_PLACE)
+				if (piece == EMPTY_FIELD)
 					continue;
 
 				auto type = GET_PIECE_INDEX_BY_TYPE(piece);
-				auto color = GET_PIECE_COLOR_BY_TYPE(piece);
+				auto color = GET_PLAYER_INDEX_BY_PIECE(piece);
 
 				piece_count[color][type]++;
 
 				// Bauernstruktur bestimmen
-				if (evaluationFeatureFlags & EVAL_FT_PAWN_STRUCTURE && type == PAWN)
+				if (evaluationFeatureFlags & EVAL_FT_PAWN_STRUCTURE && type == PAWN_INDEX)
 				{
 					auto is_double = isDoublePawn(position, x, y);
 					auto is_connected = isConnectedPawn(position, x, y);
@@ -77,14 +77,14 @@ namespace owl
 
 					switch (type)
 					{
-					case PAWN:		amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_PAWN_WEIGHT	* PIECE_SQUARE_TABLE_PAWN[table_index]; break;
-					case KNIGHT:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_KNIGHT_WEIGHT	* PIECE_SQUARE_TABLE_KNIGHT[table_index]; break;
-					case BISHOP:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_BISHOP_WEIGHT	* PIECE_SQUARE_TABLE_BISHOP[table_index]; break;
-					case ROOK:		amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_ROOK_WEIGHT	* PIECE_SQUARE_TABLE_ROOK[table_index]; break;
-					case QUEEN:		amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_QUEEN_WEIGHT	* PIECE_SQUARE_TABLE_QUEEN[table_index]; break;
+					case PAWN_INDEX:		amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_PAWN_WEIGHT	* PIECE_SQUARE_TABLE_PAWN[table_index]; break;
+					case KNIGHT_INDEX:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_KNIGHT_WEIGHT	* PIECE_SQUARE_TABLE_KNIGHT[table_index]; break;
+					case BISHOP_INDEX:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_BISHOP_WEIGHT	* PIECE_SQUARE_TABLE_BISHOP[table_index]; break;
+					case ROOK_INDEX:		amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_ROOK_WEIGHT	* PIECE_SQUARE_TABLE_ROOK[table_index]; break;
+					case QUEEN_INDEX:		amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_QUEEN_WEIGHT	* PIECE_SQUARE_TABLE_QUEEN[table_index]; break;
 					// Bestimme die Positionen der Könige, um diese nach den Iterationen der Square-Table hinzuzufügen, 
 					// da die Spielphase erst später bestimmt werden kann und es für Mittel- und Endspiel unterschiedliche Tabellen gibt
-					case KING: king_pos[color] = { x,y }; break;
+					case KING_INDEX: king_pos[color] = { x,y }; break;
 					}
 					square_table_score[color] += amount;
 				}
@@ -93,7 +93,7 @@ namespace owl
 
 		// Spielphase abfragen
 		auto game_phase = position.getGamePhase();
-		auto material = score[WHITE] + score[BLACK];
+		auto material = score[WHITE_INDEX] + score[BLACK_INDEX];
 
 		// Spielphase bestimmen bzw. anpassen
 		if (game_phase == GamePhase::Opening && material <= MAX_MATERIAL_SUM_MID_GAME)	position.enterNextGamePhase();
@@ -104,8 +104,8 @@ namespace owl
 		{
 			for (auto color = FIRST_PLAYER_INDEX; color < PLAYER_COUNT; color++)
 			{
-				auto index = std::min(piece_count[color][PAWN], DYNAMIC_PAWNS_LAST_INDEX); // Grenzen einhalten
-				extra_pawn_score[color] += piece_count[color][PAWN] * MATERIAL_DYNAMIC_PAWNS[index];
+				auto index = std::min(piece_count[color][PAWN_INDEX], DYNAMIC_PAWNS_LAST_INDEX); // Grenzen einhalten
+				extra_pawn_score[color] += piece_count[color][PAWN_INDEX] * MATERIAL_DYNAMIC_PAWNS[index];
 			}
 		}
 
@@ -140,7 +140,7 @@ namespace owl
 				case GamePhase::Mid: factor = PIECE_SQUARE_TABLE_KING_MID_GAME_WEIGHT * PIECE_SQUARE_TABLE_KING_MID_GAME[table_index]; break;
 				case GamePhase::End: factor = PIECE_SQUARE_TABLE_KING_END_GAME_WEIGHT * PIECE_SQUARE_TABLE_KING_END_GAME[table_index]; break;
 				}
-				square_table_score[color_index] += piece_count[color_index][KING] * factor;
+				square_table_score[color_index] += piece_count[color_index][KING_INDEX] * factor;
 			}
 		}
 
@@ -149,7 +149,7 @@ namespace owl
 		{
 			for (auto color_index = FIRST_PLAYER_INDEX; color_index < PLAYER_COUNT; color_index++)
 			{
-				if (piece_count[color_index][BISHOP] >= MIN_BISHOP_COUNT_PRECONDITION_BONUS)
+				if (piece_count[color_index][BISHOP_INDEX] >= MIN_BISHOP_COUNT_PRECONDITION_BONUS)
 					score[color_index] += BISHOP_PAIR_BONUS * BISHOP_PAIR_BONUS_WEIGHT;
 			}
 		}
@@ -164,12 +164,12 @@ namespace owl
 					auto factor = 1.0f;
 					switch (type_index)
 					{
-					case PAWN: factor = PIECE_MOBILITY_PAWN_WEIGHT; break;
-					case KNIGHT: factor = PIECE_MOBILITY_KNIGHT_WEIGHT; break;
-					case BISHOP: factor = PIECE_MOBILITY_BISHOP_WEIGHT; break;
-					case ROOK: factor = PIECE_MOBILITY_ROOK_WEIGHT; break;
-					case QUEEN: factor = PIECE_MOBILITY_QUEEN_WEIGHT; break;
-					case KING: factor = PIECE_MOBILITY_KING_WEIGHT; break;
+					case PAWN_INDEX: factor = PIECE_MOBILITY_PAWN_WEIGHT; break;
+					case KNIGHT_INDEX: factor = PIECE_MOBILITY_KNIGHT_WEIGHT; break;
+					case BISHOP_INDEX: factor = PIECE_MOBILITY_BISHOP_WEIGHT; break;
+					case ROOK_INDEX: factor = PIECE_MOBILITY_ROOK_WEIGHT; break;
+					case QUEEN_INDEX: factor = PIECE_MOBILITY_QUEEN_WEIGHT; break;
+					case KING_INDEX: factor = PIECE_MOBILITY_KING_WEIGHT; break;
 					}
 					score[color_index] += PIECE_MOBILITY_WEIGHT * factor * possible_moves[color_index][type_index];
 				}
@@ -184,7 +184,7 @@ namespace owl
 
 		// Je nach Spieler score der Spieler voneinander abziehen und zurückgeben
 		auto&& final_score = enginePlayer == PLAYER_WHITE ?
-			score[WHITE] - score[BLACK] : score[BLACK] - score[WHITE];
+			score[WHITE_INDEX] - score[BLACK_INDEX] : score[BLACK_INDEX] - score[WHITE_INDEX];
 
 		return final_score;
 	}
@@ -218,7 +218,7 @@ namespace owl
 	}
 	BOOL ChessEvaluation::isPassedPawn(const Position& position, INT32 x, INT32 y)
 	{
-		auto enemy_pawn = GetEnemyPiece(position.getPlayer(), PAWN);
+		auto enemy_pawn = GetEnemyPiece(position.getPlayer(), PAWN_INDEX);
 
 		for (INT32 i = 0; i < ROWS; i++)
 		{
@@ -255,8 +255,8 @@ namespace owl
 		auto start_color = GetPlayerIndexByPositionPlayer(position.getPlayer());
 		auto target_color = start_color + 1 % PLAYER_COUNT;
 
-		auto start_pawn = PIECES[start_color][PAWN];
-		auto target_pawn = PIECES[target_color][PAWN];
+		auto start_pawn = PIECES[start_color][PAWN_INDEX];
+		auto target_pawn = PIECES[target_color][PAWN_INDEX];
 
 		if (ChessValidation::isInsideChessboard(x + xOffset, y + yOffset))
 		{
@@ -267,7 +267,7 @@ namespace owl
 	}
 	UCHAR ChessEvaluation::GetPlayerIndexByPositionPlayer(short currentPlayerOfPosition)
 	{
-		return currentPlayerOfPosition == PLAYER_WHITE ? WHITE : BLACK;
+		return currentPlayerOfPosition == PLAYER_WHITE ? WHITE_INDEX : BLACK_INDEX;
 	}
 	UCHAR ChessEvaluation::GetEnemyPiece(short currentPlayerOfPosition, UINT16 pieceIndex)
 	{

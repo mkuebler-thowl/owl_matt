@@ -17,11 +17,11 @@ namespace owl
 		{
 			for (auto j = FIRST_COLUMN_INDEX; j < COLUMNS; j++)
 			{
-				m_data[i][j] = EMPTY_PLACE;
+				m_data[i][j] = EMPTY_FIELD;
 			}
 		}
 
-		m_moveDataStack.push({ Move{}, EMPTY_PLACE, EMPTY_PLACE, false, m_enPassantPosition, {false,0}, m_movedFirstTime });
+		m_moveDataStack.push({ Move{}, EMPTY_FIELD, EMPTY_FIELD, false, m_enPassantPosition, {false,0}, m_movedFirstTime });
 	}
 
 	Position::~Position()
@@ -41,14 +41,14 @@ namespace owl
 		m_plyCount(moveCount), m_moveNumber(moveNumber), m_gamePhase(GamePhase::Opening), m_state(GameState::Active),
 		m_movedFirstTime(HAS_NOT_MOVED_BIT)
 	{
-		if (m_data[FIRST_ROW_INDEX][FIRST_COLUMN_INDEX] != ROOK_BLACK) m_movedFirstTime |= HAS_BLACK_ROOK_L_MOVED_BIT;
-		if (m_data[FIRST_ROW_INDEX][LAST_COLUMN_INDEX] != ROOK_BLACK) m_movedFirstTime |= HAS_BLACK_ROOK_R_MOVED_BIT;
-		if (m_data[LAST_ROW_INDEX][LAST_COLUMN_INDEX] != ROOK_WHITE) m_movedFirstTime |= HAS_WHITE_ROOK_L_MOVED_BIT;
-		if (m_data[LAST_ROW_INDEX][LAST_COLUMN_INDEX] != ROOK_WHITE) m_movedFirstTime |= HAS_WHITE_ROOK_R_MOVED_BIT;
-		if (m_data[FIRST_ROW_INDEX][KING_START_X] != KING_BLACK) m_movedFirstTime |= HAS_BLACK_KING_MOVED_BIT;
-		if (m_data[LAST_ROW_INDEX][KING_START_X] != KING_WHITE) m_movedFirstTime |= HAS_WHITE_KING_MOVED_BIT;
+		if (m_data[FIRST_ROW_INDEX][FIRST_COLUMN_INDEX] != BLACK_ROOK) m_movedFirstTime |= HAS_BLACK_ROOK_L_MOVED_BIT;
+		if (m_data[FIRST_ROW_INDEX][LAST_COLUMN_INDEX] != BLACK_ROOK) m_movedFirstTime |= HAS_BLACK_ROOK_R_MOVED_BIT;
+		if (m_data[LAST_ROW_INDEX][LAST_COLUMN_INDEX] != WHITE_ROOK) m_movedFirstTime |= HAS_WHITE_ROOK_L_MOVED_BIT;
+		if (m_data[LAST_ROW_INDEX][LAST_COLUMN_INDEX] != WHITE_ROOK) m_movedFirstTime |= HAS_WHITE_ROOK_R_MOVED_BIT;
+		if (m_data[FIRST_ROW_INDEX][KING_START_X] != BLACK_KING) m_movedFirstTime |= HAS_BLACK_KING_MOVED_BIT;
+		if (m_data[LAST_ROW_INDEX][KING_START_X] != WHITE_KING) m_movedFirstTime |= HAS_WHITE_KING_MOVED_BIT;
 
-		m_moveDataStack.push({ Move{}, EMPTY_PLACE, EMPTY_PLACE, false, m_enPassantPosition, {false,0}, m_movedFirstTime });
+		m_moveDataStack.push({ Move{}, EMPTY_FIELD, EMPTY_FIELD, false, m_enPassantPosition, {false,0}, m_movedFirstTime });
 	}
 
 	owl::BoardLine& Position::operator[](INT32 index) const
@@ -68,30 +68,30 @@ namespace owl
 
 		// Position aktualisieren: Startfeld -> Zielfeld
 		m_data[move.targetY][move.targetX] = move_data.piece;
-		m_data[move.startY][move.startX] = EMPTY_PLACE;
+		m_data[move.startY][move.startX] = EMPTY_FIELD;
 
 		// Rochade? Turm ebenfalls bewegen
 		if (move.castlingLong)
 		{
 			auto rook = m_data[move.startY][FIRST_COLUMN_INDEX];
-			m_data[move.startY][FIRST_COLUMN_INDEX] = EMPTY_PLACE;
+			m_data[move.startY][FIRST_COLUMN_INDEX] = EMPTY_FIELD;
 			m_data[move.startY][CASTLING_ROOK_LEFT_X] = rook;
 		}
 		else if (move.castlingShort)
 		{
 			auto rook = m_data[move.startY][LAST_COLUMN_INDEX];
-			m_data[move.startY][LAST_COLUMN_INDEX] = EMPTY_PLACE;
+			m_data[move.startY][LAST_COLUMN_INDEX] = EMPTY_FIELD;
 			m_data[move.startY][CASTLING_ROOK_RIGHT_X] = rook;
 		}
 
 		// En Passant Capturee eingelöst? Richtiges Feld löschen
 		if (move.enPassantCapture && (move.targetY == EN_PASSANT_WHITE_Y || move.targetY == EN_PASSANT_BLACK_Y))
 		{
-			m_data[move.startY][move.targetX] = EMPTY_PLACE;
+			m_data[move.startY][move.targetX] = EMPTY_FIELD;
 
 		}
 
-		if (move_data.piece != PAWN_WHITE && move_data.piece != PAWN_BLACK && !move.capture) addPlyCount();
+		if (move_data.piece != WHITE_PAWN && move_data.piece != BLACK_PAWN && !move.capture) addPlyCount();
 		else
 		{
 			move_data.plyCountReset = { true, m_plyCount };
@@ -111,14 +111,14 @@ namespace owl
 		}
 
 		// Ist der Zug ein En Passant?
-		if ((move_data.piece == PAWN_BLACK 
+		if ((move_data.piece == BLACK_PAWN 
 			&& move.startY == PAWN_DOUBLE_MOVE_START_BLACK_Y 
 			&& move.targetY == PAWN_DOUBLE_MOVE_TARGET_BLACK_Y)
-			|| (move_data.piece == PAWN_WHITE 
+			|| (move_data.piece == WHITE_PAWN 
 				&& move.startY == PAWN_DOUBLE_MOVE_START_WHITE_Y 
 				&& move.targetY == PAWN_DOUBLE_MOVE_TARGET_WHITE_Y))
 		{
-			auto pawn_direction = move_data.piece == PAWN_WHITE ? PAWN_DIRECTION_WHITE : PAWN_DIRECTION_BLACK;
+			auto pawn_direction = move_data.piece == WHITE_PAWN ? PAWN_DIRECTION_WHITE : PAWN_DIRECTION_BLACK;
 			setEnPassant(move.startX, move.startY + pawn_direction);
 		}
 
@@ -126,34 +126,34 @@ namespace owl
 		if (m_plyCount >= MAX_PLIES_SINCE_NO_MOVING_PAWNS_AND_CAPTURES) setGameState(GameState::Remis);
 
 		// Turm oder König bewegt? 
-		if (move_data.piece == KING_WHITE)
+		if (move_data.piece == WHITE_KING)
 		{
 			resetWhiteCastlingLong();
 			resetWhiteCastlingShort();
 			checkFirstMovement(HAS_WHITE_KING_MOVED_BIT, move_data.movedFirstTimeFlag);
 		}
-		else if (move_data.piece == KING_BLACK)
+		else if (move_data.piece == BLACK_KING)
 		{
 			resetBlackCastlingShort();
 			resetBlackCastlingLong();
 			checkFirstMovement(HAS_BLACK_KING_MOVED_BIT, move_data.movedFirstTimeFlag);
 		}
-		else if (move_data.piece == ROOK_BLACK && move.startX == FIRST_COLUMN_INDEX)
+		else if (move_data.piece == BLACK_ROOK && move.startX == FIRST_COLUMN_INDEX)
 		{
 			resetBlackCastlingLong();
 			checkFirstMovement(HAS_BLACK_ROOK_R_MOVED_BIT, move_data.movedFirstTimeFlag);
 		}
-		else if (move_data.piece == ROOK_BLACK && move.startX == LAST_COLUMN_INDEX)
+		else if (move_data.piece == BLACK_ROOK && move.startX == LAST_COLUMN_INDEX)
 		{
 			resetBlackCastlingShort();
 			checkFirstMovement(HAS_BLACK_ROOK_L_MOVED_BIT, move_data.movedFirstTimeFlag);
 		}
-		else if (move_data.piece == ROOK_WHITE && move.startX == FIRST_COLUMN_INDEX)
+		else if (move_data.piece == WHITE_ROOK && move.startX == FIRST_COLUMN_INDEX)
 		{
 			resetWhiteCastlingLong();
 			checkFirstMovement(HAS_WHITE_ROOK_L_MOVED_BIT, move_data.movedFirstTimeFlag);
 		}
-		else if (move_data.piece == ROOK_WHITE && move.startX == LAST_COLUMN_INDEX)
+		else if (move_data.piece == WHITE_ROOK && move.startX == LAST_COLUMN_INDEX)
 		{
 			resetWhiteCastlingShort();
 			checkFirstMovement(HAS_WHITE_ROOK_R_MOVED_BIT, move_data.movedFirstTimeFlag);
@@ -181,8 +181,8 @@ namespace owl
 
 		// Mögliche Promotion rückgängig machen
 		if (last_move_data.move.promotion > 0) m_data[last_move_data.move.targetY][last_move_data.move.targetX] = m_player == PLAYER_WHITE ?
-			PAWN_WHITE :
-			PAWN_BLACK;
+			WHITE_PAWN :
+			BLACK_PAWN;
 
 		// Turm oder König wurde das erste mal bewegt:
 		if (last_move_data.movedFirstTimeFlag > HAS_NOT_MOVED_BIT)
@@ -253,7 +253,7 @@ namespace owl
 		// Wurde vorher ein En Passant Capture gespielt? (Setze den Bauer wieder zurück)
 		if (last_move_data.move.enPassantCapture)
 		{
-			m_data[last_move_data.enPassantPos.second][last_move_data.enPassantPos.first] = last_move_data.piece == PAWN_WHITE ? PAWN_BLACK : PAWN_WHITE;
+			m_data[last_move_data.enPassantPos.second][last_move_data.enPassantPos.first] = last_move_data.piece == WHITE_PAWN ? BLACK_PAWN : WHITE_PAWN;
 		}
 
 		// lange Rochade durchgeführt? 
@@ -261,7 +261,7 @@ namespace owl
 		{
 			// Turm zurückbewegen
 			auto rook = m_data[last_move_data.move.startY][CASTLING_ROOK_LEFT_X];
-			m_data[last_move_data.move.startY][CASTLING_ROOK_LEFT_X] = EMPTY_PLACE;
+			m_data[last_move_data.move.startY][CASTLING_ROOK_LEFT_X] = EMPTY_FIELD;
 			m_data[last_move_data.move.startY][FIRST_COLUMN_INDEX] = rook;
 
 			if (m_player == PLAYER_WHITE) m_whiteCastlingLong = true;
@@ -273,7 +273,7 @@ namespace owl
 		{
 			// Turm zurückbewegen
 			auto rook = m_data[last_move_data.move.startY][CASTLING_ROOK_RIGHT_X];
-			m_data[last_move_data.move.startY][CASTLING_ROOK_RIGHT_X] = EMPTY_PLACE;
+			m_data[last_move_data.move.startY][CASTLING_ROOK_RIGHT_X] = EMPTY_FIELD;
 			m_data[last_move_data.move.startY][LAST_COLUMN_INDEX] = rook;
 
 			if (m_player == PLAYER_WHITE) m_whiteCastlingShort = true;

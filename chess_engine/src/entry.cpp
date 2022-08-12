@@ -13,7 +13,7 @@
 #include "FENParser.hpp"
 
 // Test: Print move list
-auto printMoves(std::vector<owl::Move> moves, const owl::Position& pos) -> owl::VOID
+auto printMoves(std::vector<owl::Move> moves, owl::Position& pos) -> owl::VOID
 {
 	std::string out = "";
 
@@ -116,7 +116,7 @@ auto main() -> owl::INT32
 	
 	auto pos = owl::FENParser::fenToPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-	auto move = engine.searchMove(pos, pos.getPlayer(),5, owl::FT_ALPHA_BETA | owl::FT_SORT | owl::FT_KILLER);
+	auto move = engine.searchMove(pos, pos.getPlayer(),6, owl::FT_ALPHA_BETA | owl::FT_SORT | owl::FT_KILLER);
 
 	std::cout << "exit" << std::endl;
 }

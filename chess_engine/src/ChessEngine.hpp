@@ -11,23 +11,6 @@
 
 namespace owl
 {
-	// Feature-Parameter
-	constexpr UCHAR FT_NULL			= 0;
-	constexpr UCHAR FT_ALPHA_BETA	= (1 << 0);
-	constexpr UCHAR FT_SORT			= (1 << 1);
-	constexpr UCHAR FT_NESTED		= (1 << 2);
-	constexpr UCHAR FT_KILLER		= (1 << 3);
-	// Optionale-Paramater (nicht implementiert):
-	constexpr UCHAR FT_HISTORY		= (1 << 4);
-	constexpr UCHAR FT_PVS			= (1 << 5);
-
-	// Spieler
-	constexpr short PLAYER_WHITE = 1;
-	constexpr short PLAYER_BLACK = -1;
-
-	// Maximalwert
-	constexpr FLOAT INF = 999.0f;
-
 	/// Schach-Engine-Klasse. Beinhaltet die Logik einer Schach-Engine, wie die Zugfindung und Bewertung eines Zugs usw.
 	class ChessEngine
 	{
@@ -70,11 +53,11 @@ namespace owl
 		/// <returns></returns>
 		MinMaxResult alphaBeta(Position& position, short player, UINT16 depth, FLOAT alpha, FLOAT beta, BOOL sort = false, BOOL killer = false);
 	
-		MinMaxResult nested(const Position& position, short player, UINT16 depth, BOOL sort = false);
+		MinMaxResult nested(Position& position, short player, UINT16 depth, BOOL sort = false);
 
-		MinMaxResult nestedAlphaBeta(const Position& position, short player, UINT16 depth, FLOAT alpha, FLOAT beta, BOOL sort = false);
+		MinMaxResult nestedAlphaBeta(Position& position, short player, UINT16 depth, FLOAT alpha, FLOAT beta, BOOL sort = false);
 	public:
-		VOID sortMoves(MoveList* moves, const Position& position, UINT16 depth, MinMaxResult* pResult, BOOL killer = false);
+		VOID sortMoves(MoveList* moves, Position& position, UINT16 depth, MinMaxResult* pResult, BOOL killer = false);
 
 		static BOOL killerHeuristics(const Move& move, UINT16 depth, MinMaxResult* pResult);
 
@@ -88,7 +71,7 @@ namespace owl
 			pxP,pxN,pxB,pxR,pxQ
 		};
 	
-		static constexpr std::array<CHAR*, 30> s_capture_map =
+		static constexpr std::array<CHAR*, MAX_PIECE_TYPES*(MAX_PIECE_TYPES-1)> s_capture_map =
 		{
 			"kxP","kxN","kxB","kxR","kxQ",
 			"qxP","qxN","qxB","qxR","qxQ",

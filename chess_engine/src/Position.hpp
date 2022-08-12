@@ -171,12 +171,12 @@ namespace owl
 		UCHAR m_movedFirstTime;
 
 		constexpr static UCHAR HAS_NOT_MOVED_BIT = 0;
-		constexpr static UCHAR HAS_WHITE_KING_MOVED_BIT = (1 << 0);
-		constexpr static UCHAR HAS_WHITE_ROOK_R_MOVED_BIT = (1 << 1);
-		constexpr static UCHAR HAS_WHITE_ROOK_L_MOVED_BIT = (1 << 2);
-		constexpr static UCHAR HAS_BLACK_KING_MOVED_BIT = (1 << 3);
-		constexpr static UCHAR HAS_BLACK_ROOK_R_MOVED_BIT = (1 << 4);
-		constexpr static UCHAR HAS_BLACK_ROOK_L_MOVED_BIT = (1 << 5);
+		constexpr static UCHAR HAS_WHITE_KING_MOVED_BIT = BIT_1;
+		constexpr static UCHAR HAS_WHITE_ROOK_R_MOVED_BIT = BIT_2;
+		constexpr static UCHAR HAS_WHITE_ROOK_L_MOVED_BIT = BIT_3;
+		constexpr static UCHAR HAS_BLACK_KING_MOVED_BIT = BIT_4;
+		constexpr static UCHAR HAS_BLACK_ROOK_R_MOVED_BIT = BIT_5;
+		constexpr static UCHAR HAS_BLACK_ROOK_L_MOVED_BIT = BIT_6;
 
 		VOID checkFirstMovement(UCHAR check, UCHAR& movedFirstTime);
 
