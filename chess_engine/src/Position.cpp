@@ -6,7 +6,6 @@
 
 namespace owl
 {
-
 	Position::Position()
 		: m_enPassant(false), m_plyCount(0), m_moveNumber(1), m_player(PLAYER_WHITE), m_state(GameState::Active), 
 		m_whiteCastlingShort(true), m_whiteCastlingLong(true), m_blackCastlingShort(true), m_blackCastlingLong(true),
@@ -62,6 +61,7 @@ namespace owl
 		// Optional TODO: Zug validieren 
 
 		auto move_data = MoveData{move};
+		move_data.lastGamePhase = m_gamePhase;
 
 		move_data.piece = m_data[move.startY][move.startX];
 		move_data.capturedPiece = m_data[move.targetY][move.targetX];
@@ -175,6 +175,7 @@ namespace owl
 		if (m_moveDataStack.size() == 1) return;
 
 		auto& last_move_data = m_moveDataStack.top();
+		m_gamePhase = last_move_data.lastGamePhase;
 
 		// Spieler wieder wechseln
 		changePlayer(true);

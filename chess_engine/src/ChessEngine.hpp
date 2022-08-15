@@ -40,9 +40,12 @@ namespace owl
 		VOID setOption(const std::string& option, const std::string& value);
 		const EngineOptions& getOptions() const;
 
+		VOID setPosition(const Position& position);
+
 		Position& getPosition();
 		const Position& getPosition() const;
 
+		UINT16 getPlayer() const;
 	private:
 		/// <summary>
 		/// Klassischer Min-Max-Algorithmus zur Zugfindung
@@ -112,8 +115,10 @@ namespace owl
 		BOOL m_debugMode = false;
 		BOOL m_ready = true;
 		BOOL m_stop = false;
+		UINT16 m_startedDepth = 0;
 
 		std::mutex m_mutex;
+		INT16 m_player;
 		Position m_position;
 		EngineOptions m_engineOptions;
 		RepitionMap m_repitionMap;

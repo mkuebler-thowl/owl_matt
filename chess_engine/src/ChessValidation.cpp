@@ -10,12 +10,15 @@ namespace owl
 	MOVE_LIST ChessValidation::getValidMoves(Position& position, short player)
 	{
 		MOVE_LIST moves;
+		moves.reserve(MAX_MOVES_PER_PLY_BOUND);
 
 		for (INT32 y = FIRST_ROW_INDEX; y < ROWS; y++)
 		{
 			for (INT32 x = FIRST_COLUMN_INDEX; x < COLUMNS; x++)
 			{
 				auto piece = position[y][x];
+
+				if (piece == EMPTY_FIELD) continue;
 
 				auto piece_color = GET_PLAYER_INDEX_BY_PIECE(piece);
 				auto piece_player = piece_color == WHITE_INDEX ? PLAYER_WHITE : PLAYER_BLACK;
@@ -178,7 +181,7 @@ namespace owl
 		return pos;
 	}
 
-	BOOL ChessValidation::isKinginCheckAfterMove(Position& position, short player, const Move& move)
+	BOOL ChessValidation::isKingInCheckAfterMove(Position& position, short player, const Move& move)
 	{
 		position.applyMove(move);
 		auto value = isKingInCheck(position, player);
@@ -281,14 +284,16 @@ namespace owl
 	}
 	BOOL ChessValidation::checkKingAxis(INT32 king_x, INT32 king_y, const Position& position, short player)
 	{
-		CHAR enemy_queen = player == PLAYER_WHITE ? 'q' : 'Q';
-		CHAR enemy_rook = player == PLAYER_WHITE ? 'r' : 'R';
+		UINT16 enemy_player_index = player == PLAYER_WHITE ? BLACK_INDEX : WHITE_INDEX;
+
+		CHAR enemy_queen = PIECES[enemy_player_index][QUEEN_INDEX];
+		CHAR enemy_rook = PIECES[enemy_player_index][ROOK_INDEX];
 
 		// horizontal:
 		// links vom König:
-		if (king_x > 0)
+		if (king_x > FIRST_COLUMN_INDEX)
 		{
-			for (INT32 x = king_x - 1; x >= 0; x--)
+			for (INT32 x = king_x - 1; x >= FIRST_COLUMN_INDEX; x--)
 			{
 				auto place = position[king_y][x];
 				if (place == enemy_queen || place == enemy_rook) return true;
@@ -296,42 +301,42 @@ namespace owl
 			}
 		}
 		// rechts vom König:
-		if (king_x < 7)
+		if (king_x < LAST_COLUMN_INDEX)
 		{
-			for (INT32 x = king_x + 1; x <= 7; x++)
+			for (INT32 x = king_x + 1; x <= LAST_COLUMN_INDEX; x++)
 			{
 				auto place = position[king_y][x];
 				if (place == enemy_queen || place == enemy_rook) return true;
-				if (place != ' ') break;
+				if (place != EMPTY_FIELD) break;
 			}
 		}
 
 		// vertikal:
 		// oben vom König:
-		if (king_y > 0)
+		if (king_y > FIRST_COLUMN_INDEX)
 		{
-			for (INT32 y = king_y - 1; y >= 0; y--)
+			for (INT32 y = king_y - 1; y >= FIRST_ROW_INDEX; y--)
 			{
 				auto place = position[y][king_x];
 				if (place == enemy_queen || place == enemy_rook) return true;
-				if (place != ' ') break;
+				if (place != EMPTY_FIELD) break;
 			}
 		}
 		// unten vom König:
-		if (king_y < 7)
+		if (king_y < LAST_COLUMN_INDEX)
 		{
-			for (INT32 y = king_y + 1; y <= 7; y++)
+			for (INT32 y = king_y + 1; y <= LAST_ROW_INDEX; y++)
 			{
 				auto place = position[y][king_x];
 				if (place == enemy_queen || place == enemy_rook) return true;
-				if (place != ' ') break;
+				if (place != EMPTY_FIELD) break;
 			}
 		}
 		return false;
 	}
 	BOOL ChessValidation::checkKingKnights(INT32 king_x, INT32 king_y, const Position& position, short player)
 	{
-		CHAR enemy_knight = player == PLAYER_WHITE ? 'n' : 'N';
+		CHAR enemy_knight = player == PLAYER_WHITE ? BLACK_KNIGHT : WHITE_KNIGHT;
 		std::vector<PAIR<INT32, INT32>> directions = { {-1,-2}, {2,-1}, {2,1}, {1,2}, {-1,2}, {-2,1}, {-2,-1}, {-1,-2} };
 
 		for (auto direction : directions)
@@ -379,7 +384,7 @@ namespace owl
 				if (piece == enemy_pawn) return true;
 			}
 			// rechts unten:
-			if (king_y < LAST_ROW_INDEX && king_x < FIRST_COLUMN_INDEX)
+			if (king_y < LAST_ROW_INDEX && king_x < LAST_COLUMN_INDEX)
 			{
 				auto piece = position[king_y + king_offset][king_x + king_offset];
 				if (piece == enemy_pawn) return true;
@@ -409,6 +414,7 @@ namespace owl
 	MOVE_LIST ChessValidation::getValidPawnMoves(Position& position, INT32 x, INT32 y, short player)
 	{
 		MOVE_LIST moves;
+		moves.reserve(MAX_MOVES_PER_PAWN);
 		auto pawn_direction = player;
 		std::string enemies = getEnemyPiecesString(player);
 		std::string promotion_str = std::string(player == PLAYER_WHITE ? WHITE_PROMOTION_PIECES : BLACK_PROMOTION_PIECES);
@@ -431,14 +437,14 @@ namespace owl
 					for (auto c : promotion_str)
 					{
 						move.promotion = c;
-						if (!isKinginCheckAfterMove(position, player, move))
-							moves.push_back(move);
+						if (!isKingInCheckAfterMove(position, player, move))
+							moves.emplace_back(move);
 					}
 				}
 				else
 				{
-					if (!isKinginCheckAfterMove(position, player, move))
-						moves.push_back(move);
+					if (!isKingInCheckAfterMove(position, player, move))
+						moves.emplace_back(move);
 				}
 			}
 			// 2-Schritte am Anfang?
@@ -453,8 +459,8 @@ namespace owl
 				move.capture = false;
 				move.promotion = 0;
 
-				if (!isKinginCheckAfterMove(position, player, move))
-					moves.push_back(move);
+				if (!isKingInCheckAfterMove(position, player, move))
+					moves.emplace_back(move);
 			}
 
 			// Diagonal Schlagen:
@@ -473,8 +479,8 @@ namespace owl
 						move.capture = true;
 						move.promotion = 0;
 
-						if (!isKinginCheckAfterMove(position, player, move))
-							moves.push_back(move);
+						if (!isKingInCheckAfterMove(position, player, move))
+							moves.emplace_back(move);
 					}
 				}
 
@@ -491,8 +497,8 @@ namespace owl
 						move.capture = true;
 						move.promotion = 0;
 
-						if (!isKinginCheckAfterMove(position, player, move))
-							moves.push_back(move);
+						if (!isKingInCheckAfterMove(position, player, move))
+							moves.emplace_back(move);
 					}
 				}
 
@@ -514,8 +520,8 @@ namespace owl
 							move.enPassantCapture = true;
 							move.promotion = 0;
 
-							if (!isKinginCheckAfterMove(position, player, move))
-								moves.push_back(move);
+							if (!isKingInCheckAfterMove(position, player, move))
+								moves.emplace_back(move);
 						}
 
 						// rechts oben/unten
@@ -530,8 +536,8 @@ namespace owl
 							move.enPassantCapture = true;
 							move.promotion = 0;
 
-							if (!isKinginCheckAfterMove(position, player, move))
-								moves.push_back(move);
+							if (!isKingInCheckAfterMove(position, player, move))
+								moves.emplace_back(move);
 						}
 					}
 				}
@@ -544,6 +550,8 @@ namespace owl
 	MOVE_LIST ChessValidation::getValidKnightMoves(Position& position, INT32 x, INT32 y, short player)
 	{
 		MOVE_LIST moves;
+		moves.reserve(MAX_MOVES_PER_KNIGHT);
+
 		std::vector<PAIR<INT32, INT32>> possible_places = { {1,-2},{2,-1},{2,1},{1,2},{-1,2},{-2,1},{-2,-1}, {-1,-2} };
 		std::string enemies = getEnemyPiecesString(player);
 
@@ -563,8 +571,8 @@ namespace owl
 					move.capture = capture;
 
 					// Prüfen ob der König nach dem Zug nicht im Schach steht:
-					if(!isKinginCheckAfterMove(position, player, move))
-						moves.push_back(move);
+					if(!isKingInCheckAfterMove(position, player, move))
+						moves.emplace_back(move);
 				}
 			}
 		}
@@ -575,6 +583,8 @@ namespace owl
 	MOVE_LIST ChessValidation::getValidKingMoves(Position& position, INT32 x, INT32 y, short player)
 	{
 		MOVE_LIST moves;
+		moves.reserve(MAX_MOVES_PER_KING);
+
 		std::string enemies = getEnemyPiecesString(player);
 		std::vector<PAIR<INT32, INT32>> possible_places = { {0,-1},{1,-1},{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1} };
 
@@ -594,8 +604,8 @@ namespace owl
 					move.capture = capture;
 
 					// Prüfen ob der König nach dem Zug nicht im Schach steht:
-					if (!isKinginCheckAfterMove(position, player, move))
-						moves.push_back(move);
+					if (!isKingInCheckAfterMove(position, player, move))
+						moves.emplace_back(move);
 				}
 			}
 		}
@@ -616,7 +626,7 @@ namespace owl
 				move.targetY = y;
 				move.castlingShort = true;
 
-				moves.push_back(move);
+				moves.emplace_back(move);
 			}
 			if (position.getWhiteCastlingLong()
 				&& isPlaceInCheck(position, 2, LAST_ROW_INDEX, player)
@@ -632,7 +642,7 @@ namespace owl
 				move.targetY = y;
 				move.castlingLong = true;
 
-				moves.push_back(move);
+				moves.emplace_back(move);
 			}
 		}
 		else if (player == PLAYER_BLACK)
@@ -651,7 +661,7 @@ namespace owl
 				move.targetY = y;
 				move.castlingShort = true;
 
-				moves.push_back(move);
+				moves.emplace_back(move);
 			}
 			if (position.getBlackCastlingLong()
 				&& isPlaceInCheck(position, 2, FIRST_ROW_INDEX, player)
@@ -667,7 +677,7 @@ namespace owl
 				move.targetY = y;
 				move.castlingLong = true;
 
-				moves.push_back(move);
+				moves.emplace_back(move);
 			}
 		}
 
@@ -677,6 +687,7 @@ namespace owl
 	MOVE_LIST ChessValidation::getValidRookMoves(Position& position, INT32 x, INT32 y, short player)
 	{
 		MOVE_LIST moves;
+		moves.reserve(MAX_MOVES_PER_KING);
 		std::string enemies = getEnemyPiecesString(player);
 		std::vector<PAIR<INT32, INT32>> directions = { {0,-1}, {1,0}, {0,1}, {-1,0} };
 		
@@ -692,6 +703,8 @@ namespace owl
 	MOVE_LIST ChessValidation::getValidBishopMoves(Position& position, INT32 x, INT32 y, short player)
 	{
 		MOVE_LIST moves;
+		moves.reserve(MAX_MOVES_PER_BISHOP);
+
 		std::string enemies = getEnemyPiecesString(player);
 		std::vector<PAIR<INT32, INT32>> directions = { {-1,-1}, {1,-1}, {1,1}, {-1,1} };
 
@@ -707,6 +720,7 @@ namespace owl
 	MOVE_LIST ChessValidation::continueValidMovesOnLine(Position& position, INT32 x, INT32 y, const std::string& enemies_string, INT32 xDir, INT32 yDir)
 	{
 		MOVE_LIST moves;
+		moves.reserve(MAX_LINE_LENGTH);
 		BOOL line_empty = true;
 
 		INT32 offset = 1;
@@ -730,8 +744,8 @@ namespace owl
 					move.targetY = line_y;
 					move.capture = capture;
 
-					if (!isKinginCheckAfterMove(position, position.getPlayer(), move))
-						moves.push_back(move);
+					if (!isKingInCheckAfterMove(position, position.getPlayer(), move))
+						moves.emplace_back(move);
 
 					if (capture) line_empty = false;
 				}

@@ -46,7 +46,7 @@ namespace owl
 		/// <param name="player:">Aktueller Spieler</param>
 		/// <param name="move:">Angewendeter Zug</param>
 		/// <returns>Ob der König im Schach stehen würde</returns>
-		static BOOL isKinginCheckAfterMove(Position& position, short player, const Move& move);
+		static BOOL isKingInCheckAfterMove(Position& position, short player, const Move& move);
 
 		/// Überprüfe ob die Stelle x,y die Spielfeldgrenzen überschreitet
 		static BOOL isInsideChessboard(INT32 x, INT32 y);

@@ -41,6 +41,8 @@ namespace owl
 
 				piece_count[color][type]++;
 
+				auto passed_progress_index = color == WHITE_INDEX ? LAST_ROW_INDEX - y : y;
+
 				// Bauernstruktur bestimmen
 				if (evaluationFeatureFlags & EVAL_FT_PAWN_STRUCTURE && type == PAWN_INDEX)
 				{
@@ -49,16 +51,22 @@ namespace owl
 					auto is_chain = isChainPawn(position, x, y);
 					auto is_passed = isPassedPawn(position, x, y);
 
-					auto is_isolated = !(is_double && is_connected && is_chain);
+					auto is_isolated = !(is_connected || is_chain);
 					auto is_backwards = !is_connected ? isBackwardsPawn(position, x, y) : false;
+
+					auto is_isolated_double = is_double && is_isolated;
+					auto is_connected_passed = is_connected && is_passed;
 
 					if (is_double)		extra_pawn_score[color] += PAWN_STRUCTURE_DOUBLE_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
 					if (is_connected)	extra_pawn_score[color] += PAWN_STRUCTURE_CONNECTED_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
 					if (is_chain)		extra_pawn_score[color] += PAWN_STRUCTURE_CHAIN_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
-					if (is_passed)		extra_pawn_score[color] += PAWN_STRUCTURE_PASSED_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
-					
+					if (is_passed)		extra_pawn_score[color] += (PAWN_STRUCTURE_PASSED_PAWNS_BONUS + PASSED_PAWNS_PROGRESS_BONUS[passed_progress_index]) * PAWN_STRUCTURE_WEIGHT;
+				
 					if (is_isolated)	extra_pawn_score[color] += PAWN_STRUCTURE_ISOLATED_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
 					if (is_backwards)	extra_pawn_score[color] += PAWN_STRUCTURE_BACKWARDS_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
+
+					if (is_isolated_double) extra_pawn_score[color] += PAWN_STRUCTURE_ISOLATED_DOUBLE_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
+					if (is_connected_passed) extra_pawn_score[color] += PAWN_STRUCTURE_CONNECTED_PASSED_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
 				}
 
 				score[color] += MATERIAL_VALUES[type];
@@ -75,16 +83,25 @@ namespace owl
 					auto table_index = x + (COLUMNS * y);
 					auto amount = 0.0f;
 
-					switch (type)
+					switch (piece)
 					{
-					case PAWN_INDEX:		amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_PAWN_WEIGHT	* PIECE_SQUARE_TABLE_PAWN[table_index]; break;
-					case KNIGHT_INDEX:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_KNIGHT_WEIGHT	* PIECE_SQUARE_TABLE_KNIGHT[table_index]; break;
-					case BISHOP_INDEX:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_BISHOP_WEIGHT	* PIECE_SQUARE_TABLE_BISHOP[table_index]; break;
-					case ROOK_INDEX:		amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_ROOK_WEIGHT	* PIECE_SQUARE_TABLE_ROOK[table_index]; break;
-					case QUEEN_INDEX:		amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_QUEEN_WEIGHT	* PIECE_SQUARE_TABLE_QUEEN[table_index]; break;
+					case WHITE_PAWN:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_PAWN_WEIGHT	* PIECE_SQUARE_TABLE_PAWN[table_index]; break;
+					case WHITE_KNIGHT:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_KNIGHT_WEIGHT	* PIECE_SQUARE_TABLE_KNIGHT[table_index]; break;
+					case WHITE_BISHOP:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_BISHOP_WEIGHT	* PIECE_SQUARE_TABLE_BISHOP[table_index]; break;
+					case WHITE_ROOK:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_ROOK_WEIGHT	* PIECE_SQUARE_TABLE_ROOK[table_index]; break;
+					case WHITE_QUEEN:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_QUEEN_WEIGHT	* PIECE_SQUARE_TABLE_QUEEN[table_index]; break;
+
+					case BLACK_PAWN:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_PAWN_WEIGHT	* MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_PAWN)[table_index]; break;
+					case BLACK_KNIGHT:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_KNIGHT_WEIGHT	* MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_KNIGHT)[table_index]; break;
+					case BLACK_BISHOP:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_BISHOP_WEIGHT	* MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_BISHOP)[table_index]; break;
+					case BLACK_ROOK:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_ROOK_WEIGHT	* MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_ROOK)[table_index]; break;
+					case BLACK_QUEEN:	amount += PIECE_SQUARE_TABLE_WEIGHT * PIECE_SQUARE_TABLE_QUEEN_WEIGHT	* MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_QUEEN)[table_index]; break;
 					// Bestimme die Positionen der Könige, um diese nach den Iterationen der Square-Table hinzuzufügen, 
 					// da die Spielphase erst später bestimmt werden kann und es für Mittel- und Endspiel unterschiedliche Tabellen gibt
-					case KING_INDEX: king_pos[color] = { x,y }; break;
+					case WHITE_KING:
+					case BLACK_KING: 
+						king_pos[color] = { x,y }; 
+						break;
 					}
 					square_table_score[color] += amount;
 				}
@@ -99,16 +116,7 @@ namespace owl
 		if (game_phase == GamePhase::Opening && material <= MAX_MATERIAL_SUM_MID_GAME)	position.enterNextGamePhase();
 		if (game_phase == GamePhase::Mid && material <= MAX_MATERIAL_SUM_END_GAME)		position.enterNextGamePhase();
 		
-		// Dynamische Bauern aktiviert?
-		if (evaluationFeatureFlags & EVAL_FT_DYNAMIC_PAWNS)
-		{
-			for (auto color = FIRST_PLAYER_INDEX; color < PLAYER_COUNT; color++)
-			{
-				auto index = std::min(piece_count[color][PAWN_INDEX], DYNAMIC_PAWNS_LAST_INDEX); // Grenzen einhalten
-				extra_pawn_score[color] += piece_count[color][PAWN_INDEX] * MATERIAL_DYNAMIC_PAWNS[index];
-			}
-		}
-
+		/// TODO: Score Zahlen ändern sich bei DPValue on
 		// Dynamischer Bonus für den Materialwert je Spielphase
 		if (evaluationFeatureFlags & EVAL_FT_MATERIAL_DYNAMIC_GAME_PHASE)
 		{
@@ -128,20 +136,41 @@ namespace owl
 			}
 		}
 
-		// Piece Square Table für König hinzufügen
-		if (evaluationFeatureFlags & EVAL_FT_PIECE_SQUARE_TABLE && game_phase != GamePhase::Opening)
+		// Dynamische Bauern aktiviert?
+		if (evaluationFeatureFlags & EVAL_FT_DYNAMIC_PAWNS)
 		{
-			for (auto color_index = FIRST_PLAYER_INDEX; color_index < PLAYER_COUNT; color_index++)
+			for (auto color = FIRST_PLAYER_INDEX; color < PLAYER_COUNT; color++)
 			{
-				auto table_index = king_pos[color_index].first + ((COLUMNS * king_pos[color_index].second));
-				auto factor = 0.0f;
-				switch (game_phase)
-				{
-				case GamePhase::Mid: factor = PIECE_SQUARE_TABLE_KING_MID_GAME_WEIGHT * PIECE_SQUARE_TABLE_KING_MID_GAME[table_index]; break;
-				case GamePhase::End: factor = PIECE_SQUARE_TABLE_KING_END_GAME_WEIGHT * PIECE_SQUARE_TABLE_KING_END_GAME[table_index]; break;
-				}
-				square_table_score[color_index] += piece_count[color_index][KING_INDEX] * factor;
+				auto index = std::min(piece_count[color][PAWN_INDEX], DYNAMIC_PAWNS_LAST_INDEX); // Grenzen einhalten
+				extra_pawn_score[color] += piece_count[color][PAWN_INDEX] * MATERIAL_DYNAMIC_PAWNS[index];
 			}
+		}
+
+		/// TODO: PST Zahlen ändern sich bei DPValue on
+		// Piece Square Table für König hinzufügen
+ 		if (evaluationFeatureFlags & EVAL_FT_PIECE_SQUARE_TABLE && game_phase != GamePhase::Opening)
+		{
+			UINT64 table_index[PLAYER_COUNT] =
+			{
+				king_pos[WHITE_INDEX].first + ((COLUMNS * king_pos[WHITE_INDEX].second)),
+				king_pos[BLACK_INDEX].first + ((COLUMNS * king_pos[BLACK_INDEX].second))
+			};
+
+			float factor[PLAYER_COUNT] = { 0.0f };
+
+			switch (game_phase)
+			{
+			case GamePhase::Mid: 
+				factor[WHITE_INDEX] = PIECE_SQUARE_TABLE_KING_MID_GAME_WEIGHT * PIECE_SQUARE_TABLE_KING_MID_GAME[table_index[WHITE_INDEX]];
+				factor[BLACK_INDEX] = PIECE_SQUARE_TABLE_KING_MID_GAME_WEIGHT * MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_KING_MID_GAME)[table_index[BLACK_INDEX]];
+				break;
+			case GamePhase::End: 
+				factor[WHITE_INDEX] = PIECE_SQUARE_TABLE_KING_END_GAME_WEIGHT * MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_KING_END_GAME)[table_index[WHITE_INDEX]];
+				factor[BLACK_INDEX] = PIECE_SQUARE_TABLE_KING_END_GAME_WEIGHT * MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_KING_END_GAME)[table_index[BLACK_INDEX]];
+				break;
+			}
+			square_table_score[WHITE_INDEX] += piece_count[WHITE_INDEX][KING_INDEX] * factor[WHITE_INDEX];
+			square_table_score[BLACK_INDEX] += piece_count[BLACK_INDEX][KING_INDEX] * factor[BLACK_INDEX];
 		}
 
 		// Läuferpaar aktiviert?
@@ -155,6 +184,7 @@ namespace owl
 		}
 
 		// Piece Mobility hinzufügen:
+		/// TODO: DPValue On ändert score
 		if (evaluationFeatureFlags & EVAL_FT_PIECE_MOBILITY)
 		{
 			for (INT32 color_index = FIRST_PLAYER_INDEX; color_index < PLAYER_COUNT; color_index++)
@@ -218,7 +248,7 @@ namespace owl
 	}
 	BOOL ChessEvaluation::isPassedPawn(const Position& position, INT32 x, INT32 y)
 	{
-		auto enemy_pawn = GetEnemyPiece(position.getPlayer(), PAWN_INDEX);
+		auto enemy_pawn = position[y][x] == WHITE_PAWN ? WHITE_PAWN: BLACK_PAWN;
 
 		for (INT32 i = 0; i < ROWS; i++)
 		{

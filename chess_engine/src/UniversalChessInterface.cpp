@@ -186,8 +186,7 @@ namespace owl
             Move move = FENParser::stringToMove(move_str);
 
             // invalid move warning
-            if (move.isMoveInvalid()) std::cout << "Invalid Move: " << FENParser::moveToString(move) << std::endl;
-            else m_pEngine->getPosition().applyMove(move);
+            if (!move.isMoveInvalid()) m_pEngine->getPosition().applyMove(move);
 
             // TODO: Erstmal ignorieren und verstehen was hier passiert
             //if (move_str != "0000" && !m_pEngine->getPosition().applyMove(move, false))

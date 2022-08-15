@@ -140,6 +140,7 @@ namespace owl
 			PAIR<UINT16, UINT16> enPassantPos; // Position des vorherigen En Passants
 			PAIR<BOOL, UINT16> plyCountReset; // Halbzüge-Reset? und vorheriger Halbzug-Wert
 			UCHAR movedFirstTimeFlag; // Bitflags: Haben sich Turm oder König das erste mal bewegt
+			GamePhase lastGamePhase; // Zum setzten der alten Phase, die durch die Evaluierung verändert wurde
 		};
 	private:
 

@@ -2,6 +2,7 @@
 
 #include <array>
 #include <vector>
+#include <cstdint>
 
 namespace owl
 {
@@ -22,12 +23,12 @@ namespace owl
 	struct MinMaxResult;
 
 	// Typdefinitionen
-	typedef short INT16;
-	typedef unsigned short UINT16;
-	typedef int INT32;
-	typedef unsigned int UINT32;
-	typedef long long INT64;
-	typedef size_t UINT64;
+	typedef std::int16_t INT16;
+	typedef std::uint16_t UINT16;
+	typedef std::int32_t INT32;
+	typedef std::uint32_t UINT32;
+	typedef std::int64_t INT64;
+	typedef std::uint64_t UINT64;
 	typedef float FLOAT;
 	typedef bool BOOL;
 	typedef char CHAR;
@@ -68,23 +69,23 @@ namespace owl
 
 	constexpr UCHAR FT_STANDARD = FT_ALPHA_BETA | FT_SRT_MATERIAL | FT_SRT_MVV_LVA | FT_SRT_KILLER; // OWL-Matt Standard Features
 
-	constexpr BOOL USE_RANDOM = false;
+	constexpr BOOL USE_RANDOM = false; // Soll der Min-Max aus einer zufälligen Anzahl an Zügen ziehen?
 
 	// Spieler
-	constexpr short PLAYER_WHITE = 1;
-	constexpr short PLAYER_BLACK = -1;
+	constexpr INT16 PLAYER_WHITE = 1;	// Spieler Weiß
+	constexpr INT16 PLAYER_BLACK = -1;	// Spieler Schwarz
 
 	// Maximalwert für Endstellung
-	constexpr FLOAT INF = 999.0f;
+	constexpr FLOAT INF = 999.0f; // Maximaler Bewertungswert (Für Endstellungen)
 
 	// Parameter-Konstanten
-	constexpr UINT16 KILLER_SIZE = 2;
-	constexpr UINT16 FIRST_KILLER_INDEX = 0;
-	constexpr UINT16 LAST_KILLER_INDEX = KILLER_SIZE-1;
+	constexpr UINT16 KILLER_SIZE		= 2; // Anzahl der möglichen Killerzüge bezogenen auf eine Tiefe im Suchbaum
+	constexpr UINT16 FIRST_KILLER_INDEX = 0; // Erster Killerzug-Index
+	constexpr UINT16 LAST_KILLER_INDEX	= KILLER_SIZE-1; // Letzter Killerzug-Index
 
-	constexpr UINT16 KILLER_PRIO_1 = 2;
-	constexpr UINT16 KILLER_PRIO_2 = 1;
-	constexpr UINT16 KILLER_NO_PRIO = 0;
+	constexpr UINT16 KILLER_PRIO_1 = 2;	// Höchste Killerzug Priorität
+	constexpr UINT16 KILLER_PRIO_2 = 1; // Zweite Killerzug Priorität
+	constexpr UINT16 KILLER_NO_PRIO = 0; // Keine Killerzug Priorität (Kein Killermove)
 
 	constexpr UINT16 MAX_DEPTH = 10; // Später auf maximale erreichbare Suchtiefe anpassen
 
@@ -187,10 +188,10 @@ namespace owl
 
 
 	// Materialwert + Addition für die jeweilige Spielphase								//  P	   N	  B		 R		Q		K
-	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_VALUES = { 1.00f, 3.00f, 3.00f, 5.00f, 9.00f,	0.00f }; // Materialwert
-	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_ADDITION_BEGIN_GAME_PHASE = { 0.00f, 0.25f, 0.25f, 0.00f, 0.00f,	0.00f }; // Materialwert-Addition in der Eröffnung
-	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_ADDITION_MID_GAME_PHASE = { 0.00f, 0.50f, 0.50f, 0.50f, 0.50f,	0.00f }; // Materialwert-Addition im Mittelspiel
-	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_ADDITION_END_GAME_PHASE = { 0.00f, 0.50f, 0.50f, 0.75f, 0.75f,	0.00f }; // Materialwert-Addition im Endspiel
+	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_VALUES						= { 1.00f, 3.00f, 3.00f, 5.00f, 9.00f,	0.00f }; // Materialwert
+	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_ADDITION_BEGIN_GAME_PHASE		= { 0.00f, 0.25f, 0.25f, 0.00f, 0.00f,	0.00f }; // Materialwert-Addition in der Eröffnung
+	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_ADDITION_MID_GAME_PHASE		= { 0.00f, 0.50f, 0.50f, 0.50f, 0.50f,	0.00f }; // Materialwert-Addition im Mittelspiel
+	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_ADDITION_END_GAME_PHASE		= { 0.00f, 0.50f, 0.50f, 0.75f, 0.75f,	0.00f }; // Materialwert-Addition im Endspiel
 
 	// Spielphase Material Balance
 	constexpr std::array<UINT16, MAX_PIECE_TYPES> START_PIECE_COUNT = { 8,	   2,	  2,	 2,		1,		1 }; // Anzahl der Figuren beim Start (Für 100% Materialwertberechnung)
@@ -334,20 +335,24 @@ namespace owl
 	constexpr FLOAT PIECE_MOBILITY_KING_WEIGHT = 0.10f; // König-Figurenbewegung (Faktor)
 
 	// Zusätzliche Dynamische Bauerngewichtung
-	constexpr UINT16 MAX_DYNAMIC_PAWNS = MAX_PAWN_COUNT;
-	constexpr UINT16 DYNAMIC_PAWNS_LAST_INDEX = MAX_DYNAMIC_PAWNS - 1;
+	constexpr UINT16 MAX_DYNAMIC_PAWNS = MAX_PAWN_COUNT; // Anzahl der möglichen Bauern für die Dynamik
+	constexpr UINT16 DYNAMIC_PAWNS_LAST_INDEX = MAX_DYNAMIC_PAWNS - 1; // Index der letzten Bauerndynamik
 
-	constexpr std::array<FLOAT, MAX_DYNAMIC_PAWNS> MATERIAL_DYNAMIC_PAWNS = { 0.05f, 0.03f, 0.01f, 0.00f, -0.01f, -0.02f, -0.03f, -0.05f };
+	constexpr std::array<FLOAT, MAX_DYNAMIC_PAWNS> MATERIAL_DYNAMIC_PAWNS	= { 0.10f, 0.05f, 0.025f, 0.00f, 0.00f, -0.01f, -0.02f, -0.025f }; // Dynamische additive Bauerngewichtung je nach Anzahl der verbleibenden Bauern
+	constexpr std::array<FLOAT, ROWS> PASSED_PAWNS_PROGRESS_BONUS			= { 0.00f, 0.00f,  0.00f, 0.00f, 0.05f,  0.15f,  0.35f,   0.00f }; // Additiver Bonus für Freibauern je nach Entfernung zur gegnerischen Grundreihe
 
+	// Hinweis: Alle Mali und Boni werden pro Bauer auf dem Spielfeld gegeben
 	// Bauernstruktur Malus
 	constexpr FLOAT PAWN_STRUCTURE_DOUBLE_PAWNS_PENALTY = -0.200f;	// Doppelte Bauern Malus
 	constexpr FLOAT PAWN_STRUCTURE_ISOLATED_PAWNS_PENALTY = -0.100f;	// Isolierte Bauern Malus
 	constexpr FLOAT PAWN_STRUCTURE_BACKWARDS_PAWNS_PENALTY = -0.125f;	// Rückständige Bauern Malus
+	constexpr FLOAT PAWN_STRUCTURE_ISOLATED_DOUBLE_PAWNS_PENALTY = -0.200f; // Doppelte Bauern, die isoliert sind
+
 	// Bauernstruktur Bonus
 	constexpr FLOAT PAWN_STRUCTURE_CONNECTED_PAWNS_BONUS = 0.100f;	// Verbundene Bauern Bonus
 	constexpr FLOAT PAWN_STRUCTURE_CHAIN_PAWNS_BONUS = 0.100f;	// Bauernkette Bonus
-	constexpr FLOAT PAWN_STRUCTURE_PASSED_PAWNS_BONUS = 0.200f;	// Freibauern Bonus
-
+	constexpr FLOAT PAWN_STRUCTURE_PASSED_PAWNS_BONUS = 0.300f;	// Freibauern Bonus
+	constexpr FLOAT PAWN_STRUCTURE_CONNECTED_PASSED_PAWNS_BONUS = 0.700f; // Freibauern, die verbunden sind
 	// Piece Square Tables
 	constexpr FLOAT PIECE_SQUARE_TABLE_PAWN_WEIGHT = 1.0f;	// Bauern-Tabellen-Gewicht (Faktor)
 	constexpr FLOAT PIECE_SQUARE_TABLE_KNIGHT_WEIGHT = 1.0f;	// Springer-Tabellen-Gewicht (Faktor)
@@ -370,11 +375,11 @@ namespace owl
 
 	constexpr std::array<FLOAT, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_KNIGHT = {
 		-0.50f,-0.40f,-0.30f,-0.30f,-0.30f,-0.30f,-0.40f,-0.50f,
-		-0.00f,-0.20f, 0.00f, 0.00f, 0.00f, 0.00f,-0.20f,-0.40f,
-		-0.00f, 0.00f, 0.10f, 0.15f, 0.15f, 0.10f, 0.00f,-0.30f,
-		-0.00f, 0.05f, 0.15f, 0.20f, 0.20f, 0.15f, 0.05f,-0.30f,
-		-0.00f, 0.00f, 0.15f, 0.20f, 0.20f, 0.15f, 0.00f,-0.30f,
-		-0.00f, 0.05f, 0.10f, 0.15f, 0.15f, 0.10f, 0.05f,-0.30f,
+		-0.40f,-0.20f, 0.00f, 0.00f, 0.00f, 0.00f,-0.20f,-0.40f,
+		-0.30f, 0.00f, 0.10f, 0.15f, 0.15f, 0.10f, 0.00f,-0.30f,
+		-0.30f, 0.05f, 0.15f, 0.20f, 0.20f, 0.15f, 0.05f,-0.30f,
+		-0.30f, 0.00f, 0.15f, 0.20f, 0.20f, 0.15f, 0.00f,-0.30f,
+		-0.30f, 0.05f, 0.10f, 0.15f, 0.15f, 0.10f, 0.05f,-0.30f,
 		-0.40f,-0.20f, 0.00f, 0.05f, 0.05f, 0.00f,-0.20f,-0.40f,
 		-0.50f,-0.40f,-0.30f,-0.30f,-0.30f,-0.30f,-0.40f,-0.50f
 	};
@@ -470,4 +475,14 @@ namespace owl
 		"nxP","nxN","nxB","nxR","nxQ",
 		"pxP","pxN","pxB","pxR","pxQ"
 	};
+
+	// Maximale Züge
+	constexpr UINT16 MAX_MOVES_PER_PLY_BOUND = 35;
+	constexpr UINT16 MAX_MOVES_PER_PAWN = 4;
+	constexpr UINT16 MAX_MOVES_PER_KNIGHT = 8;
+	constexpr UINT16 MAX_MOVES_PER_BISHOP = 13;
+	constexpr UINT16 MAX_MOVES_PER_ROOK = 14;
+	constexpr UINT16 MAX_MOVES_PER_QUEEN = MAX_MOVES_PER_BISHOP + MAX_MOVES_PER_ROOK;
+	constexpr UINT16 MAX_MOVES_PER_KING = 10;
+	constexpr UINT16 MAX_LINE_LENGTH = std::max(ROWS, COLUMNS);
 }
