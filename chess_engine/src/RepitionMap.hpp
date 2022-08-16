@@ -15,7 +15,6 @@ namespace owl
 	class RepitionMap
 	{
 	public:
-		// TODO: lange fen-form durch einfachen 64-CHAR-String ersetzen
 		/// <summary>
 		/// Neu Spielposition zur Repition Map hinzufügen. Wird für die dreimalige Stellungswiederholung verwendet.
 		/// </summary>

@@ -117,7 +117,7 @@ namespace owl
 		/// Spielphase abrufen
 		GamePhase getGamePhase() const;
 
-		static VOID printPosition(const Position& position); 
+		VOID print() const; 
 
 		constexpr BOOL operator==(const Position& other) const
 		{

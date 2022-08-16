@@ -1,64 +1,42 @@
 #include "ChessEngine.hpp"
 #include "ChessValidation.hpp"
 #include "ChessEvaluation.hpp"
+
 #include <algorithm>
-#include <chrono>
+#include <iostream>
 
 namespace owl
 {
-	using clock = std::chrono::steady_clock;
-	using time_point = std::chrono::steady_clock::time_point;
-	using milliseconds = std::chrono::milliseconds;
-	using microseconds = std::chrono::microseconds;
 
-	inline time_point START_CLOCK()
-	{
-		return clock::now();
-	}
-
-	inline INT32 CALCULATE_MILLISECONDS(time_point start)
-	{
-		return std::chrono::duration_cast<milliseconds>(clock::now() - start).count();
-	}
-
-	inline auto CALCULATE_MICROSECONDS(time_point start)
-	{
-		return std::chrono::duration_cast<microseconds>(clock::now() - start).count();
-	}
+	//static MinMaxResult m_result;
 
 	ChessEngine::ChessEngine()
 		: m_player(0)
 	{
+		ChessValidation::init();
+
 	}
 	ChessEngine::~ChessEngine()
 	{
 	}
 
-	Move ChessEngine::searchMove(short player, UINT16 depth, UCHAR parameterFlags, BOOL random)
+	PAIR<Move, FLOAT> ChessEngine::searchMove(short player, UINT16 depth, UCHAR parameterFlags, BOOL random)
 	{
-
 		m_mutex.lock();
 
 		m_ready = false;
 		m_stop = false;
 		m_startedDepth = depth;
-		// Die Position des generischen Zugs zur RepitionMap hinzufügen
 		m_repitionMap.addPosition(m_position);
-
 		if(m_player == 0) m_player = player;
 		KILLER_LIST killer_list;
-		MinMaxResult result;
 
 		m_mutex.unlock();
 
-		// MinMax oder MinMax+Sort
-		//if (parameterFlags == FT_NULL || parameterFlags == FT_SORT)
-		//{
-		//	result = minMax(position, player, depth);
-		//}
-
-		// AlphaBeta oder AlphaBeta+Sort
-		result = alphaBeta(m_position, m_player, depth, -INF, INF, 
+		// Führe MinMax aus:
+		if (parameterFlags == FT_NULL) minMax(m_position, m_player, depth);
+		// Führe Alpha-Beta aus
+		else alphaBeta(m_position, m_player, depth, -INF, INF, 
 			parameterFlags,	// Parameter-Flags
 			parameterFlags & FT_SRT_KILLER ? &killer_list : nullptr // Killer-Liste
 		);
@@ -67,12 +45,13 @@ namespace owl
 
 		m_ready = true;
 		m_stop = false;
-		m_position.applyMove(result.best);
+		auto result = m_result.getResult();
+		m_position.applyMove(result.first);
 		m_repitionMap.addPosition(m_position);
 
 		m_mutex.unlock();
 
-		return result.best;
+		return result;
 	}
 
 	BOOL ChessEngine::inDebugMode() const
@@ -111,6 +90,7 @@ namespace owl
 
 	VOID ChessEngine::setPosition(const Position& position)
 	{
+		if (m_player == 0) m_player = position.getPlayer();
 		m_position = position;
 	}
 
@@ -129,126 +109,115 @@ namespace owl
 		return m_position;
 	}
 
-	MinMaxResult ChessEngine::minMax(Position& position, INT16 player, UINT16 depth)
+	FLOAT ChessEngine::minMax(Position& position, INT16 player, UINT16 depth)
 	{
+		if (m_stop) return -INF;
 
-		auto result = MinMaxResult{};
-		result.values.resize(MIN_MAX_VALUE_SIZE);
-
-		result.values[VALUE] = -player * INF;
+		auto value = -player * INF;
 
 		if (depth == 0)
 		{
-			// TODO: Change Engine Player
-			result.values[VALUE] = ChessEvaluation::evaluate(position, PLAYER_WHITE, EVAL_FT_STANDARD);
-			return result;
+			return ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD);
 		}
 
 		auto moves = ChessValidation::getValidMoves(position, player);
 
 		if (moves.empty())
 		{
-			// TODO: Change Engine Player
-			result.values[VALUE] = ChessEvaluation::evaluate(position, PLAYER_WHITE, EVAL_FT_STANDARD);
-			return result;
+			return ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD);
 		}
-
-		for (auto move : moves)
+		else if (moves.size() == 1 && depth == m_startedDepth)
 		{
-			auto current_position = ChessValidation::applyMove(position, move);
-
-			// Stellungen wegen 3x Stellungswiederholung überspringen
-			if (m_repitionMap.isPositionAlreadyLocked(current_position)) continue;
-
-			auto new_result = minMax(current_position, -player, depth - 1);
-
-			if (new_result.values[VALUE] > result.values[VALUE] && player == PLAYER_WHITE || new_result.values[VALUE] < result.values[VALUE] && player == PLAYER_BLACK)
-			{
-				result.values[VALUE] = new_result.values[VALUE];
-				result.best = move;
-			}
-			// if empty
-			else if (new_result.values[VALUE] == result.values[VALUE] && result.best.startX == 0 && result.best.startY == 0 && result.best.targetX == 0 && result.best.targetY == 0)
-			{
-				result.best = move;
-			}
-		}
-		return result;
-	}
-
-	MinMaxResult ChessEngine::alphaBeta(Position& position, INT16 player, UINT16 depth, FLOAT alpha, FLOAT beta, UCHAR parameterFlags, KILLER_LIST* killerList)
-	{
-
-		auto result = MinMaxResult{};		
-		auto is_player_white = player == PLAYER_WHITE;
-
-		result.values.resize(MIN_MAX_VALUE_SIZE);
-		result.values[VALUE] = -player * INF;
-
-		if (depth == 0)
-		{
-			auto start = START_CLOCK();
-			result.values[VALUE] = ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD);
-
-			return result;
-		} 
-
-		MOVE_LIST moves = ChessValidation::getValidMoves(position, player);
-
-		if (moves.empty())
-		{
-			result.values[VALUE] = ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD);
-
-			return result;
-		}
-		else if (moves.size() == 1 && depth == m_startedDepth) // Nicht weiter suchen, wenn der Wurzelknoten nur einen Folgezug hat
-		{
-			result.values[VALUE] = ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD);
-			result.best = moves.front();
-			return result;
-		}
-
-		sortMoves(&moves, position, depth, parameterFlags, killerList);
-
-		if (m_stop)
-		{
-			position.applyMove(moves.front());
-			auto not_best_but_any_move = moves.front();
-			result.values[VALUE] = ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD);
-			result.best = not_best_but_any_move;
-			position.undoLastMove();
-			return result;
+			return ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD);
 		}
 
 		for (auto move : moves)
 		{
 			position.applyMove(move);
 
-			PAIR<FLOAT, FLOAT> alpha_beta = is_player_white ? 
-				std::make_pair(result.values[VALUE], beta) : 
-				std::make_pair(alpha, result.values[VALUE]);
-
-			auto new_result = alphaBeta(position, -player, depth - 1, alpha_beta.first, alpha_beta.second, parameterFlags, killerList);
+			auto new_value = minMax(position, -player, depth - 1);
 
 			position.undoLastMove();
 
-			if (is_player_white && new_result.values[VALUE] > alpha)
+			if (new_value > value && player == m_player 
+				|| new_value < value && player != m_player)
 			{
-				result.values[VALUE] = new_result.values[VALUE];
-				result.best = move;
+				value = new_value;
+				if (depth == m_startedDepth) {
+					m_result.insert(move, value);
+				}
+			}
+			else if (new_value == value && m_result.empty())
+			{
+				if (depth == m_startedDepth) {
+					m_result.insert(move, value);
+				}
+			}
+		}
 
-				if (alpha >= beta) 
+		return value;
+	}
+
+	FLOAT ChessEngine::alphaBeta(Position& position, INT16 player, UINT16 depth, FLOAT alpha, FLOAT beta, UCHAR parameterFlags, KILLER_LIST* killerList)
+	{		
+		if (m_stop) return -INF;
+
+		// Blattknoten erreicht?
+		if (depth == 0)
+		{
+			auto v = ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD, true);
+			return v;
+		} 
+
+		// Liste generieren + Checkmate überprüfen bei 0 Zügen
+		MOVE_LIST moves = ChessValidation::getValidMoves(position, player); 
+
+		// Endstellung erreicht? 
+		if (moves.empty())
+		{
+			auto v = ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD);
+			return v;
+		}
+
+		// Züge gegebenfalls sortieren
+		sortMoves(&moves, position, depth, parameterFlags, killerList);
+		
+		auto value = m_player ? alpha : beta;
+
+		for (auto move : moves)
+		{
+			position.applyMove(move);
+
+			auto new_alpha = m_player ? value : alpha;
+			auto new_beta = m_player ? beta : value;
+
+			auto new_value = alphaBeta(position, -player, depth - 1, new_alpha, new_beta, parameterFlags, killerList);
+
+			position.undoLastMove();
+
+			if (m_player && new_value > value)
+			{
+				value = new_value;
+
+				if (depth == m_startedDepth) {
+					m_result.insert(move, value);
+				}
+
+				if (value >= beta)
 				{
 					insertKiller(killerList, move, depth);
 					break; 
 				}
 			}
-			else if (!is_player_white && new_result.values[VALUE] < beta)
+			else if (!m_player && new_value < value)
 			{
-				result.values[VALUE] = new_result.values[VALUE];
-				result.best = move;
+				value = new_value;
 
-				if (beta <= alpha) 
+				if (depth == m_startedDepth) {
+					m_result.insert(move, value);
+				}
+
+				if (value <= alpha)
 				{
 					insertKiller(killerList, move, depth);
 					break;
@@ -256,7 +225,7 @@ namespace owl
 			}
 		}
 		
-		return result;
+		return value;
 	}
 
 	VOID ChessEngine::sortMoves(MOVE_LIST* moves, Position& position, UINT16 depth, UCHAR parameterFlags, KILLER_LIST* killerList)
@@ -264,7 +233,9 @@ namespace owl
 		// Falls keine Sortierung aktiviert wurde: nichts tun
 		if (parameterFlags < FT_BIT_SORT_BEGIN ) return;
 
-		std::sort(moves->begin(), moves->end(), [&position, depth, parameterFlags, killerList](const Move& left, const Move& right)
+		auto& enginePlayer = m_player;
+
+		std::sort(moves->begin(), moves->end(), [&position, depth, parameterFlags, killerList, &enginePlayer](const Move& left, const Move& right)
 		{
 			// MVV_LVA: 
 			if (parameterFlags & FT_SRT_MVV_LVA)
@@ -294,8 +265,12 @@ namespace owl
 			// Material-Heuristik
 			if (parameterFlags & FT_SRT_MATERIAL)
 			{
-				FLOAT left_move_value = ChessEvaluation::evaluate(ChessValidation::applyMove(position, left), -position.getPlayer(), 0);
-				FLOAT right_move_value = ChessEvaluation::evaluate(ChessValidation::applyMove(position, right), -position.getPlayer(), 0);
+				position.applyMove(left);
+				FLOAT left_move_value = ChessEvaluation::evaluate(position, enginePlayer, 0);
+				position.undoLastMove();
+				position.applyMove(right);
+				FLOAT right_move_value = ChessEvaluation::evaluate(position, enginePlayer, 0);
+				position.undoLastMove();
 
 				return left_move_value > right_move_value;
 			}

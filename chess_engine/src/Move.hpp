@@ -39,15 +39,15 @@ namespace owl
 		/// </summary>
 		BOOL castlingShort = false;
 
-		static VOID printMove(const Move& move)
+		VOID printMove()
 		{
-			std::cout << "{ start: " << move.startX << ", " << move.startY
-				<< "; target: " << move.targetX << ", " << move.targetY
-				<< "; capture= " << move.capture
-				<< "; promotion= " << move.promotion
-				<< "; enPassantCapture= " << move.enPassantCapture
-				<< "; castlingLong= " << move.castlingLong
-				<< "; castlingShort= " << move.castlingShort
+			std::cout << "{ start: " << startX << ", " << startY
+				<< "; target: " << targetX << ", " << targetY
+				<< "; capture= " << capture
+				<< "; promotion= " << promotion
+				<< "; enPassantCapture= " << enPassantCapture
+				<< "; castlingLong= " << castlingLong
+				<< "; castlingShort= " << castlingShort
 				<< "}\n";
 		}
 

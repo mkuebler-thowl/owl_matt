@@ -4,6 +4,8 @@
 #include <vector>
 #include <cstdint>
 
+#define OWL_RANDOM false
+
 namespace owl
 {
 	// Klassen vorher deklarieren
@@ -18,9 +20,10 @@ namespace owl
 	class Command;
 	class CommandBuilder;
 	class EngineOptions;
+	class MinMaxResult;
 
 	struct Move;
-	struct MinMaxResult;
+
 
 	// Typdefinitionen
 	typedef std::int16_t INT16;
@@ -70,7 +73,8 @@ namespace owl
 	constexpr UCHAR FT_STANDARD = FT_ALPHA_BETA | FT_SRT_MATERIAL | FT_SRT_MVV_LVA | FT_SRT_KILLER; // OWL-Matt Standard Features
 
 	constexpr BOOL USE_RANDOM = false; // Soll der Min-Max aus einer zufälligen Anzahl an Zügen ziehen?
-
+	constexpr FLOAT RANDOM_THRESHOLD = 4.0f; // Standardabweichung für alle Züge mit relativen Abstand zum besten gefunden Zug (Delta-Phi-Cut)
+	
 	// Spieler
 	constexpr INT16 PLAYER_WHITE = 1;	// Spieler Weiß
 	constexpr INT16 PLAYER_BLACK = -1;	// Spieler Schwarz
@@ -477,12 +481,39 @@ namespace owl
 	};
 
 	// Maximale Züge
-	constexpr UINT16 MAX_MOVES_PER_PLY_BOUND = 35;
+	constexpr UINT16 MAX_MOVES_PER_PLY_BOUND = 40;
 	constexpr UINT16 MAX_MOVES_PER_PAWN = 4;
 	constexpr UINT16 MAX_MOVES_PER_KNIGHT = 8;
 	constexpr UINT16 MAX_MOVES_PER_BISHOP = 13;
 	constexpr UINT16 MAX_MOVES_PER_ROOK = 14;
 	constexpr UINT16 MAX_MOVES_PER_QUEEN = MAX_MOVES_PER_BISHOP + MAX_MOVES_PER_ROOK;
 	constexpr UINT16 MAX_MOVES_PER_KING = 10;
+	constexpr UINT16 MAX_MOVES_PER_KING_WITHOUT_CASTLING = MAX_MOVES_PER_KING - 2;
+
+	constexpr UINT16 MAX_ROOK_DIR = 4;
+	constexpr UINT16 MAX_BISHOP_DIR = 4;
 	constexpr UINT16 MAX_LINE_LENGTH = std::max(ROWS, COLUMNS);
+
+	constexpr UINT16 VEC = 2;
+	constexpr UINT16 FIRST = 0;
+	constexpr UINT16 SECOND = 1;
+
+	constexpr INT32 MOVE_DIR_KNIGHT[MAX_MOVES_PER_KNIGHT][VEC] = 
+	{ 
+		{-1,-2}, {2,-1}, {2,1}, {1,2}, {-1,2}, {-2,1}, {-2,-1}, {-1,-2} 
+	};
+	constexpr INT32 MOVE_DIR_KING[MAX_MOVES_PER_KING_WITHOUT_CASTLING][VEC] =
+	{
+		{0,-1}, {1,-1}, {1,0}, {1,1}, {0,1},{-1,1}, {-1,0}, {-1,-1}
+	};
+
+	constexpr INT32 MOVE_DIR_ROOK[MAX_ROOK_DIR][VEC] =
+	{
+		{0,-1}, {1,0}, {0,1}, {-1,0}
+	};
+
+	constexpr INT32 MOVE_DIR_BISHOP[MAX_BISHOP_DIR][VEC] =
+	{
+		{-1,-1}, {1,-1}, {1,1}, {-1,1}
+	};
 }

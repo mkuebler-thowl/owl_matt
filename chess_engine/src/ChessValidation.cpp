@@ -1,23 +1,28 @@
 #include "ChessValidation.hpp"
 #include "ChessEngine.hpp"
-#include "FENParser.hpp"
+#include "ChessUtility.hpp"
 #include "ChessEvaluation.hpp"
 
 #include <string>
 #include <iostream>
+
 namespace owl
 {
+	MOVE_LIST ChessValidation::s_data = MOVE_LIST();
+
+	VOID ChessValidation::init()
+	{
+		s_data.reserve(MAX_MOVES_PER_PLY_BOUND);
+	}
 	MOVE_LIST ChessValidation::getValidMoves(Position& position, short player)
 	{
-		MOVE_LIST moves;
-		moves.reserve(MAX_MOVES_PER_PLY_BOUND);
+		s_data.clear();
 
-		for (INT32 y = FIRST_ROW_INDEX; y < ROWS; y++)
+		for (UINT16 y = FIRST_ROW_INDEX; y < ROWS; y++)
 		{
-			for (INT32 x = FIRST_COLUMN_INDEX; x < COLUMNS; x++)
+			for (UINT16 x = FIRST_COLUMN_INDEX; x < COLUMNS; x++)
 			{
 				auto piece = position[y][x];
-
 				if (piece == EMPTY_FIELD) continue;
 
 				auto piece_color = GET_PLAYER_INDEX_BY_PIECE(piece);
@@ -30,36 +35,24 @@ namespace owl
 					switch (piece_type)
 					{
 					case PAWN_INDEX: {
-						auto tmp = getValidPawnMoves(position, x, y, player);
-						//moves.reserve(moves.size() + pawns.size());
-						moves.insert(moves.end(), tmp.begin(), tmp.end());
+						getValidPawnMoves(position, x, y, player);
 						break; }
 					case KNIGHT_INDEX: {
-						auto tmp = getValidKnightMoves(position, x, y, player);
-						//moves.reserve(moves.size() + knights.size());
-						moves.insert(moves.end(), tmp.begin(), tmp.end());
+						getValidKnightMoves(position, x, y, player);
 						break; }
 					case KING_INDEX: {
-						auto tmp = getValidKingMoves(position, x, y, player);
-						//moves.reserve(moves.size() + kings.size());
-						moves.insert(moves.end(), tmp.begin(), tmp.end());
+						getValidKingMoves(position, x, y, player);
+						
 						break; }
 					case ROOK_INDEX: {
-						auto tmp = getValidRookMoves(position, x, y, player);
-						//moves.reserve(moves.size() + rooks.size());
-						moves.insert(moves.end(), tmp.begin(), tmp.end());
+						getValidRookMoves(position, x, y, player);
 						break; }
 					case BISHOP_INDEX: {
-						auto tmp = getValidBishopMoves(position, x, y, player);
-						//moves.reserve(moves.size() + bishops.size());
-						moves.insert(moves.end(), tmp.begin(), tmp.end());
+						getValidBishopMoves(position, x, y, player);
 						break; }
 					case QUEEN_INDEX: {
-						auto tmp = getValidRookMoves(position, x, y, player);
-						auto tmp2 = getValidBishopMoves(position, x, y, player);
-						//moves.reserve(moves.size() + axis.size() + diagonal.size());
-						moves.insert(moves.end(), tmp.begin(), tmp.end());
-						moves.insert(moves.end(), tmp2.begin(), tmp2.end());
+						getValidRookMoves(position, x, y, player);
+						getValidBishopMoves(position, x, y, player);
 						break; }
 					}
 				}
@@ -69,116 +62,31 @@ namespace owl
 		// Schachmatt abfragen
 		// Da jeder Zug, der ein "Schach" auslöst entfernt wird, gilt das natürlich auch für alle Folgezüge, die eine "Schach"-Situation nicht auflösen können.
 		// Deshalb reicht es abzufragen, ob der König im Schach steht und keine Züge mehr zur Verfügung stehen
-		evaluateCheckmate(position, player, moves.empty());
+		evaluateCheckmate(position, player, s_data.empty());
 
-		return moves;
+		return s_data;
 	}
 	UINT16 ChessValidation::countPossibleMovesOnField(Position& position, INT32 x, INT32 y)
 	{
-		UINT16 count = 0;
+		//MOVE_LIST moves;
+		s_data.clear();
 
 		switch (position[y][x])
 		{
-		case WHITE_PAWN: count += getValidPawnMoves(position, x, y, PLAYER_WHITE).size(); break;
-		case BLACK_PAWN: count += getValidPawnMoves(position, x, y, PLAYER_BLACK).size(); break;
-		case WHITE_KNIGHT: count += getValidKnightMoves(position, x, y, PLAYER_WHITE).size(); break;
-		case BLACK_KNIGHT: count += getValidKnightMoves(position, x, y, PLAYER_BLACK).size(); break;
-		case WHITE_BISHOP: count += getValidBishopMoves(position, x, y, PLAYER_WHITE).size(); break;
-		case BLACK_BISHOP: count += getValidBishopMoves(position, x, y, PLAYER_BLACK).size(); break;
-		case WHITE_ROOK: count += getValidRookMoves(position, x, y, PLAYER_WHITE).size(); break;
-		case BLACK_ROOK: count += getValidRookMoves(position, x, y, PLAYER_BLACK).size(); break;
-		case WHITE_QUEEN: count += getValidBishopMoves(position, x, y, PLAYER_WHITE).size() + getValidRookMoves(position, x, y, PLAYER_WHITE).size(); break;
-		case BLACK_QUEEN: count += getValidBishopMoves(position, x, y, PLAYER_BLACK).size() + getValidRookMoves(position, x, y, PLAYER_BLACK).size(); break;
-		case WHITE_KING: count += getValidKingMoves(position, x, y, PLAYER_WHITE).size(); break;
-		case BLACK_KING: count += getValidKingMoves(position, x, y, PLAYER_BLACK).size(); break;
+		case WHITE_PAWN: getValidPawnMoves(position, x, y, PLAYER_WHITE); break;
+		case BLACK_PAWN: getValidPawnMoves(position, x, y, PLAYER_BLACK); break;
+		case WHITE_KNIGHT:getValidKnightMoves(position, x, y, PLAYER_WHITE); break;
+		case BLACK_KNIGHT: getValidKnightMoves(position, x, y, PLAYER_BLACK); break;
+		case WHITE_BISHOP: getValidBishopMoves(position, x, y, PLAYER_WHITE); break;
+		case BLACK_BISHOP: getValidBishopMoves(position, x, y, PLAYER_BLACK); break;
+		case WHITE_ROOK: getValidRookMoves(position, x, y, PLAYER_WHITE); break;
+		case BLACK_ROOK: getValidRookMoves(position, x, y, PLAYER_BLACK); break;
+		case WHITE_QUEEN: getValidBishopMoves(position, x, y, PLAYER_WHITE); getValidRookMoves(position, x, y, PLAYER_WHITE); break;
+		case BLACK_QUEEN: getValidBishopMoves(position, x, y, PLAYER_BLACK); getValidRookMoves(position, x, y, PLAYER_BLACK); break;
+		case WHITE_KING: getValidKingMoves(position, x, y, PLAYER_WHITE); break;
+		case BLACK_KING: getValidKingMoves(position, x, y, PLAYER_BLACK); break;
 		}
-		return count;
-	}
-	Position ChessValidation::applyMove(Position& position, const Move& move)
-	{
-		//auto pos = position;
-		//pos.applyMove(move);
-		//return pos;
-
-		auto pos = position;
-		auto figure = position[move.startY][move.startX];
-
-		pos[move.targetY][move.targetX] = figure;
-		pos[move.startY][move.startX] = EMPTY_FIELD;
-		
-		// Ist der Zug eine Rochade? => Turm bewegen
-		if (move.castlingLong)
-		{
-			auto rook = position[move.startY][FIRST_COLUMN_INDEX];
-			pos[move.startY][FIRST_COLUMN_INDEX] = EMPTY_FIELD;
-			pos[move.startY][3] = rook;
-		}
-		else if (move.castlingShort)
-		{
-			auto rook = position[move.startY][COLUMNS-1];
-			pos[move.startY][LAST_COLUMN_INDEX] = EMPTY_FIELD;
-			pos[move.startY][5] = rook;
-		}
-
-		// Wurde die En Passant-Capture eingelöst? Lösche richtiges Feld
-		if (move.enPassantCapture && (move.targetY == 2 || move.targetY == 5)) 
-		{
-			pos[move.startY][move.targetX] = EMPTY_FIELD;
-		}
-
-		pos.addPlyCount();
-		pos.changePlayer();
-
-		// En Passant zurücksetzen:
-		if (position.isEnPassant())
-		{
-			pos.resetEnPassant();
-		}
-
-		// 50-Züge-Regel: Capture abfragen & Bauernbewegung
-		if (figure == WHITE_PAWN || figure == BLACK_PAWN || move.capture)
-		{
-			pos.resetPlyCount();
-		}
-
-		// En passant für die Folgeposition bestimmen:
-		if ((figure == BLACK_PAWN && move.startY == 1 && move.targetY == 3)
-			|| (figure == WHITE_PAWN && move.startY == 6 && move.targetY == 4))
-		{
-			auto dir = move.startY == 1 ? 1 : -1;
-			pos.setEnPassant(move.startX, move.startY + dir);
-		}
-
-		// 100 Halbzüge woanders informieren; auswerten
-		if (pos.getPlyCount() >= 100) // 100 Halbzüge bzw. 50 Züge
-		{
-			pos.setGameState(GameState::Remis);
-		}
-
-		// Rochieren gegebenfalls deaktivieren
-		if (pos.getWhiteCastlingShort() || pos.getWhiteCastlingLong() || pos.getBlackCastlingLong() || pos.getBlackCastlingShort())
-		{
-			switch (figure)
-			{
-			case WHITE_KING:
-				pos.resetWhiteCastlingLong();
-				pos.resetWhiteCastlingShort();
-				break;
-			case BLACK_KING:
-				pos.resetBlackCastlingLong();
-				pos.resetBlackCastlingShort();
-				break;
-			case WHITE_ROOK:
-				if (move.startX == FIRST_COLUMN_INDEX) pos.resetWhiteCastlingLong();
-				else if (move.startX == LAST_COLUMN_INDEX) pos.resetWhiteCastlingShort();
-				break;
-			case BLACK_ROOK:
-				if (move.startX == FIRST_COLUMN_INDEX) pos.resetBlackCastlingLong();
-				else if (move.startX == LAST_COLUMN_INDEX) pos.resetBlackCastlingShort();
-			}
-		}
-
-		return pos;
+		return s_data.size();
 	}
 
 	BOOL ChessValidation::isKingInCheckAfterMove(Position& position, short player, const Move& move)
@@ -186,6 +94,7 @@ namespace owl
 		position.applyMove(move);
 		auto value = isKingInCheck(position, player);
 		position.undoLastMove();
+
 		return value;
 	}
 
@@ -224,6 +133,7 @@ namespace owl
 
 		return false;
 	}
+
 	BOOL ChessValidation::isPlaceInCheck(const Position& position, INT32 x, INT32 y, short player)
 	{
 		if (checkKingPawns(x, y, position, player)) return true;
@@ -242,11 +152,11 @@ namespace owl
 		// diagonal links oben:
 		if (king_x > 0 && king_y > 0)
 		{
-			for (INT32 i = std::min(king_x, king_y); i >= 0; i--)
+			for (INT32 i = 1; i <= std::min(king_x, king_y); i++)
 			{
 				auto place = position[king_y - i][king_x - i];
 				if (place == enemy_queen || place == enemy_bishop) return true;
-				if (place != ' ') break;
+				else if (place != EMPTY_FIELD) break;
 			}
 		}
 		// diagonal rechts unten:
@@ -337,12 +247,11 @@ namespace owl
 	BOOL ChessValidation::checkKingKnights(INT32 king_x, INT32 king_y, const Position& position, short player)
 	{
 		CHAR enemy_knight = player == PLAYER_WHITE ? BLACK_KNIGHT : WHITE_KNIGHT;
-		std::vector<PAIR<INT32, INT32>> directions = { {-1,-2}, {2,-1}, {2,1}, {1,2}, {-1,2}, {-2,1}, {-2,-1}, {-1,-2} };
 
-		for (auto direction : directions)
+		for (auto direction : MOVE_DIR_KNIGHT)
 		{
-			auto x = king_x + direction.first;
-			auto y = king_y + direction.second;
+			auto x = king_x + direction[FIRST];
+			auto y = king_y + direction[SECOND];
 
 			if (isInsideChessboard(x,y))
 			{
@@ -395,26 +304,25 @@ namespace owl
 	}
 	VOID ChessValidation::evaluateCheckmate(Position& position, short player, BOOL noValidMoves)
 	{
-		if (noValidMoves)
+		if (!noValidMoves) return;
+
+		// Sieg & Niederlage
+		if (isKingInCheck(position, player))
 		{
-			// Sieg & Niederlage
-			if (isKingInCheck(position, player))
-			{
-				auto state = player == PLAYER_WHITE ? GameState::PlayerBlackWins : GameState::PlayerWhiteWins;
-				position.setGameState(state);
-			}
-			// Pattsituation (Spieler kann keine Bewegung durchführen)
-			else
-			{
-				position.setGameState(GameState::Remis);
-			}
+			auto state = player == PLAYER_WHITE ? GameState::PlayerBlackWins : GameState::PlayerWhiteWins;
+			position.setGameState(state);
+		}
+		// Pattsituation (Spieler kann keine Bewegung durchführen)
+		else
+		{
+			position.setGameState(GameState::Remis);
 		}
 	}
 
-	MOVE_LIST ChessValidation::getValidPawnMoves(Position& position, INT32 x, INT32 y, short player)
+	VOID ChessValidation::getValidPawnMoves(Position& position, INT32 x, INT32 y, short player)
 	{
-		MOVE_LIST moves;
-		moves.reserve(MAX_MOVES_PER_PAWN);
+		//MOVE_LIST moves;
+		//moves.reserve(MAX_MOVES_PER_PAWN);
 		auto pawn_direction = player;
 		std::string enemies = getEnemyPiecesString(player);
 		std::string promotion_str = std::string(player == PLAYER_WHITE ? WHITE_PROMOTION_PIECES : BLACK_PROMOTION_PIECES);
@@ -431,22 +339,24 @@ namespace owl
 				move.targetY = y - pawn_direction;
 				move.capture = false;
 
-				// Bauernumwandlung?
-				if (y - pawn_direction == 0) {
+				if (!isKingInCheckAfterMove(position, player, move))
+				{
+					// Bauernumwandlung?
+					if (y - pawn_direction == 0) {
 
-					for (auto c : promotion_str)
+						for (auto c : promotion_str)
+						{
+							move.promotion = c;
+							s_data.emplace_back(move);
+						}
+					}
+					else
 					{
-						move.promotion = c;
-						if (!isKingInCheckAfterMove(position, player, move))
-							moves.emplace_back(move);
+						s_data.emplace_back(move);
 					}
 				}
-				else
-				{
-					if (!isKingInCheckAfterMove(position, player, move))
-						moves.emplace_back(move);
-				}
 			}
+
 			// 2-Schritte am Anfang?
 			if ((y == 6 && player == PLAYER_WHITE && position[4][x] == EMPTY_FIELD && position[5][x] == EMPTY_FIELD)
 				|| (y == 1 && player == PLAYER_BLACK && position[2][x] == EMPTY_FIELD && position[3][x] == EMPTY_FIELD))
@@ -460,7 +370,7 @@ namespace owl
 				move.promotion = 0;
 
 				if (!isKingInCheckAfterMove(position, player, move))
-					moves.emplace_back(move);
+					s_data.emplace_back(move);
 			}
 
 			// Diagonal Schlagen:
@@ -480,13 +390,13 @@ namespace owl
 						move.promotion = 0;
 
 						if (!isKingInCheckAfterMove(position, player, move))
-							moves.emplace_back(move);
+							s_data.emplace_back(move);
 					}
 				}
 
+				// rechts oben/unten
 				if (isInsideChessboard(x + 1, y - pawn_direction))
 				{
-					// rechts oben/unten
 					if (enemies.find(position[y - pawn_direction][x + 1]) != std::string::npos)
 					{
 						Move move;
@@ -498,7 +408,7 @@ namespace owl
 						move.promotion = 0;
 
 						if (!isKingInCheckAfterMove(position, player, move))
-							moves.emplace_back(move);
+							s_data.emplace_back(move);
 					}
 				}
 
@@ -521,7 +431,7 @@ namespace owl
 							move.promotion = 0;
 
 							if (!isKingInCheckAfterMove(position, player, move))
-								moves.emplace_back(move);
+								s_data.emplace_back(move);
 						}
 
 						// rechts oben/unten
@@ -537,75 +447,75 @@ namespace owl
 							move.promotion = 0;
 
 							if (!isKingInCheckAfterMove(position, player, move))
-								moves.emplace_back(move);
+								s_data.emplace_back(move);
 						}
 					}
 				}
 			}
 		}
 
-		return moves;
+		return;
 	}
 
-	MOVE_LIST ChessValidation::getValidKnightMoves(Position& position, INT32 x, INT32 y, short player)
+	VOID ChessValidation::getValidKnightMoves(Position& position, INT32 x, INT32 y, short player)
 	{
-		MOVE_LIST moves;
-		moves.reserve(MAX_MOVES_PER_KNIGHT);
+		//MOVE_LIST moves;
+		//moves.reserve(MAX_MOVES_PER_KNIGHT);
 
-		std::vector<PAIR<INT32, INT32>> possible_places = { {1,-2},{2,-1},{2,1},{1,2},{-1,2},{-2,1},{-2,-1}, {-1,-2} };
 		std::string enemies = getEnemyPiecesString(player);
 
-		for (auto pair : possible_places)
+		for (auto pair : MOVE_DIR_KNIGHT)
 		{
-			if (isInsideChessboard(x + pair.first, y + pair.second))
+			if (isInsideChessboard(x + pair[FIRST], y + pair[SECOND]))
 			{
-				auto piece = position[y + pair.second][x + pair.first];
+				auto piece = position[y + pair[SECOND]][x + pair[FIRST]];
 				auto capture = enemies.find(piece) != std::string::npos;
 				if (piece == ' ' || capture)
 				{
 					Move move;
 					move.startX = x;
 					move.startY = y;
-					move.targetX = x + pair.first;
-					move.targetY = y + pair.second;
+					move.targetX = x + pair[FIRST];
+					move.targetY = y + pair[SECOND];
 					move.capture = capture;
 
 					// Prüfen ob der König nach dem Zug nicht im Schach steht:
 					if(!isKingInCheckAfterMove(position, player, move))
-						moves.emplace_back(move);
+						s_data.emplace_back(move);
 				}
 			}
 		}
 
-		return moves;
+		return;
 	}
 
-	MOVE_LIST ChessValidation::getValidKingMoves(Position& position, INT32 x, INT32 y, short player)
+	VOID ChessValidation::getValidKingMoves(Position& position, INT32 x, INT32 y, short player)
 	{
-		MOVE_LIST moves;
-		moves.reserve(MAX_MOVES_PER_KING);
+		//MOVE_LIST moves;
+		//moves.reserve(MAX_MOVES_PER_KING);
 
 		std::string enemies = getEnemyPiecesString(player);
-		std::vector<PAIR<INT32, INT32>> possible_places = { {0,-1},{1,-1},{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1} };
 
-		for (auto pair : possible_places)
+		for (auto pair : MOVE_DIR_KING)
 		{
-			if (isInsideChessboard(x + pair.first, y + pair.second))
+			auto first = pair[FIRST];
+			auto second = pair[SECOND];
+			if (isInsideChessboard(x + first, y + second))
 			{
-				auto piece = position[y + pair.second][x + pair.first];
+				auto piece = position[y + second][x + first];
 				auto capture = enemies.find(piece) != std::string::npos;
-				if (piece == ' ' || capture)
+				if (piece == EMPTY_FIELD || capture)
 				{
 					Move move;
 					move.startX = x;
 					move.startY = y;
-					move.targetX = x + pair.first;
-					move.targetY = y + pair.second;
+					move.targetX = x + first;
+					move.targetY = y + second;
 					move.capture = capture;
 
 					// Prüfen ob der König nach dem Zug nicht im Schach steht:
 					if (!isKingInCheckAfterMove(position, player, move))
-						moves.emplace_back(move);
+						s_data.emplace_back(move);
 				}
 			}
 		}
@@ -626,7 +536,7 @@ namespace owl
 				move.targetY = y;
 				move.castlingShort = true;
 
-				moves.emplace_back(move);
+				s_data.emplace_back(move);
 			}
 			if (position.getWhiteCastlingLong()
 				&& isPlaceInCheck(position, 2, LAST_ROW_INDEX, player)
@@ -642,7 +552,7 @@ namespace owl
 				move.targetY = y;
 				move.castlingLong = true;
 
-				moves.emplace_back(move);
+				s_data.emplace_back(move);
 			}
 		}
 		else if (player == PLAYER_BLACK)
@@ -661,7 +571,7 @@ namespace owl
 				move.targetY = y;
 				move.castlingShort = true;
 
-				moves.emplace_back(move);
+				s_data.emplace_back(move);
 			}
 			if (position.getBlackCastlingLong()
 				&& isPlaceInCheck(position, 2, FIRST_ROW_INDEX, player)
@@ -677,50 +587,50 @@ namespace owl
 				move.targetY = y;
 				move.castlingLong = true;
 
-				moves.emplace_back(move);
+				s_data.emplace_back(move);
 			}
 		}
 
-		return moves;
+		return;
 	}
 
-	MOVE_LIST ChessValidation::getValidRookMoves(Position& position, INT32 x, INT32 y, short player)
+	VOID ChessValidation::getValidRookMoves(Position& position, INT32 x, INT32 y, short player)
 	{
-		MOVE_LIST moves;
-		moves.reserve(MAX_MOVES_PER_KING);
+		////MOVE_LIST moves;
+		////moves.reserve(MAX_MOVES_PER_KING);
 		std::string enemies = getEnemyPiecesString(player);
-		std::vector<PAIR<INT32, INT32>> directions = { {0,-1}, {1,0}, {0,1}, {-1,0} };
 		
-		for (auto direction : directions)
+		for (auto direction : MOVE_DIR_ROOK)
 		{
-			auto tmp = continueValidMovesOnLine(position, x, y, enemies, direction.first, direction.second);
-			moves.insert(moves.end(), tmp.begin(), tmp.end());
+			continueValidMovesOnLine(position, x, y, enemies, direction[FIRST], direction[SECOND]);
+			//moves.insert(moves.end(), tmp.begin(), tmp.end());
+			//std::move(tmp.begin(), tmp.end(), std::back_inserter(moves));
 		}
 
-		return moves;
+		return;
 	}
 
-	MOVE_LIST ChessValidation::getValidBishopMoves(Position& position, INT32 x, INT32 y, short player)
+	VOID ChessValidation::getValidBishopMoves(Position& position, INT32 x, INT32 y, short player)
 	{
-		MOVE_LIST moves;
-		moves.reserve(MAX_MOVES_PER_BISHOP);
+		//MOVE_LIST moves;
+		//moves.reserve(MAX_MOVES_PER_BISHOP);
 
 		std::string enemies = getEnemyPiecesString(player);
-		std::vector<PAIR<INT32, INT32>> directions = { {-1,-1}, {1,-1}, {1,1}, {-1,1} };
 
-		for (auto direction : directions)
+		for (auto direction : MOVE_DIR_BISHOP)
 		{
-			auto tmp = continueValidMovesOnLine(position, x, y, enemies, direction.first, direction.second);
-			moves.insert(moves.end(), tmp.begin(), tmp.end());
+			continueValidMovesOnLine(position, x, y, enemies, direction[FIRST], direction[SECOND]);
+			//moves.insert(moves.end(), tmp.begin(), tmp.end());
+			//std::move(tmp.begin(), tmp.end(), std::back_inserter(moves));
 		}
 
-		return moves;
+		return;
 	}
 
-	MOVE_LIST ChessValidation::continueValidMovesOnLine(Position& position, INT32 x, INT32 y, const std::string& enemies_string, INT32 xDir, INT32 yDir)
+	VOID ChessValidation::continueValidMovesOnLine(Position& position, INT32 x, INT32 y, const std::string& enemies_string, INT32 xDir, INT32 yDir)
 	{
-		MOVE_LIST moves;
-		moves.reserve(MAX_LINE_LENGTH);
+		//MOVE_LIST moves;
+		//moves.reserve(MAX_LINE_LENGTH);
 		BOOL line_empty = true;
 
 		INT32 offset = 1;
@@ -745,7 +655,7 @@ namespace owl
 					move.capture = capture;
 
 					if (!isKingInCheckAfterMove(position, position.getPlayer(), move))
-						moves.emplace_back(move);
+						s_data.emplace_back(move);
 
 					if (capture) line_empty = false;
 				}
@@ -761,7 +671,7 @@ namespace owl
 			offset++;
 		}
 
-		return moves;
+		return;
 	}
 
 	std::string ChessValidation::getEnemyPiecesString(short player)

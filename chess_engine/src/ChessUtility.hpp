@@ -9,7 +9,7 @@
 namespace owl
 {
 	/// FENParser ist eine Hilfsklasse zur Umwandlung von FEN-Strings in Positionen, Algebraische Notationen in Züge und umgekehrt.
-	class FENParser
+	class ChessUtility
 	{
 	public:
 		/// <summary>
@@ -37,5 +37,8 @@ namespace owl
 		/// <param name="move:">Das Move-Objekt (Der Zug)</param>
 		/// <returns>String in der algebraischen Notation</returns>
 		static std::string moveToString(const Move& move);
+
+
+		static INT16 convertToCentipawns(FLOAT VALUE);
 	};
 }

@@ -92,7 +92,7 @@ namespace owl
             Example:
                 "option name UCI_EngineAbout type string default Shredder by Stefan Meyer-Kahlen, see www.shredderchess.com"
         */
-        m_engineOptions["UCI_EngineAbout"] = { true, "", "SchwachMatt from the students of TH-OWL", "string" };
+        m_engineOptions["UCI_EngineAbout"] = { true, "", "OWL-Matt from TH-OWL", "string" };
 
         /*
             this is either the path to the folder on the hard disk containing the Shredder endgame databases or the path and filename of one Shredder endgame datbase.

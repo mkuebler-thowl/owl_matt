@@ -58,8 +58,6 @@ namespace owl
 
 	VOID Position::applyMove(const Move& move)
 	{	
-		// Optional TODO: Zug validieren 
-
 		auto move_data = MoveData{move};
 		move_data.lastGamePhase = m_gamePhase;
 
@@ -285,6 +283,12 @@ namespace owl
 		m_data[last_move_data.move.startY][last_move_data.move.startX] = last_move_data.piece;
 		m_data[last_move_data.move.targetY][last_move_data.move.targetX] = last_move_data.capturedPiece;
 
+		// Falls Endstellung: überprüfe ob König nach Rückzug im Schach steht?
+		// Wenn nicht Zustand zurück auf Active setzen
+		if (m_state != GameState::Active)
+		{
+			if (ChessValidation::isKingInCheck(*this, m_player)) m_state = GameState::Active;
+		}
 		// Zug vom Stack entfernen
 		m_moveDataStack.pop();
 	}
@@ -388,7 +392,7 @@ namespace owl
 	{
 		return m_gamePhase;
 	}
-	VOID Position::printPosition(const Position& position)
+	VOID Position::print() const
 	{
 		std::string out = "";
 
@@ -396,7 +400,7 @@ namespace owl
 		{
 			for (auto j = 0; j < COLUMNS; j++)
 			{
-				out += position[i][j];
+				out += m_data[i][j];
 			}
 			out += "\n";
 		}

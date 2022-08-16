@@ -1,5 +1,5 @@
 #include "UniversalChessInterface.hpp"
-#include "FENParser.hpp"
+#include "ChessUtility.hpp"
 #include "ChessEvaluation.hpp"
 #include "ChessValidation.hpp"
 
@@ -124,8 +124,6 @@ namespace owl
      */
     VOID UniversalChessInterface::handleIsReadyCommand(Command& cmd)
     {
-        // TODO: Check what this function should actually do
-        // check if the engine is currently doing a calculation
         if (m_pEngine->isReady())
         {
             std::cout << "readyok" << std::endl;
@@ -174,34 +172,18 @@ namespace owl
         Position& position = m_pEngine->getPosition();
         if (fromStart)
         {
-            position = FENParser::fenToPosition(STARTPOS_FEN);
+            position = ChessUtility::fenToPosition(STARTPOS_FEN);
         }
         else
         {
-            position = FENParser::fenToPosition(pos);
+            position = ChessUtility::fenToPosition(pos);
         }
 
         for (auto& move_str : moves)
         {
-            Move move = FENParser::stringToMove(move_str);
-
-            // invalid move warning
-            if (!move.isMoveInvalid()) m_pEngine->getPosition().applyMove(move);
-
-            // TODO: Erstmal ignorieren und verstehen was hier passiert
-            //if (move_str != "0000" && !m_pEngine->getPosition().applyMove(move, false))
-            //{
-            //    // spdlog::warn("invalid move");
-            //    std::cout << "Invalid Move" << std::endl;
-            //    break;
-            //}
-            // spdlog::info("played move: " + move_str);
+            Move move = ChessUtility::stringToMove(move_str);
+            m_pEngine->getPosition().applyMove(move);
         }
-
-        // ChessHelper::drawPositionInTerminal(chessposition.getPosition());
-        // play the given moves
-        // std::cout << "evalutated fenstring: " << m_pEngine->evaluateBoard(chessposition.getPosition()) << std::endl;
-        // std::cout << "command not fully implemented yet" << std::endl;
     }
 
     /**
@@ -392,13 +374,12 @@ namespace owl
      */
     VOID UniversalChessInterface::handleUciNewGameCommand(Command& cmd)
     {
-        m_pEngine->getPosition() = FENParser::fenToPosition(STARTPOS_FEN);
+        m_pEngine->getPosition() = ChessUtility::fenToPosition(STARTPOS_FEN);
     }
 
     VOID UniversalChessInterface::handleEvaluateCommand(Command& cmd)
     {
         std::cout << ChessEvaluation::evaluate(m_pEngine->getPosition(), EVAL_FT_STANDARD) << std::endl;
-        //std::cout << m_pEngine->evaluateBoard(m_pEngine->getPosition()) << std::endl;
     }
 
     VOID UniversalChessInterface::handleGetValidMovesCommand(Command& cmd)
@@ -406,31 +387,22 @@ namespace owl
         MOVE_LIST moves = ChessValidation::getValidMoves(m_pEngine->getPosition(), m_pEngine->getPosition().getPlayer());
         for (auto move : moves)
         {
-            std::cout << FENParser::moveToString(move) << ", ";
+            std::cout << ChessUtility::moveToString(move) << ", ";
         }
 
-        if (!moves.empty()) std::cout << FENParser::moveToString(moves.back()) << std::endl;
-
-        //auto moves = m_pEngine->getPosition().getValidMoves();
-        //for (auto i = 0; i < moves.size() - 1; ++i) {
-        //    std::cout << ChessHelper::moveToString(moves[i]) << ",";
-        //}
-        //if (!moves.empty())
-        //    std::cout << ChessHelper::moveToString(moves.back()) << std::endl;
-        //else
-        //    std::cout << "null" << std::endl;
+        if (!moves.empty()) std::cout << ChessUtility::moveToString(moves.back()) << std::endl;
     }
 
     VOID UniversalChessInterface::go(std::shared_ptr<GoSubcommandData> p_data)
     {
-        //const Chessposition::Player player = pos.getActivePlayer();
-
         UINT16 depth = p_data->depth == 0 ? 4 : p_data->depth;
+        auto result = m_pEngine->searchMove(m_pEngine->getPosition().getPlayer(), depth, FT_STANDARD, USE_RANDOM);
 
-        Move best = m_pEngine->searchMove(m_pEngine->getPosition().getPlayer(), depth, FT_STANDARD, USE_RANDOM);
+        auto best = result.first;
+        auto value = result.second;
 
-        std::cout << "bestmove " << FENParser::moveToString(best) << std::endl;
-        //spdlog::info("bestmove " + ChessHelper::moveToString(result.move));
+        std::cout << "info score " << value << " cp " << ChessUtility::convertToCentipawns(value) << std::endl;
+        std::cout << "bestmove " << ChessUtility::moveToString(best) << std::endl;
 
         if (m_readyCheckQueued) {
             std::cout << "readyok" << std::endl;

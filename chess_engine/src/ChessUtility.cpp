@@ -1,4 +1,4 @@
-#include "FENParser.hpp"
+#include "ChessUtility.hpp"
 #include "ChessEngine.hpp"
 
 #include <vector>
@@ -7,11 +7,8 @@
 
 namespace owl {
 
-    Position FENParser::fenToPosition(std::string fen)
+    Position ChessUtility::fenToPosition(std::string fen)
     {
-        // TODO: Regex check for invalid fen-strings
-        // Beispiel: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
-
         auto rows = std::vector<std::string>();
 
         // Erste Zeile bis vorletzte Zeile
@@ -103,7 +100,7 @@ namespace owl {
             ply_count, move_number};
     }
 
-    std::string FENParser::positionToFen(const Position& pos)
+    std::string ChessUtility::positionToFen(const Position& pos)
     {
         auto out = std::string();
 
@@ -160,7 +157,7 @@ namespace owl {
         return out;
     }
 
-    Move FENParser::stringToMove(const std::string& algebraicNotation, const Position* position)
+    Move ChessUtility::stringToMove(const std::string& algebraicNotation, const Position* position)
     {
         Move move;
 
@@ -183,7 +180,6 @@ namespace owl {
         if (position != nullptr)
         {
             auto&& pos = *position;
-            /// TODO: En Passant & Rochade checken 
             auto piece = pos[move.startY][move.startX];
 
             // Capture abfangen:
@@ -212,7 +208,7 @@ namespace owl {
         return move;
     }
 
-    std::string FENParser::moveToString(const Move& move)
+    std::string ChessUtility::moveToString(const Move& move)
     {
         std::string out = "";
 
@@ -231,5 +227,9 @@ namespace owl {
         out += move.promotion;
 
         return out;
+    }
+    INT16 ChessUtility::convertToCentipawns(FLOAT VALUE)
+    {
+        return static_cast<INT16>(std::round(VALUE*100.f));
     }
 }

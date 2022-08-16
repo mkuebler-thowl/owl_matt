@@ -1,5 +1,5 @@
 #include "RepitionMap.hpp"
-#include "FENParser.hpp"
+#include "ChessUtility.hpp"
 
 
 namespace owl

@@ -5,13 +5,33 @@
 
 namespace owl
 {
-	FLOAT ChessEvaluation::evaluate(Position& position, short enginePlayer, UCHAR evaluationFeatureFlags)
+	FLOAT ChessEvaluation::evaluate(Position& position, short enginePlayer, UCHAR evaluationFeatureFlags, BOOL validationCheckMate)
 	{
+		// Checkmate überprüfen?
+		// Hinweis: getValidMoves() berechnet das Checkmate intern und es soll nur bei in Schach-Stellungen
+		// die Liste der möglichen Züge berechnet werden. Andernfalls wird nicht von einer Endstellung ausgegangen.
+		// Vorteil: Mehr Effizienz
+		if (validationCheckMate)
+		{
+			// Gegnerische König im Schach && Gegnerischer Spieler am Zug?
+			if (ChessValidation::isKingInCheck(position, -enginePlayer) && position.getPlayer() == -enginePlayer)
+			{
+				ChessValidation::getValidMoves(position, -enginePlayer);
+			}
+			// Eigener König im Schach && Selber am Zug?
+			else if (ChessValidation::isKingInCheck(position, enginePlayer) && position.getPlayer() == enginePlayer)
+			{
+				ChessValidation::getValidMoves(position, enginePlayer);
+			}
+		}
+
 		// Ist die Position eine Endstellung?
 		if ((position.getGameState() == GameState::PlayerBlackWins && enginePlayer == PLAYER_WHITE)
-			|| position.getGameState() == GameState::PlayerWhiteWins && enginePlayer == PLAYER_BLACK) return -INF;
+			|| position.getGameState() == GameState::PlayerWhiteWins && enginePlayer == PLAYER_BLACK) 
+			return -INF;
 		if ((position.getGameState() == GameState::PlayerBlackWins && enginePlayer == PLAYER_BLACK)
-			|| position.getGameState() == GameState::PlayerWhiteWins && enginePlayer == PLAYER_WHITE) return INF;
+			|| position.getGameState() == GameState::PlayerWhiteWins && enginePlayer == PLAYER_WHITE) 
+			return INF;
 		if (position.getGameState() == GameState::Remis) return 0.00f;
 
 		FLOAT score[PLAYER_COUNT] = { 0.0f };					// Score
@@ -116,7 +136,6 @@ namespace owl
 		if (game_phase == GamePhase::Opening && material <= MAX_MATERIAL_SUM_MID_GAME)	position.enterNextGamePhase();
 		if (game_phase == GamePhase::Mid && material <= MAX_MATERIAL_SUM_END_GAME)		position.enterNextGamePhase();
 		
-		/// TODO: Score Zahlen ändern sich bei DPValue on
 		// Dynamischer Bonus für den Materialwert je Spielphase
 		if (evaluationFeatureFlags & EVAL_FT_MATERIAL_DYNAMIC_GAME_PHASE)
 		{
@@ -146,7 +165,6 @@ namespace owl
 			}
 		}
 
-		/// TODO: PST Zahlen ändern sich bei DPValue on
 		// Piece Square Table für König hinzufügen
  		if (evaluationFeatureFlags & EVAL_FT_PIECE_SQUARE_TABLE && game_phase != GamePhase::Opening)
 		{
@@ -184,7 +202,6 @@ namespace owl
 		}
 
 		// Piece Mobility hinzufügen:
-		/// TODO: DPValue On ändert score
 		if (evaluationFeatureFlags & EVAL_FT_PIECE_MOBILITY)
 		{
 			for (INT32 color_index = FIRST_PLAYER_INDEX; color_index < PLAYER_COUNT; color_index++)

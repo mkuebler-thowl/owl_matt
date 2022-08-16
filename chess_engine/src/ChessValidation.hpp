@@ -13,6 +13,8 @@ namespace owl
 	class ChessValidation
 	{
 	public:
+		static VOID init();
+
 		/// <summary>
 		/// Funktion zur Ermittlung gültiger Züge "Moves".
 		/// </summary>
@@ -29,16 +31,6 @@ namespace owl
 		/// <param name="y">Zeile 0-7 (oben-unten)</param>
 		/// <returns>Anzahl gefundener Züge</returns>
 		static UINT16 countPossibleMovesOnField(Position& position, INT32 x, INT32 y);
-
-		/// <summary>
-		/// Zug auf eine Position anwenden. Hinweis: Diese Funktion überprüft nicht, ob der Zug auf die Position angwendet werden darf. In der Zugfindung später wichtig, in der Überprüfungphase irrelevant.
-		/// </summary>
-		/// <param name="position:">Aktuelle Spielposition bzw. Ausgangsstellung</param>
-		/// <param name="move">Der Zug, der ausgeführt werden soll</param>
-		/// <returns>die neue Spielposition bzw. Ausgangsstellung</returns>
-		static Position applyMove(Position& position, const Move& move);
-
-		// TODO: position.getPlayer() macht player:parameter überflüssig?
 		/// <summary>
 		/// Überprüfung, ob der König durch den nächsten Zug im Schach steht.
 		/// </summary>
@@ -48,10 +40,6 @@ namespace owl
 		/// <returns>Ob der König im Schach stehen würde</returns>
 		static BOOL isKingInCheckAfterMove(Position& position, short player, const Move& move);
 
-		/// Überprüfe ob die Stelle x,y die Spielfeldgrenzen überschreitet
-		static BOOL isInsideChessboard(INT32 x, INT32 y);
-	private:
-
 		/// <summary>
 		/// Funktion zur Überprüfung, ob die aktuelle Stellung den jeweiligen König bedroht.
 		/// </summary>
@@ -60,6 +48,10 @@ namespace owl
 		/// <returns>Steht der König des aktuellen Spielers im Schach?</returns>
 		static BOOL isKingInCheck(Position& position, short player);
 
+		/// Überprüfe ob die Stelle x,y die Spielfeldgrenzen überschreitet
+		static BOOL isInsideChessboard(INT32 x, INT32 y);
+	private: 
+		static MOVE_LIST s_data;
 		/// <summary>
 		/// Ist die Platzierung x,y im Schach bzw. wird diese Position bedroht? 
 		/// </summary>
@@ -83,17 +75,17 @@ namespace owl
 		static VOID evaluateCheckmate(Position& position, short player, BOOL noValidMoves);
 
 		/// Suche alle legalen Bauerbewegungen
-		static MOVE_LIST getValidPawnMoves(Position& position, INT32 x, INT32 y, short player);
+		static VOID getValidPawnMoves(Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Springerbewegungen
-		static MOVE_LIST getValidKnightMoves(Position& position, INT32 x, INT32 y, short player);
+		static VOID getValidKnightMoves(Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Königbewegungen
-		static MOVE_LIST getValidKingMoves(Position& position, INT32 x, INT32 y, short player);
+		static VOID getValidKingMoves(Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Turmbewegungen
-		static MOVE_LIST getValidRookMoves(Position& position, INT32 x, INT32 y, short player);
+		static VOID getValidRookMoves(Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle legalen Läuferbewegungen
-		static MOVE_LIST getValidBishopMoves(Position& position, INT32 x, INT32 y, short player);
+		static VOID getValidBishopMoves(Position& position, INT32 x, INT32 y, short player);
 		/// Suche alle Linien ab für Läufer, Türme und Dame
-		static MOVE_LIST continueValidMovesOnLine(Position& position, INT32 x, INT32 y, const std::string& enemies_string, INT32 xDir, INT32 yDir);
+		static VOID continueValidMovesOnLine(Position& position, INT32 x, INT32 y, const std::string& enemies_string, INT32 xDir, INT32 yDir);
 
 		/// Enemy-String nach Spielertyp ausgeben
 		static std::string getEnemyPiecesString(short player);
