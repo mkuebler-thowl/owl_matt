@@ -30,7 +30,7 @@ namespace owl
 		/// <param name="parameterFlags:">Für Min-Max-Erweiterungen können Feature-Parameter über Bitflags aktiviert werden</param>
 		/// <param name="random:">Bei Aktivierung wird aus einer Menge bestmöglicher Züge (+-Threshold) ein Zug zufällig gewählt</param>
 		/// <returns>Der bestmögliche gefundene Zug innerhalb der Suchtiefe</returns>
-		PAIR<Move, FLOAT> searchMove(short player, UINT16 depth, UCHAR parameter_flags, BOOL random = false);
+		PAIR<Move, EVALUATION_VALUE> searchMove(INT32 player, INT32 depth, UCHAR parameter_flags, BOOL random = false);
 
 		BOOL inDebugMode() const;
 		VOID setDebugMode(BOOL debug);
@@ -44,17 +44,16 @@ namespace owl
 		Position& getPosition();
 		const Position& getPosition() const;
 
-		UINT16 getPlayer() const;
+		INT32 getPlayer() const;
 	private:
-		FLOAT minMax(Position& position, INT16 player, UINT16 depth);
-		FLOAT alphaBeta(Position& position, INT16 player,
-			UINT16 depth, FLOAT alpha, FLOAT beta, 
+		EVALUATION_VALUE minMax(Position& position, INT32 player, INT32 depth);
+		EVALUATION_VALUE alphaBeta(Position& position, INT32 player,
+			INT32 depth, FLOAT alpha, FLOAT beta, 
 			UCHAR parameterFlags, KILLER_LIST* killerList = nullptr);
 	public:
-		VOID sortMoves(MOVE_LIST* moves, Position& position, UINT16 depth, 
+		VOID sortMoves(MOVE_LIST* moves, Position& position, INT32 depth, 
 			UCHAR parameterFlags, KILLER_LIST* killerList = nullptr);
-
-		static VOID insertKiller(KILLER_LIST* killerList, const Move move, const UINT16 ply)
+		static VOID insertKiller(KILLER_LIST* killerList, const Move move, const INT32 ply)
 		{
 			 if (killerList == nullptr || ply >= MAX_DEPTH) return;
 			 if (move.capture) return;
@@ -71,8 +70,7 @@ namespace owl
 				 killer_list[FIRST_KILLER_INDEX][ply] = move;
 			}
 		}
-
-		static UINT16 compareKiller(KILLER_LIST* killerList, const Move move, const UINT16 ply)
+		static INT32 compareKiller(KILLER_LIST* killerList, const Move move, const INT32 ply)
 		{
 			auto first_killer = *(killerList[FIRST_KILLER_INDEX][ply]);
 			if (first_killer.isMoveInvalid()) return KILLER_NO_PRIO;
@@ -90,10 +88,10 @@ namespace owl
 		BOOL m_debugMode = false;
 		BOOL m_ready = true;
 		BOOL m_stop = false;
-		UINT16 m_startedDepth = 0;
+		INT32 m_startedDepth = 0;
 
 		std::mutex m_mutex;
-		INT16 m_player;
+		INT32 m_player;
 		Position m_position;
 		EngineOptions m_engineOptions;
 		RepitionMap m_repitionMap;

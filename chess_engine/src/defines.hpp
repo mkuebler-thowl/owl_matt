@@ -2,9 +2,11 @@
 
 #include <array>
 #include <vector>
+#include <iostream>
 #include <cstdint>
 
-#define OWL_RANDOM false
+#define OWL_USE_RANDOM false
+#define OWL_USE_EVALUATION_COMPONENT_REPRESENTAION true
 
 namespace owl
 {
@@ -76,51 +78,51 @@ namespace owl
 	constexpr FLOAT RANDOM_THRESHOLD = 4.0f; // Standardabweichung für alle Züge mit relativen Abstand zum besten gefunden Zug (Delta-Phi-Cut)
 	
 	// Spieler
-	constexpr INT16 PLAYER_WHITE = 1;	// Spieler Weiß
-	constexpr INT16 PLAYER_BLACK = -1;	// Spieler Schwarz
+	constexpr INT32 PLAYER_WHITE = 1;	// Spieler Weiß
+	constexpr INT32 PLAYER_BLACK = -1;	// Spieler Schwarz
 
 	// Maximalwert für Endstellung
 	constexpr FLOAT INF = 999.0f; // Maximaler Bewertungswert (Für Endstellungen)
 
 	// Parameter-Konstanten
-	constexpr UINT16 KILLER_SIZE		= 2; // Anzahl der möglichen Killerzüge bezogenen auf eine Tiefe im Suchbaum
-	constexpr UINT16 FIRST_KILLER_INDEX = 0; // Erster Killerzug-Index
-	constexpr UINT16 LAST_KILLER_INDEX	= KILLER_SIZE-1; // Letzter Killerzug-Index
+	constexpr INT32 KILLER_SIZE		= 2; // Anzahl der möglichen Killerzüge bezogenen auf eine Tiefe im Suchbaum
+	constexpr INT32 FIRST_KILLER_INDEX = 0; // Erster Killerzug-Index
+	constexpr INT32 LAST_KILLER_INDEX	= KILLER_SIZE-1; // Letzter Killerzug-Index
 
-	constexpr UINT16 KILLER_PRIO_1 = 2;	// Höchste Killerzug Priorität
-	constexpr UINT16 KILLER_PRIO_2 = 1; // Zweite Killerzug Priorität
-	constexpr UINT16 KILLER_NO_PRIO = 0; // Keine Killerzug Priorität (Kein Killermove)
+	constexpr INT32 KILLER_PRIO_1 = 2;	// Höchste Killerzug Priorität
+	constexpr INT32 KILLER_PRIO_2 = 1; // Zweite Killerzug Priorität
+	constexpr INT32 KILLER_NO_PRIO = 0; // Keine Killerzug Priorität (Kein Killermove)
 
-	constexpr UINT16 MAX_DEPTH = 10; // Später auf maximale erreichbare Suchtiefe anpassen
+	constexpr INT32 MAX_DEPTH = 10; // Später auf maximale erreichbare Suchtiefe anpassen
 
 	// Positionsbezogen:
-	constexpr UINT16 EN_PASSANT_WHITE_Y = 5; // Übergangene Zeile y bei En Passant für Spieler Weiß
-	constexpr UINT16 EN_PASSANT_BLACK_Y = 2; // Übergangene Zeile y bei En Passant für Spieler Schwarz
+	constexpr INT32 EN_PASSANT_WHITE_Y = 5; // Übergangene Zeile y bei En Passant für Spieler Weiß
+	constexpr INT32 EN_PASSANT_BLACK_Y = 2; // Übergangene Zeile y bei En Passant für Spieler Schwarz
 	
-	constexpr UINT16 PAWN_DOUBLE_MOVE_START_WHITE_Y = 6; // Startzeile y für weiße Bauern bei Zweifelder-Bewegung
-	constexpr UINT16 PAWN_DOUBLE_MOVE_START_BLACK_Y = 1; // Startzeile y für schwarze Bauern bei Zweifelder-Bewegung
-	constexpr UINT16 PAWN_DOUBLE_MOVE_TARGET_WHITE_Y = 4; // Zielzeile y für weiße Bauern bei Zweifelder-Bewegung
-	constexpr UINT16 PAWN_DOUBLE_MOVE_TARGET_BLACK_Y = 3; // Zielzeile y für schwarze Bauern bei Zweifelder-Bewegung
+	constexpr INT32 PAWN_DOUBLE_MOVE_START_WHITE_Y = 6; // Startzeile y für weiße Bauern bei Zweifelder-Bewegung
+	constexpr INT32 PAWN_DOUBLE_MOVE_START_BLACK_Y = 1; // Startzeile y für schwarze Bauern bei Zweifelder-Bewegung
+	constexpr INT32 PAWN_DOUBLE_MOVE_TARGET_WHITE_Y = 4; // Zielzeile y für weiße Bauern bei Zweifelder-Bewegung
+	constexpr INT32 PAWN_DOUBLE_MOVE_TARGET_BLACK_Y = 3; // Zielzeile y für schwarze Bauern bei Zweifelder-Bewegung
 
-	constexpr INT16 PAWN_DIRECTION_WHITE = -1; // Laufrichtung der weißen Bauern
-	constexpr INT16 PAWN_DIRECTION_BLACK = 1;	// Laufrichtung der schwarzen Bauern
+	constexpr INT32 PAWN_DIRECTION_WHITE = -1; // Laufrichtung der weißen Bauern
+	constexpr INT32 PAWN_DIRECTION_BLACK = 1;	// Laufrichtung der schwarzen Bauern
 
-	constexpr UINT16 CASTLING_ROOK_LEFT_X = 3;	// Zielspalte x des Turms für lange Rochade
-	constexpr UINT16 CASTLING_ROOK_RIGHT_X = 5; // Zeilspalte x des Turms für kurze Rochade
-	constexpr UINT16 KING_START_X = 4; // Spalte x in der der König startet
-	constexpr UINT16 KING_CASTLING_LONG_X = 2; // Spalte x in der der König nach der langen Rochade steht
-	constexpr UINT16 KING_CASTLING_SHORT_X = 6; // Spalte x in der der König nach der kurzen Rochade steht
+	constexpr INT32 CASTLING_ROOK_LEFT_X = 3;	// Zielspalte x des Turms für lange Rochade
+	constexpr INT32 CASTLING_ROOK_RIGHT_X = 5; // Zeilspalte x des Turms für kurze Rochade
+	constexpr INT32 KING_START_X = 4; // Spalte x in der der König startet
+	constexpr INT32 KING_CASTLING_LONG_X = 2; // Spalte x in der der König nach der langen Rochade steht
+	constexpr INT32 KING_CASTLING_SHORT_X = 6; // Spalte x in der der König nach der kurzen Rochade steht
 
-	constexpr UINT16 MAX_PLIES_SINCE_NO_MOVING_PAWNS_AND_CAPTURES = 100; // Anzahl der Halbzüge für 50-Züge Regel
+	constexpr INT32 MAX_PLIES_SINCE_NO_MOVING_PAWNS_AND_CAPTURES = 100; // Anzahl der Halbzüge für 50-Züge Regel
 
 	// Spielfeldgröße
-	constexpr UINT16 ROWS = 8;								// Zeile
-	constexpr UINT16 COLUMNS = 8;							// Spalten
-	constexpr UINT16 FIRST_ROW_INDEX = 0;					// Erste Zeile
-	constexpr UINT16 FIRST_COLUMN_INDEX = 0;				// Erste Spalte
-	constexpr UINT16 LAST_ROW_INDEX = ROWS - 1;				// Letzte Zeile
-	constexpr UINT16 LAST_COLUMN_INDEX = COLUMNS - 1;		// Letzte Spalte
-	constexpr UINT16 MAX_FIELDS_ON_BOARD = ROWS * COLUMNS;	// Anzahl der Zellen
+	constexpr INT32 ROWS = 8;								// Zeile
+	constexpr INT32 COLUMNS = 8;							// Spalten
+	constexpr INT32 FIRST_ROW_INDEX = 0;					// Erste Zeile
+	constexpr INT32 FIRST_COLUMN_INDEX = 0;				// Erste Spalte
+	constexpr INT32 LAST_ROW_INDEX = ROWS - 1;				// Letzte Zeile
+	constexpr INT32 LAST_COLUMN_INDEX = COLUMNS - 1;		// Letzte Spalte
+	constexpr INT32 MAX_FIELDS_ON_BOARD = ROWS * COLUMNS;	// Anzahl der Zellen
 
 	constexpr CHAR* STARTPOS_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -138,29 +140,29 @@ namespace owl
 	constexpr BOOL CHOOSE_RIGHT = false;
 
 	// Notwendige Konstanten
-	constexpr UINT16 WHITE_INDEX = 0;
-	constexpr UINT16 BLACK_INDEX = 1;
+	constexpr INT32 WHITE_INDEX = 0;
+	constexpr INT32 BLACK_INDEX = 1;
 
-	constexpr UINT16 PLAYER_COUNT = 2;
-	constexpr UINT16 FIRST_PLAYER_INDEX = 0;
-	constexpr UINT16 LAST_PLAYER_INDEX = PLAYER_COUNT - 1;
+	constexpr INT32 PLAYER_COUNT = 2;
+	constexpr INT32 FIRST_PLAYER_INDEX = 0;
+	constexpr INT32 LAST_PLAYER_INDEX = PLAYER_COUNT - 1;
 
 	// Zuordung bzw. Index für MATERIAL_VALUES und weitere:
-	constexpr UINT16 EMPTY = -1; // Leeres Feld
+	constexpr INT32 EMPTY = -1; // Leeres Feld
 
-	constexpr UINT16 PAWN_INDEX = 0; // Bauer-Index
-	constexpr UINT16 KNIGHT_INDEX = 1; // Springer-Index
-	constexpr UINT16 BISHOP_INDEX = 2; // Läufer-Index
-	constexpr UINT16 ROOK_INDEX = 3; // Turm-Index
-	constexpr UINT16 QUEEN_INDEX = 4; // Dame-Index
-	constexpr UINT16 KING_INDEX = 5; // König-Index
+	constexpr INT32 PAWN_INDEX = 0; // Bauer-Index
+	constexpr INT32 KNIGHT_INDEX = 1; // Springer-Index
+	constexpr INT32 BISHOP_INDEX = 2; // Läufer-Index
+	constexpr INT32 ROOK_INDEX = 3; // Turm-Index
+	constexpr INT32 QUEEN_INDEX = 4; // Dame-Index
+	constexpr INT32 KING_INDEX = 5; // König-Index
 
-	constexpr UINT16 MAX_PIECE_TYPES = 6;
-	constexpr UINT16 FIRST_PIECE_TYPES_INDEX = 0;
-	constexpr UINT16 LAST_PIECE_TYPES_INDEX = MAX_PIECE_TYPES - 1;
+	constexpr INT32 MAX_PIECE_TYPES = 6;
+	constexpr INT32 FIRST_PIECE_TYPES_INDEX = 0;
+	constexpr INT32 LAST_PIECE_TYPES_INDEX = MAX_PIECE_TYPES - 1;
 
-	constexpr UINT16 MAX_PAWN_COUNT = 8;
-	constexpr UINT16 MIN_BISHOP_COUNT_PRECONDITION_BONUS = 2;
+	constexpr INT32 MAX_PAWN_COUNT = 8;
+	constexpr INT32 MIN_BISHOP_COUNT_PRECONDITION_BONUS = 2;
 
 	// Bewertungsfunktions-Feature
 	constexpr UCHAR EVAL_FT_MATERIAL_DYNAMIC_GAME_PHASE = BIT_1; // Materialwerte abhängig von der Spielphase (Eröffnung, Mittel- und Endspiel)
@@ -182,8 +184,138 @@ namespace owl
 	// Alle Bewertungsfunktions-Features
 	constexpr UCHAR EVAL_FT_ALL = 0xff;
 
-	// Faktoren (Mit welcher Gewichtung die Features Einfluss auf die Bewertung haben 0.0 = 0% und 1.0 = 100%)
+	// Datentyp für Evaluierung anpassen
+	// Zur Überwachung des Einflusses der Bewertungskomponenten wird das Datenobjekt einfach angepasst
+	// Damit im Code nichts verändert wewrden muss, werden auch alle grundlegenden boolischen Vergleichsoperationen überladen
+#if OWL_USE_EVALUATION_COMPONENT_REPRESENTAION==true
+	struct EvaluationDataScore
+	{
+		FLOAT score;			// Allgemeiner Gesamt-Score
+		FLOAT material;			// Reines Material
+		FLOAT gamePhase;		// Spielphasen
+		FLOAT squareTable;		// PieceSquareTable-Boni/Mali
+		FLOAT pieceMobility;	// Figurenmobilität-Boni
+		FLOAT pawnStructure;	// Bauernstruktur-Boni/Mali
+		FLOAT bishopPair;		// Läuferpaar-Bonus
+		FLOAT dynamicPawns;		// Dynamische-Bauern
 
+		// Boolische Operatoren überladen:
+
+		BOOL operator>(const EvaluationDataScore& other) { return score > other.score; }
+		BOOL operator>=(const EvaluationDataScore& other) { return score >= other.score; }
+		BOOL operator<(const EvaluationDataScore& other) { return score < other.score; }
+		BOOL operator<=(const EvaluationDataScore& other) { return score <= other.score; }
+		BOOL operator==(const EvaluationDataScore& other) { return score == other.score; }
+		BOOL operator!=(const EvaluationDataScore& other) { return score != other.score; }
+
+		BOOL operator>	(const FLOAT& value) { return score >	value; }
+		BOOL operator>=	(const FLOAT& value) { return score >= value; }
+		BOOL operator<	(const FLOAT& value) { return score <	value; }
+		BOOL operator<=	(const FLOAT& value) { return score <= value; }
+		BOOL operator==	(const FLOAT& value) { return score == value; }
+		BOOL operator!=	(const FLOAT& value) { return score != value; }
+
+		VOID operator=(const FLOAT& value) { score = value; }
+
+		VOID operator+=(const EvaluationDataScore& other)
+		{
+			score			+= other.score;
+			material		+= other.material;
+			gamePhase		+= other.gamePhase;
+			squareTable		+= other.squareTable;
+			pieceMobility	+= other.pieceMobility;
+			pawnStructure	+= other.pawnStructure;
+			bishopPair		+= other.bishopPair;
+			dynamicPawns	+= other.dynamicPawns;
+		}
+
+		VOID operator-=(const EvaluationDataScore& other)
+		{
+			score -= other.score;
+			material -= other.material;
+			gamePhase -= other.gamePhase;
+			squareTable -= other.squareTable;
+			pieceMobility -= other.pieceMobility;
+			pawnStructure -= other.pawnStructure;
+			bishopPair -= other.bishopPair;
+			dynamicPawns -= other.dynamicPawns;
+		}
+
+		friend EvaluationDataScore operator+(EvaluationDataScore a, const EvaluationDataScore& b)
+		{
+			a.score += b.score;
+			a.material += b.material;
+			a.gamePhase += b.gamePhase;
+			a.squareTable += b.squareTable;
+			a.pieceMobility += b.pieceMobility;
+			a.pawnStructure += b.pawnStructure;
+			a.bishopPair += b.bishopPair;
+			a.dynamicPawns += b.dynamicPawns;
+			return a;
+		}
+
+		friend EvaluationDataScore operator-(EvaluationDataScore a, const EvaluationDataScore& b)
+		{
+			a.score -= b.score;
+			a.material -= b.material;
+			a.gamePhase -= b.gamePhase;
+			a.squareTable -= b.squareTable;
+			a.pieceMobility -= b.pieceMobility;
+			a.pawnStructure -= b.pawnStructure;
+			a.bishopPair -= b.bishopPair;
+			a.dynamicPawns -= b.dynamicPawns;
+			return a;
+		}
+
+		VOID calculateScore()
+		{
+			score = material + gamePhase + squareTable + pieceMobility + pawnStructure + bishopPair + dynamicPawns;
+		}
+
+		operator FLOAT() const { return score; }
+
+		EvaluationDataScore()
+			: score(0.0f), material(0.f), gamePhase(0.f),
+			squareTable(0.f), pieceMobility(0.f),
+			pawnStructure(0.f), bishopPair(0.f), dynamicPawns(0.f)
+		{}
+
+		EvaluationDataScore(FLOAT score) 
+			: score(score), material(0.f), gamePhase(0.f), 
+			squareTable(0.f), pieceMobility(0.f),
+			pawnStructure(0.f), bishopPair(0.f), dynamicPawns(0.f)
+		{}
+	};
+
+	using  EVALUATION_VALUE = EvaluationDataScore;
+
+	// Print-Funktion
+	inline VOID PRINT_EVALUATION_VALUE(const EVALUATION_VALUE& data)
+	{
+		std::cout << "{";
+		std::cout << " score: " << data.score;
+		std::cout << " = material: " << data.material;
+		std::cout << " + gamephase: " << data.gamePhase;
+		std::cout << " + squaretable: " << data.squareTable;
+		std::cout << " + piecemobility: " << data.pieceMobility;
+		std::cout << " + pawnstructure: " << data.pawnStructure;
+		std::cout << " + bishoppair: " << data.bishopPair;
+		std::cout << " + dynamicpawns: " << data.dynamicPawns;
+		std::cout << " }\n";
+	}
+#else
+	using EVALUATION_VALUE = FLOAT;
+
+	inline VOID PRINT_EVALUATION_VALUE(const EVALUATION_VALUE data)
+	{
+		std::cout << "{";
+		std::cout << " score: " << data;
+		std::cout << " }\n";
+	}
+#endif
+
+
+	// Faktoren (Mit welcher Gewichtung die Features Einfluss auf die Bewertung haben 0.0 = 0% und 1.0 = 100%)
 	constexpr FLOAT MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT = 1.00f; // Materialwerte zu Spielphase (Faktor)
 	constexpr FLOAT PIECE_SQUARE_TABLE_WEIGHT = 1.00f; // Piece-Square-Tabelle (Faktor)
 	constexpr FLOAT PIECE_MOBILITY_WEIGHT = 1.00f; // Piece-Mobility (Faktor)
@@ -198,7 +330,7 @@ namespace owl
 	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_ADDITION_END_GAME_PHASE		= { 0.00f, 0.50f, 0.50f, 0.75f, 0.75f,	0.00f }; // Materialwert-Addition im Endspiel
 
 	// Spielphase Material Balance
-	constexpr std::array<UINT16, MAX_PIECE_TYPES> START_PIECE_COUNT = { 8,	   2,	  2,	 2,		1,		1 }; // Anzahl der Figuren beim Start (Für 100% Materialwertberechnung)
+	constexpr std::array<INT32, MAX_PIECE_TYPES> START_PIECE_COUNT = { 8,	   2,	  2,	 2,		1,		1 }; // Anzahl der Figuren beim Start (Für 100% Materialwertberechnung)
 
 	constexpr FLOAT GET_MAX_MATERIAL_SUM(FLOAT ratio) {
 		auto value = 0.0f;
@@ -236,7 +368,7 @@ namespace owl
 	// Sonstige Eigenschaften
 	constexpr UCHAR EMPTY_FIELD = ' ';
 
-	constexpr UINT16 MAX_PIECE_PROMOTION_TYPES = 4;
+	constexpr INT32 MAX_PIECE_PROMOTION_TYPES = 4;
 
 	constexpr CHAR WHITE_PIECES[MAX_PIECE_TYPES] =
 	{
@@ -267,7 +399,7 @@ namespace owl
 		{BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN, BLACK_KING}
 	};
 
-	constexpr UINT16 GET_PIECE_INDEX_BY_TYPE(CHAR piece)
+	constexpr INT32 GET_PIECE_INDEX_BY_TYPE(CHAR piece)
 	{
 		switch (piece)
 		{
@@ -301,7 +433,7 @@ namespace owl
 		}
 	}
 
-	constexpr UINT16 GET_PLAYER_INDEX_BY_PIECE(CHAR piece)
+	constexpr INT32 GET_PLAYER_INDEX_BY_PIECE(CHAR piece)
 	{
 		switch (piece)
 		{
@@ -339,8 +471,8 @@ namespace owl
 	constexpr FLOAT PIECE_MOBILITY_KING_WEIGHT = 0.10f; // König-Figurenbewegung (Faktor)
 
 	// Zusätzliche Dynamische Bauerngewichtung
-	constexpr UINT16 MAX_DYNAMIC_PAWNS = MAX_PAWN_COUNT; // Anzahl der möglichen Bauern für die Dynamik
-	constexpr UINT16 DYNAMIC_PAWNS_LAST_INDEX = MAX_DYNAMIC_PAWNS - 1; // Index der letzten Bauerndynamik
+	constexpr INT32 MAX_DYNAMIC_PAWNS = MAX_PAWN_COUNT; // Anzahl der möglichen Bauern für die Dynamik
+	constexpr INT32 DYNAMIC_PAWNS_LAST_INDEX = MAX_DYNAMIC_PAWNS - 1; // Index der letzten Bauerndynamik
 
 	constexpr std::array<FLOAT, MAX_DYNAMIC_PAWNS> MATERIAL_DYNAMIC_PAWNS	= { 0.10f, 0.05f, 0.025f, 0.00f, 0.00f, -0.01f, -0.02f, -0.025f }; // Dynamische additive Bauerngewichtung je nach Anzahl der verbleibenden Bauern
 	constexpr std::array<FLOAT, ROWS> PASSED_PAWNS_PROGRESS_BONUS			= { 0.00f, 0.00f,  0.00f, 0.00f, 0.05f,  0.15f,  0.35f,   0.00f }; // Additiver Bonus für Freibauern je nach Entfernung zur gegnerischen Grundreihe
@@ -481,22 +613,21 @@ namespace owl
 	};
 
 	// Maximale Züge
-	constexpr UINT16 MAX_MOVES_PER_PLY_BOUND = 40;
-	constexpr UINT16 MAX_MOVES_PER_PAWN = 4;
-	constexpr UINT16 MAX_MOVES_PER_KNIGHT = 8;
-	constexpr UINT16 MAX_MOVES_PER_BISHOP = 13;
-	constexpr UINT16 MAX_MOVES_PER_ROOK = 14;
-	constexpr UINT16 MAX_MOVES_PER_QUEEN = MAX_MOVES_PER_BISHOP + MAX_MOVES_PER_ROOK;
-	constexpr UINT16 MAX_MOVES_PER_KING = 10;
-	constexpr UINT16 MAX_MOVES_PER_KING_WITHOUT_CASTLING = MAX_MOVES_PER_KING - 2;
+	constexpr INT32 MAX_MOVES_PER_PLY_BOUND = 40;
+	constexpr INT32 MAX_MOVES_PER_KNIGHT = 8;
+	constexpr INT32 MAX_MOVES_PER_BISHOP = 13;
+	constexpr INT32 MAX_MOVES_PER_ROOK = 14;
+	constexpr INT32 MAX_MOVES_PER_QUEEN = MAX_MOVES_PER_BISHOP + MAX_MOVES_PER_ROOK;
+	constexpr INT32 MAX_MOVES_PER_KING = 10;
+	constexpr INT32 MAX_MOVES_PER_KING_WITHOUT_CASTLING = MAX_MOVES_PER_KING - 2;
 
-	constexpr UINT16 MAX_ROOK_DIR = 4;
-	constexpr UINT16 MAX_BISHOP_DIR = 4;
-	constexpr UINT16 MAX_LINE_LENGTH = std::max(ROWS, COLUMNS);
+	constexpr INT32 MAX_ROOK_DIR = 4;
+	constexpr INT32 MAX_BISHOP_DIR = 4;
+	constexpr INT32 MAX_LINE_LENGTH = std::max(ROWS, COLUMNS);
 
-	constexpr UINT16 VEC = 2;
-	constexpr UINT16 FIRST = 0;
-	constexpr UINT16 SECOND = 1;
+	constexpr INT32 VEC = 2;
+	constexpr INT32 FIRST = 0;
+	constexpr INT32 SECOND = 1;
 
 	constexpr INT32 MOVE_DIR_KNIGHT[MAX_MOVES_PER_KNIGHT][VEC] = 
 	{ 

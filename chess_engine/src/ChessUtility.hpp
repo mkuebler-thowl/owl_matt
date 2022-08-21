@@ -39,6 +39,6 @@ namespace owl
 		static std::string moveToString(const Move& move);
 
 
-		static INT16 convertToCentipawns(FLOAT VALUE);
+		static INT32 convertToCentipawns(FLOAT VALUE);
 	};
 }

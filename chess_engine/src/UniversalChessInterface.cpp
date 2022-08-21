@@ -395,7 +395,7 @@ namespace owl
 
     VOID UniversalChessInterface::go(std::shared_ptr<GoSubcommandData> p_data)
     {
-        UINT16 depth = p_data->depth == 0 ? 4 : p_data->depth;
+        INT32 depth = p_data->depth == 0 ? 4 : p_data->depth;
         auto result = m_pEngine->searchMove(m_pEngine->getPosition().getPlayer(), depth, FT_STANDARD, USE_RANDOM);
 
         auto best = result.first;

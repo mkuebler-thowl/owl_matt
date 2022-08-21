@@ -10,14 +10,14 @@ namespace owl
 	struct Move
 	{
 		/// Startfeld (Spalte)
-		UINT16 startX = 0;
+		INT32 startX = 0;
 		/// Startfeld (Reihe)
-		UINT16 startY = 0;
+		INT32 startY = 0;
 
 		/// Zielfeld (Spalte)
-		UINT16 targetX = 0;
+		INT32 targetX = 0;
 		/// Zielfeld (Reihe)
-		UINT16 targetY = 0;
+		INT32 targetY = 0;
 
 		/// Figure geschlagen
 		BOOL capture = false;
@@ -39,7 +39,7 @@ namespace owl
 		/// </summary>
 		BOOL castlingShort = false;
 
-		VOID printMove()
+		VOID print() const
 		{
 			std::cout << "{ start: " << startX << ", " << startY
 				<< "; target: " << targetX << ", " << targetY
@@ -76,10 +76,10 @@ namespace owl
 		{
 			UINT64 operator()(const Move& move) const
 			{
-				UINT64 s_x = std::hash<UINT16>()(move.startX);
-				UINT64 s_y = std::hash<UINT16>()(move.startY) << 1;
-				UINT64 t_x = std::hash<UINT16>()(move.targetX) << 2;
-				UINT64 t_y = std::hash<UINT16>()(move.targetY) << 3;
+				UINT64 s_x = std::hash<INT32>()(move.startX);
+				UINT64 s_y = std::hash<INT32>()(move.startY) << 1;
+				UINT64 t_x = std::hash<INT32>()(move.targetX) << 2;
+				UINT64 t_y = std::hash<INT32>()(move.targetY) << 3;
 				return (s_x ^ s_y ^ t_x ^ t_y);
 			}
 		};

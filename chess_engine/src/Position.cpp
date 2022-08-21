@@ -3,6 +3,7 @@
 #include "ChessEngine.hpp"
 #include <iostream>
 #include "ChessEvaluation.hpp"
+#include "ChessUtility.hpp"
 
 namespace owl
 {
@@ -20,6 +21,11 @@ namespace owl
 			}
 		}
 
+		m_kingPosition[FIRST][WHITE_INDEX] = 0;
+		m_kingPosition[SECOND][WHITE_INDEX] = 0;
+		m_kingPosition[FIRST][BLACK_INDEX] = 0;
+		m_kingPosition[SECOND][BLACK_INDEX] = 0;
+
 		m_moveDataStack.push({ Move{}, EMPTY_FIELD, EMPTY_FIELD, false, m_enPassantPosition, {false,0}, m_movedFirstTime });
 	}
 
@@ -28,11 +34,11 @@ namespace owl
 
 	}
 
-	Position::Position(const BOARD_ARRAY& data, INT16 player,
+	Position::Position(const BOARD_ARRAY& data, INT32 player,
 		BOOL whiteCastlingShort, BOOL whiteCastlingLong, 
 		BOOL blackCastlingShort, BOOL blackCastlingLong, 
-		BOOL enPassant, PAIR<UINT16, UINT16> enPassantPosition,
-		UINT16 moveCount, UINT16 moveNumber)
+		BOOL enPassant, PAIR<INT32, INT32> enPassantPosition,
+		INT32 moveCount, INT32 moveNumber)
 		: m_data(data), m_player(player), 
 		m_whiteCastlingShort(whiteCastlingShort), m_whiteCastlingLong(whiteCastlingLong),
 		m_blackCastlingShort(blackCastlingShort), m_blackCastlingLong(blackCastlingLong),
@@ -48,6 +54,8 @@ namespace owl
 		if (m_data[LAST_ROW_INDEX][KING_START_X] != WHITE_KING) m_movedFirstTime |= HAS_WHITE_KING_MOVED_BIT;
 
 		m_moveDataStack.push({ Move{}, EMPTY_FIELD, EMPTY_FIELD, false, m_enPassantPosition, {false,0}, m_movedFirstTime });
+
+		calculateKingPositions();
 	}
 
 	owl::BOARD_LINE& Position::operator[](INT32 index) const
@@ -129,12 +137,14 @@ namespace owl
 			resetWhiteCastlingLong();
 			resetWhiteCastlingShort();
 			checkFirstMovement(HAS_WHITE_KING_MOVED_BIT, move_data.movedFirstTimeFlag);
+			setKingPosition(WHITE_INDEX, move_data.move.targetX, move_data.move.targetY);
 		}
 		else if (move_data.piece == BLACK_KING)
 		{
 			resetBlackCastlingShort();
 			resetBlackCastlingLong();
 			checkFirstMovement(HAS_BLACK_KING_MOVED_BIT, move_data.movedFirstTimeFlag);
+			setKingPosition(BLACK_INDEX, move_data.move.targetX, move_data.move.targetY);
 		}
 		else if (move_data.piece == BLACK_ROOK && move.startX == FIRST_COLUMN_INDEX)
 		{
@@ -228,10 +238,6 @@ namespace owl
 		
 		// 50-Züge Regel rückgängig machen
 		if (m_plyCount > 0) m_plyCount--;
-		if (m_plyCount < MAX_PLIES_SINCE_NO_MOVING_PAWNS_AND_CAPTURES && m_state == GameState::Remis)
-		{
-			m_state = GameState::Active;
-		}
 
 		// War vor dem Zug ein En Passant? 
 		if (last_move_data.enPassantFlag)
@@ -279,16 +285,19 @@ namespace owl
 			else m_blackCastlingShort = true;
 		}
 
+		// Falls der König zuvor bewegt wurde, setzte die Königsposition zurück:
+		if (last_move_data.piece == WHITE_KING) setKingPosition(WHITE_INDEX, last_move_data.move.startX, last_move_data.move.startY);
+		else if (last_move_data.piece == BLACK_KING) setKingPosition(BLACK_INDEX, last_move_data.move.startX, last_move_data.move.startY);
+
 		// Position wieder zurücksetzen:
 		m_data[last_move_data.move.startY][last_move_data.move.startX] = last_move_data.piece;
 		m_data[last_move_data.move.targetY][last_move_data.move.targetX] = last_move_data.capturedPiece;
 
-		// Falls Endstellung: überprüfe ob König nach Rückzug im Schach steht?
-		// Wenn nicht Zustand zurück auf Active setzen
-		if (m_state != GameState::Active)
-		{
-			if (ChessValidation::isKingInCheck(*this, m_player)) m_state = GameState::Active;
-		}
+		// Falls Endstellung:
+		// Logik: Jeder Vogegangene Zug einer Endstellung ist keine Endstellung:
+		// => Setzte GameState wieder auf Aktiv!
+		setGameState(GameState::Active);
+
 		// Zug vom Stack entfernen
 		m_moveDataStack.pop();
 	}
@@ -321,11 +330,11 @@ namespace owl
 	{
 		m_plyCount = 0;
 	}
-	UINT16 Position::getPlyCount() const
+	INT32 Position::getPlyCount() const
 	{
 		return m_plyCount;
 	}
-	UINT16 Position::getMoveNumber() const
+	INT32 Position::getMoveNumber() const
 	{
 		return m_moveNumber;
 	}
@@ -337,12 +346,44 @@ namespace owl
 		// Spieler wechseln
 		m_player = m_player == PLAYER_WHITE ? PLAYER_BLACK : PLAYER_WHITE;
 	}
-	INT16 Position::getPlayer() const
+	INT32 Position::getPlayer() const
 	{
 		return m_player;
 	}
 	VOID Position::setGameState(GameState state) const
 	{
+#ifdef DEBUG
+		if (state != GameState::Active && m_state == GameState::Active)
+		{
+			std::cout << "[FOUND ENDGAME]\n";
+			std::cout << "-----------------------------------------------------------------------------------------------------------------------\n";
+			std::cout << "GameState: " << (INT32)state << "\t(0=Active, 1=WhiteWins, 2=BlackWins, 3=Remis)\n";
+			std::cout << "MoveStack: ";
+			auto cpy = m_moveDataStack;
+
+			MOVE_LIST mvs;
+
+			while (cpy.size() > 2)
+			{
+				std::cout << "\t";  
+				cpy.top().move.print();
+				std::cout << "-> ";
+				mvs.push_back(cpy.top().move);
+				cpy.pop();
+			}
+			std::cout << "\n Moves in Notation: ";
+			for (auto mv : mvs)
+			{
+				std::cout << ChessUtility::moveToString(mv) << ", ";
+			}
+
+			std::cout << "\nPosition:\n\n";
+			print();
+			std::cout << "--------\n";
+			std::cout << "ABCDEFGH\n\n";
+			std::cout << "-----------------------------------------------------------------------------------------------------------------------\n";
+		}
+#endif
 		m_state = state;
 	}
 
@@ -408,6 +449,16 @@ namespace owl
 		std::cout << out;
 	}
 
+	PAIR<INT32, INT32> Position::getKingPosition(INT32 index) const
+	{
+		return { m_kingPosition[FIRST][index], m_kingPosition[SECOND][index] };
+	}
+
+	const std::stack<Position::MoveData>& Position::getMoveDataStack() const
+	{
+		return m_moveDataStack;
+	}
+
 	VOID Position::checkFirstMovement(UCHAR check, UCHAR& movedFirstTime)
 	{
 		if (!(m_movedFirstTime & check)) 
@@ -415,6 +466,54 @@ namespace owl
 			movedFirstTime |= check;
 			m_movedFirstTime |= check;
 		}
+	}
+
+	VOID Position::calculateKingPositions()
+	{
+		auto white_king_already_found = false;
+		// Suche schwarzen König von oben nach unten:
+		// Gegebenfalls betrachten ob weißer König höher steht als schwarzer König
+		for (auto y = FIRST_ROW_INDEX; y < LAST_ROW_INDEX; y++)
+		{
+			for (auto x = FIRST_COLUMN_INDEX; x < LAST_COLUMN_INDEX; x++)
+			{
+				auto piece = m_data[y][x];
+
+				if (piece == BLACK_KING)
+				{
+					setKingPosition(BLACK_INDEX, x, y);
+					break;
+				}
+				else if (piece == WHITE_KING)
+				{
+					setKingPosition(WHITE_INDEX, x, y);
+					white_king_already_found = true;
+				}
+			}
+		}
+
+		if (white_king_already_found) return;
+
+		// Suche weißen König von unten nach oben - sofern noch nicht gefunden
+		for (auto y = LAST_ROW_INDEX; y > FIRST_ROW_INDEX; y--)
+		{
+			for (auto x = FIRST_COLUMN_INDEX; x < LAST_COLUMN_INDEX; x++)
+			{
+				auto piece = m_data[y][x];
+				
+				if (piece == WHITE_KING)
+				{
+					setKingPosition(WHITE_INDEX, x, y);
+					break;
+				}
+			}
+		}
+	}
+
+	VOID Position::setKingPosition(INT32 index, INT32 x, INT32 y)
+	{
+		m_kingPosition[FIRST][index] = x;
+		m_kingPosition[SECOND][index] = y;
 	}
 
 }

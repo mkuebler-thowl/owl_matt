@@ -87,11 +87,11 @@ namespace owl {
 
         // Halbzüge
         pos = fen.find(" ");
-        UINT16 ply_count = static_cast<UINT16>(std::stoi(fen.substr(0, pos)));
+        INT32 ply_count = static_cast<INT32>(std::stoi(fen.substr(0, pos)));
         fen.replace(0, pos + 1, "");
 
         // Zugnummer
-        UINT16 move_number = static_cast<UINT16>(std::stoi(fen));
+        INT32 move_number = static_cast<INT32>(std::stoi(fen));
 
         return Position{data, player, 
             white_castling_short, white_castling_long, 
@@ -171,7 +171,7 @@ namespace owl {
         move.startX = algebraicNotation[0] - 'a';
         move.startY = 7 - (algebraicNotation[1] - '1');
 
-        INT16 index_offset = (algebraicNotation[2] >= 'a' && algebraicNotation[2] <= 'h') ? 0 : 1;
+        INT32 index_offset = (algebraicNotation[2] >= 'a' && algebraicNotation[2] <= 'h') ? 0 : 1;
 
         move.targetX = algebraicNotation[2+index_offset] - 'a';
         move.targetY = 7 - (algebraicNotation[3+index_offset] - '1');
@@ -228,8 +228,8 @@ namespace owl {
 
         return out;
     }
-    INT16 ChessUtility::convertToCentipawns(FLOAT VALUE)
+    INT32 ChessUtility::convertToCentipawns(FLOAT VALUE)
     {
-        return static_cast<INT16>(std::round(VALUE*100.f));
+        return static_cast<INT32>(std::round(VALUE*100.f));
     }
 }

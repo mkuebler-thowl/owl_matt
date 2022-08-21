@@ -5,10 +5,18 @@
 
 namespace owl
 {
-	VOID MinMaxResult::insert(const Move& move, const FLOAT value) const
+	VOID MinMaxResult::insert(const Move& move, const EVALUATION_VALUE value) const
 	{
+#ifdef DEBUG
+		std::cout << "[INSERT]\n";
+		std::cout << "-----------------------------------------------------------------------------------------------------------------------\n";
+		std::cout << "old move -> new move:" << m_currentBestValue << " -> " << value << "\n";
+		m_best.print();
+		move.print();
+		std::cout << "-----------------------------------------------------------------------------------------------------------------------\n";
+#endif
 		updateCurrentValue(value);
-	#if OWL_RANDOM==true
+	#if OWL_USE_RANDOM==true
 		m_result.emplace(move, value);
 		
 		// Lösche Züge, die kleiner sind als (Bester Zug-Threshold):
@@ -25,9 +33,9 @@ namespace owl
 	#endif
 	}
 
-	std::pair<Move, FLOAT> MinMaxResult::getResult() const
+	std::pair<Move, EVALUATION_VALUE> MinMaxResult::getResult() const
 	{
-	#if OWL_RANDOM==true
+	#if OWL_USE_RANDOM==true
 		if (m_result.empty()) return { INVALID_MOVE, m_currentBestValue };
 
 		// Wähle einen zufälligen Zug aus:
@@ -46,14 +54,14 @@ namespace owl
 
 	BOOL MinMaxResult::empty() const
 	{
-	#if OWL_RANDOM==true
+	#if OWL_USE_RANDOM==true
 		return m_result.empty();
 	#else
 		return m_best.isMoveInvalid();
 	#endif
 	}
 
-	void MinMaxResult::updateCurrentValue(FLOAT newValue) const
+	void MinMaxResult::updateCurrentValue(const EVALUATION_VALUE newValue) const
 	{
 		m_currentBestValue = newValue;
 	}

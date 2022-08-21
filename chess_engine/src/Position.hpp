@@ -49,11 +49,11 @@ namespace owl
 		/// <param name="enPassantPosition:">Übergangenes En passant Feld</param>
 		/// <param name="moveCount:">Anzahl der Halbzüge seitdem kein Bauer bewegt oder eine Figur geschlagen wurde</param>
 		/// <param name="moveNumber:">Aktuelle Zugnummer, die nachdem Schwarz dran war, inkrementiert wird</param>
-		Position(const BOARD_ARRAY& data, INT16 player,
+		Position(const BOARD_ARRAY& data, INT32 player,
 			BOOL whiteCastlingShort, BOOL whiteCastlingLong, 
 			BOOL blackCastlingShort, BOOL blackCastlingLong, 
-			BOOL enPassant, PAIR<UINT16, UINT16> enPassantPosition,
-			UINT16 moveCount, UINT16 moveNumber);
+			BOOL enPassant, PAIR<INT32, INT32> enPassantPosition,
+			INT32 moveCount, INT32 moveNumber);
 
 		/// <summary>
 		/// Operatorüberladungs [index], so dass über Position[x][y] auf die jeweilige Zelle bzw. Feld zugegriffen werden kann.
@@ -80,14 +80,14 @@ namespace owl
 		/// Halbzüge auf 0 zurücksetzen
 		VOID resetPlyCount();
 		/// aktuelle Halbzüge abfragen
-		UINT16 getPlyCount() const;
+		INT32 getPlyCount() const;
 		/// aktuelle Zugnummer abfragen
-		UINT16 getMoveNumber() const;
+		INT32 getMoveNumber() const;
 
 		/// Wechsel den aktuellen Spieler
 		VOID changePlayer(BOOL undoMove = false);
 		/// Gibt den aktuellen Spieler zurück (Der dran ist)
-		INT16 getPlayer() const;
+		INT32 getPlayer() const;
 
 		/// GameState ändern
 		VOID setGameState(GameState state) const;
@@ -117,7 +117,11 @@ namespace owl
 		/// Spielphase abrufen
 		GamePhase getGamePhase() const;
 
+
+
 		VOID print() const; 
+
+		PAIR<INT32, INT32> getKingPosition(INT32 index) const;
 
 		constexpr BOOL operator==(const Position& other) const
 		{
@@ -137,29 +141,32 @@ namespace owl
 			CHAR piece; // Figur des Zugs
 			CHAR capturedPiece; // Mögliche geschlagene Figur (Zur Wiederbelebung)
 			BOOL enPassantFlag; // War der Zug zuvor ein En Passant
-			PAIR<UINT16, UINT16> enPassantPos; // Position des vorherigen En Passants
-			PAIR<BOOL, UINT16> plyCountReset; // Halbzüge-Reset? und vorheriger Halbzug-Wert
+			PAIR<INT32, INT32> enPassantPos; // Position des vorherigen En Passants
+			PAIR<BOOL, INT32> plyCountReset; // Halbzüge-Reset? und vorheriger Halbzug-Wert
 			UCHAR movedFirstTimeFlag; // Bitflags: Haben sich Turm oder König das erste mal bewegt
 			GamePhase lastGamePhase; // Zum setzten der alten Phase, die durch die Evaluierung verändert wurde
-		};
+		};		
+		
+		const std::stack<MoveData>& getMoveDataStack() const;
 	private:
 
 		/// Datenobjekt für eine Spielposition
 		mutable BOARD_ARRAY m_data;
-		std::stack<MoveData> m_moveDataStack;
+		mutable std::stack<MoveData> m_moveDataStack;
+
+		INT32 m_kingPosition[VEC][PLAYER_COUNT];
+
+		/// En Passant Position
+		PAIR<INT32, INT32> m_enPassantPosition;
+		/// Anzahl der Halbszüge zur Bestimmung der 50-Züge-Regel
+		INT32 m_plyCount;
+		/// Nummerierung der Folgezüge. Beginnt bei 1 und wird nachdem Schwarz dran war, um eins erhöht.
+		INT32 m_moveNumber;
 
 		/// En Passant möglich?
 		BOOL m_enPassant;
-
-		/// En Passant Position
-		PAIR<UINT16, UINT16> m_enPassantPosition;
-		/// Anzahl der Halbszüge zur Bestimmung der 50-Züge-Regel
-		UINT16 m_plyCount;
-		/// Nummerierung der Folgezüge. Beginnt bei 1 und wird nachdem Schwarz dran war, um eins erhöht.
-		UINT16 m_moveNumber;
-
 		/// Aktueller Spieler
-		INT16 m_player;
+		INT32 m_player;
 		/// Kann Weiß noch kurz rochieren?
 		BOOL m_whiteCastlingShort;
 		/// Kann Weiß noch lang rochieren?
@@ -180,6 +187,9 @@ namespace owl
 		constexpr static UCHAR HAS_BLACK_ROOK_L_MOVED_BIT = BIT_6;
 
 		VOID checkFirstMovement(UCHAR check, UCHAR& movedFirstTime);
+
+		VOID calculateKingPositions();
+		VOID setKingPosition(INT32 index, INT32 x, INT32 y);
 
 		/// Korrespondierender Spielzustand zur Position (Aktiv, Sieg für Weiß/Schwarz oder Remis)
 		mutable GameState m_state;

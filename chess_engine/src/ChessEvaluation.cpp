@@ -5,7 +5,7 @@
 
 namespace owl
 {
-	FLOAT ChessEvaluation::evaluate(Position& position, short enginePlayer, UCHAR evaluationFeatureFlags, BOOL validationCheckMate)
+	EVALUATION_VALUE ChessEvaluation::evaluate(Position& position, INT32 enginePlayer, UCHAR evaluationFeatureFlags, BOOL validationCheckMate)
 	{
 		// Checkmate überprüfen?
 		// Hinweis: getValidMoves() berechnet das Checkmate intern und es soll nur bei in Schach-Stellungen
@@ -34,14 +34,41 @@ namespace owl
 			return INF;
 		if (position.getGameState() == GameState::Remis) return 0.00f;
 
-		FLOAT score[PLAYER_COUNT] = { 0.0f };					// Score
-		FLOAT extra_pawn_score[PLAYER_COUNT] = { 0.0f };		// Bauernscore (Wird nachträglich zum Score addiert)
-		FLOAT square_table_score[PLAYER_COUNT] = { 0.0f };		// Square-Table Score
+	#if OWL_USE_EVALUATION_COMPONENT_REPRESENTAION==true
+		EVALUATION_VALUE data[PLAYER_COUNT];
+
+		std::array<FLOAT*, PLAYER_COUNT> score				= {&data[WHITE_INDEX].score,		 &data[BLACK_INDEX].score };
+		std::array<FLOAT*, PLAYER_COUNT> material			= {&data[WHITE_INDEX].material,		 &data[BLACK_INDEX].material };
+		std::array<FLOAT*, PLAYER_COUNT> game_phase			= {&data[WHITE_INDEX].gamePhase,	 &data[BLACK_INDEX].gamePhase };
+		std::array<FLOAT*, PLAYER_COUNT> square_table		= {&data[WHITE_INDEX].squareTable,	 &data[BLACK_INDEX].squareTable };
+		std::array<FLOAT*, PLAYER_COUNT> piece_mobility		= {&data[WHITE_INDEX].pieceMobility, &data[BLACK_INDEX].pieceMobility };
+		std::array<FLOAT*, PLAYER_COUNT> pawn_structure		= {&data[WHITE_INDEX].pawnStructure, &data[BLACK_INDEX].pawnStructure };
+		std::array<FLOAT*, PLAYER_COUNT> bishop_pair		= {&data[WHITE_INDEX].bishopPair,	 &data[BLACK_INDEX].bishopPair };
+		std::array<FLOAT*, PLAYER_COUNT> dynamic_pawns		= {&data[WHITE_INDEX].dynamicPawns,	 &data[BLACK_INDEX].dynamicPawns };
+	#else
+		FLOAT _score[PLAYER_COUNT]			= { 0.0f };
+		FLOAT _material[PLAYER_COUNT]		= { 0.0f };
+		FLOAT _game_phase[PLAYER_COUNT]		= { 0.0f };
+		FLOAT _square_table[PLAYER_COUNT]	= { 0.0f };
+		FLOAT _piece_mobility[PLAYER_COUNT]	= { 0.0f };
+		FLOAT _pawn_structure[PLAYER_COUNT]	= { 0.0f };
+		FLOAT _bishop_pair[PLAYER_COUNT]	= { 0.0f };
+		FLOAT _dynamic_pawns[PLAYER_COUNT]	= { 0.0f };
+
+		std::array<FLOAT*, PLAYER_COUNT> score				= {&_score[WHITE_INDEX], &_score[BLACK_INDEX] };
+		std::array<FLOAT*, PLAYER_COUNT> material			= {&_material[WHITE_INDEX], &_material[BLACK_INDEX] };
+		std::array<FLOAT*, PLAYER_COUNT> game_phase			= {&_game_phase[WHITE_INDEX], &_game_phase[BLACK_INDEX] };
+		std::array<FLOAT*, PLAYER_COUNT> square_table		= {&_square_table[WHITE_INDEX],	&_square_table[BLACK_INDEX]};
+		std::array<FLOAT*, PLAYER_COUNT> piece_mobility		= {&_piece_mobility[WHITE_INDEX], &_piece_mobility[BLACK_INDEX]};
+		std::array<FLOAT*, PLAYER_COUNT> pawn_structure		= {&_pawn_structure[WHITE_INDEX], &_pawn_structure[BLACK_INDEX]};
+		std::array<FLOAT*, PLAYER_COUNT> bishop_pair		= {&_bishop_pair[WHITE_INDEX], &_bishop_pair[BLACK_INDEX]};
+		std::array<FLOAT*, PLAYER_COUNT> dynamic_pawns		= {&_dynamic_pawns[WHITE_INDEX], &_dynamic_pawns[BLACK_INDEX]};
+	#endif
 
 		PAIR<INT32, INT32> king_pos[PLAYER_COUNT] = {{0, 0}};
 
-		UINT16 piece_count[PLAYER_COUNT][MAX_PIECE_TYPES] = { {0} };	 // Figurenanzahl
-		UINT16 possible_moves[PLAYER_COUNT][MAX_PIECE_TYPES] = { {0} }; // Piece Mobility Count
+		INT32 piece_count[PLAYER_COUNT][MAX_PIECE_TYPES] = { {0} };	 // Figurenanzahl
+		INT32 possible_moves[PLAYER_COUNT][MAX_PIECE_TYPES] = { {0} }; // Piece Mobility Count
 
 		// Pro Spielfeld Figure zählen und Materialwert hinzutragen
 		// Anmerkung: Der Materialwert der Bauern wird später zu white_score bzw. black_score hinzugetragen, 
@@ -77,24 +104,24 @@ namespace owl
 					auto is_isolated_double = is_double && is_isolated;
 					auto is_connected_passed = is_connected && is_passed;
 
-					if (is_double)		extra_pawn_score[color] += PAWN_STRUCTURE_DOUBLE_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
-					if (is_connected)	extra_pawn_score[color] += PAWN_STRUCTURE_CONNECTED_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
-					if (is_chain)		extra_pawn_score[color] += PAWN_STRUCTURE_CHAIN_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
-					if (is_passed)		extra_pawn_score[color] += (PAWN_STRUCTURE_PASSED_PAWNS_BONUS + PASSED_PAWNS_PROGRESS_BONUS[passed_progress_index]) * PAWN_STRUCTURE_WEIGHT;
+					if (is_double)		*pawn_structure[color] += PAWN_STRUCTURE_DOUBLE_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
+					if (is_connected)	*pawn_structure[color] += PAWN_STRUCTURE_CONNECTED_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
+					if (is_chain)		*pawn_structure[color] += PAWN_STRUCTURE_CHAIN_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
+					if (is_passed)		*pawn_structure[color] += (PAWN_STRUCTURE_PASSED_PAWNS_BONUS + PASSED_PAWNS_PROGRESS_BONUS[passed_progress_index]) * PAWN_STRUCTURE_WEIGHT;
 				
-					if (is_isolated)	extra_pawn_score[color] += PAWN_STRUCTURE_ISOLATED_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
-					if (is_backwards)	extra_pawn_score[color] += PAWN_STRUCTURE_BACKWARDS_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
+					if (is_isolated)	*pawn_structure[color] += PAWN_STRUCTURE_ISOLATED_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
+					if (is_backwards)	*pawn_structure[color] += PAWN_STRUCTURE_BACKWARDS_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
 
-					if (is_isolated_double) extra_pawn_score[color] += PAWN_STRUCTURE_ISOLATED_DOUBLE_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
-					if (is_connected_passed) extra_pawn_score[color] += PAWN_STRUCTURE_CONNECTED_PASSED_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
+					if (is_isolated_double) *pawn_structure[color] += PAWN_STRUCTURE_ISOLATED_DOUBLE_PAWNS_PENALTY * PAWN_STRUCTURE_WEIGHT;
+					if (is_connected_passed) *pawn_structure[color] += PAWN_STRUCTURE_CONNECTED_PASSED_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
 				}
 
-				score[color] += MATERIAL_VALUES[type];
+				*material[color] += MATERIAL_VALUES[type];
 
 				// Piece Mobility Züge zählen
 				if (evaluationFeatureFlags & EVAL_FT_PIECE_MOBILITY)
 				{
-					possible_moves[color][type] += ChessValidation::countPossibleMovesOnField(position, x, y);
+					possible_moves[color][type] += ChessValidation::countPossibleMovesOnField(position, x, y, true);
 				}
 
 				// Square Table addieren (Zunächst ohne König)
@@ -123,18 +150,18 @@ namespace owl
 						king_pos[color] = { x,y }; 
 						break;
 					}
-					square_table_score[color] += amount;
+					*square_table[color] += amount;
 				}
 			}
 		}
 
 		// Spielphase abfragen
-		auto game_phase = position.getGamePhase();
-		auto material = score[WHITE_INDEX] + score[BLACK_INDEX];
+		auto pos_game_phase = position.getGamePhase();
+		auto both_material = *score[WHITE_INDEX] + *score[BLACK_INDEX];
 
 		// Spielphase bestimmen bzw. anpassen
-		if (game_phase == GamePhase::Opening && material <= MAX_MATERIAL_SUM_MID_GAME)	position.enterNextGamePhase();
-		if (game_phase == GamePhase::Mid && material <= MAX_MATERIAL_SUM_END_GAME)		position.enterNextGamePhase();
+		if (pos_game_phase == GamePhase::Opening && both_material <= MAX_MATERIAL_SUM_MID_GAME)	position.enterNextGamePhase();
+		if (pos_game_phase == GamePhase::Mid && both_material <= MAX_MATERIAL_SUM_END_GAME)		position.enterNextGamePhase();
 		
 		// Dynamischer Bonus für den Materialwert je Spielphase
 		if (evaluationFeatureFlags & EVAL_FT_MATERIAL_DYNAMIC_GAME_PHASE)
@@ -144,13 +171,13 @@ namespace owl
 				for (INT32 type_index = FIRST_PIECE_TYPES_INDEX; type_index < MAX_PIECE_TYPES; type_index++)
 				{
 					auto factor = 1.0f;
-					switch (game_phase)
+					switch (pos_game_phase)
 					{
 					case GamePhase::Opening: factor = MATERIAL_ADDITION_BEGIN_GAME_PHASE[type_index]; break;
 					case GamePhase::Mid: factor = MATERIAL_ADDITION_MID_GAME_PHASE[type_index]; break;
 					case GamePhase::End: factor = MATERIAL_ADDITION_END_GAME_PHASE[type_index]; break;
 					}
-					score[color_index] += piece_count[color_index][type_index] * factor * MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
+					*game_phase[color_index] += piece_count[color_index][type_index] * factor * MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT;
 				}
 			}
 		}
@@ -161,12 +188,12 @@ namespace owl
 			for (auto color = FIRST_PLAYER_INDEX; color < PLAYER_COUNT; color++)
 			{
 				auto index = std::min(piece_count[color][PAWN_INDEX], DYNAMIC_PAWNS_LAST_INDEX); // Grenzen einhalten
-				extra_pawn_score[color] += piece_count[color][PAWN_INDEX] * MATERIAL_DYNAMIC_PAWNS[index];
+				*dynamic_pawns[color] += piece_count[color][PAWN_INDEX] * MATERIAL_DYNAMIC_PAWNS[index];
 			}
 		}
 
 		// Piece Square Table für König hinzufügen
- 		if (evaluationFeatureFlags & EVAL_FT_PIECE_SQUARE_TABLE && game_phase != GamePhase::Opening)
+ 		if (evaluationFeatureFlags & EVAL_FT_PIECE_SQUARE_TABLE && pos_game_phase != GamePhase::Opening)
 		{
 			UINT64 table_index[PLAYER_COUNT] =
 			{
@@ -176,7 +203,7 @@ namespace owl
 
 			float factor[PLAYER_COUNT] = { 0.0f };
 
-			switch (game_phase)
+			switch (pos_game_phase)
 			{
 			case GamePhase::Mid: 
 				factor[WHITE_INDEX] = PIECE_SQUARE_TABLE_KING_MID_GAME_WEIGHT * PIECE_SQUARE_TABLE_KING_MID_GAME[table_index[WHITE_INDEX]];
@@ -187,8 +214,8 @@ namespace owl
 				factor[BLACK_INDEX] = PIECE_SQUARE_TABLE_KING_END_GAME_WEIGHT * MIRROR_PIECE_SQUARE_TABLE(PIECE_SQUARE_TABLE_KING_END_GAME)[table_index[BLACK_INDEX]];
 				break;
 			}
-			square_table_score[WHITE_INDEX] += piece_count[WHITE_INDEX][KING_INDEX] * factor[WHITE_INDEX];
-			square_table_score[BLACK_INDEX] += piece_count[BLACK_INDEX][KING_INDEX] * factor[BLACK_INDEX];
+			*square_table[WHITE_INDEX] += piece_count[WHITE_INDEX][KING_INDEX] * factor[WHITE_INDEX];
+			*square_table[BLACK_INDEX] += piece_count[BLACK_INDEX][KING_INDEX] * factor[BLACK_INDEX];
 		}
 
 		// Läuferpaar aktiviert?
@@ -197,7 +224,7 @@ namespace owl
 			for (auto color_index = FIRST_PLAYER_INDEX; color_index < PLAYER_COUNT; color_index++)
 			{
 				if (piece_count[color_index][BISHOP_INDEX] >= MIN_BISHOP_COUNT_PRECONDITION_BONUS)
-					score[color_index] += BISHOP_PAIR_BONUS * BISHOP_PAIR_BONUS_WEIGHT;
+					*bishop_pair[color_index] += BISHOP_PAIR_BONUS * BISHOP_PAIR_BONUS_WEIGHT;
 			}
 		}
 
@@ -218,7 +245,7 @@ namespace owl
 					case QUEEN_INDEX: factor = PIECE_MOBILITY_QUEEN_WEIGHT; break;
 					case KING_INDEX: factor = PIECE_MOBILITY_KING_WEIGHT; break;
 					}
-					score[color_index] += PIECE_MOBILITY_WEIGHT * factor * possible_moves[color_index][type_index];
+					*piece_mobility[color_index] += PIECE_MOBILITY_WEIGHT * factor * possible_moves[color_index][type_index];
 				}
 			}
 		}
@@ -226,13 +253,24 @@ namespace owl
 		// Materialwerte summieren
 		for (INT32 color_index = FIRST_PLAYER_INDEX; color_index < PLAYER_COUNT; color_index++)
 		{
-			score[color_index] += extra_pawn_score[color_index] + square_table_score[color_index];
+		#if OWL_USE_EVALUATION_COMPONENT_REPRESENTAION==true
+			data[color_index].calculateScore();
+		#else
+			_score[color_index] += _material[color_index] + _game_phase[color_index] + _square_table[color_index]
+				+ _piece_mobility[color_index] + _pawn_structure[color_index] + _bishop_pair[color_index] + _dynamic_pawns[color_index];
+		#endif
 		}
 
 		// Je nach Spieler score der Spieler voneinander abziehen und zurückgeben
-		auto&& final_score = enginePlayer == PLAYER_WHITE ?
-			score[WHITE_INDEX] - score[BLACK_INDEX] : score[BLACK_INDEX] - score[WHITE_INDEX];
-
+	#if OWL_USE_EVALUATION_COMPONENT_REPRESENTAION==true
+		EVALUATION_VALUE final_score = enginePlayer == PLAYER_WHITE ?
+			data[WHITE_INDEX] - data[BLACK_INDEX] :
+			data[BLACK_INDEX] - data[WHITE_INDEX];
+	#else
+		EVALUATION_VALUE final_score = enginePlayer == PLAYER_WHITE ?
+			_score[WHITE_INDEX] - _score[BLACK_INDEX] :
+			_score[BLACK_INDEX] - _score[WHITE_INDEX];
+	#endif
 		return final_score;
 	}
 
@@ -312,11 +350,11 @@ namespace owl
 
 		return false;
 	}
-	UCHAR ChessEvaluation::GetPlayerIndexByPositionPlayer(short currentPlayerOfPosition)
+	INT32 ChessEvaluation::GetPlayerIndexByPositionPlayer(INT32 currentPlayerOfPosition)
 	{
 		return currentPlayerOfPosition == PLAYER_WHITE ? WHITE_INDEX : BLACK_INDEX;
 	}
-	UCHAR ChessEvaluation::GetEnemyPiece(short currentPlayerOfPosition, UINT16 pieceIndex)
+	UCHAR ChessEvaluation::GetEnemyPiece(INT32 currentPlayerOfPosition, INT32 pieceIndex)
 	{
 		auto&& enemy_color = GetPlayerIndexByPositionPlayer(-currentPlayerOfPosition);
 		return PIECES[enemy_color][pieceIndex];

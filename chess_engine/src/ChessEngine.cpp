@@ -3,7 +3,9 @@
 #include "ChessEvaluation.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <iostream>
+#include "ChessUtility.hpp"
 
 namespace owl
 {
@@ -14,13 +16,12 @@ namespace owl
 		: m_player(0)
 	{
 		ChessValidation::init();
-
 	}
 	ChessEngine::~ChessEngine()
 	{
 	}
 
-	PAIR<Move, FLOAT> ChessEngine::searchMove(short player, UINT16 depth, UCHAR parameterFlags, BOOL random)
+	PAIR<Move, EVALUATION_VALUE> ChessEngine::searchMove(INT32 player, INT32 depth, UCHAR parameterFlags, BOOL random)
 	{
 		m_mutex.lock();
 
@@ -33,6 +34,7 @@ namespace owl
 
 		m_mutex.unlock();
 
+		auto time_start = std::chrono::steady_clock::now();
 		// Führe MinMax aus:
 		if (parameterFlags == FT_NULL) minMax(m_position, m_player, depth);
 		// Führe Alpha-Beta aus
@@ -40,6 +42,9 @@ namespace owl
 			parameterFlags,	// Parameter-Flags
 			parameterFlags & FT_SRT_KILLER ? &killer_list : nullptr // Killer-Liste
 		);
+		auto time_end = std::chrono::steady_clock::now();
+
+		std::cout << "info searchtime " << (std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start).count()) << " ms" << std::endl;
 
 		m_mutex.lock();
 
@@ -99,7 +104,7 @@ namespace owl
 		return m_position;
 	}
 
-	UINT16 ChessEngine::getPlayer() const
+	INT32 ChessEngine::getPlayer() const
 	{
 		return m_player;
 	}
@@ -109,7 +114,7 @@ namespace owl
 		return m_position;
 	}
 
-	FLOAT ChessEngine::minMax(Position& position, INT16 player, UINT16 depth)
+	EVALUATION_VALUE ChessEngine::minMax(Position& position, INT32 player, INT32 depth)
 	{
 		if (m_stop) return -INF;
 
@@ -131,7 +136,7 @@ namespace owl
 			return ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD);
 		}
 
-		for (auto move : moves)
+		for (auto &move : moves)
 		{
 			position.applyMove(move);
 
@@ -158,15 +163,17 @@ namespace owl
 		return value;
 	}
 
-	FLOAT ChessEngine::alphaBeta(Position& position, INT16 player, UINT16 depth, FLOAT alpha, FLOAT beta, UCHAR parameterFlags, KILLER_LIST* killerList)
+	EVALUATION_VALUE ChessEngine::alphaBeta(Position& position, INT32 player, INT32 depth, FLOAT alpha, FLOAT beta, UCHAR parameterFlags, KILLER_LIST* killerList)
 	{		
-		if (m_stop) return -INF;
+		if (m_stop)
+		{
+			return -INF;
+		}
 
 		// Blattknoten erreicht?
 		if (depth == 0)
 		{
-			auto v = ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD, true);
-			return v;
+			return ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD, true);
 		} 
 
 		// Liste generieren + Checkmate überprüfen bei 0 Zügen
@@ -175,27 +182,26 @@ namespace owl
 		// Endstellung erreicht? 
 		if (moves.empty())
 		{
-			auto v = ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD);
-			return v;
+			return ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD);
 		}
 
 		// Züge gegebenfalls sortieren
 		sortMoves(&moves, position, depth, parameterFlags, killerList);
 		
-		auto value = m_player ? alpha : beta;
+		EVALUATION_VALUE value = player == PLAYER_WHITE ? alpha : beta;
 
 		for (auto move : moves)
 		{
 			position.applyMove(move);
 
-			auto new_alpha = m_player ? value : alpha;
-			auto new_beta = m_player ? beta : value;
+			auto new_alpha = player == PLAYER_WHITE ? value : alpha;
+			auto new_beta = player == PLAYER_WHITE ? beta : value;
 
-			auto new_value = alphaBeta(position, -player, depth - 1, new_alpha, new_beta, parameterFlags, killerList);
+			EVALUATION_VALUE new_value = alphaBeta(position, -player, depth - 1, new_alpha, new_beta, parameterFlags, killerList);
 
 			position.undoLastMove();
 
-			if (m_player && new_value > value)
+			if (player == PLAYER_WHITE && new_value > value)
 			{
 				value = new_value;
 
@@ -209,7 +215,7 @@ namespace owl
 					break; 
 				}
 			}
-			else if (!m_player && new_value < value)
+			else if (player == PLAYER_BLACK && new_value < value)
 			{
 				value = new_value;
 
@@ -228,7 +234,7 @@ namespace owl
 		return value;
 	}
 
-	VOID ChessEngine::sortMoves(MOVE_LIST* moves, Position& position, UINT16 depth, UCHAR parameterFlags, KILLER_LIST* killerList)
+	VOID ChessEngine::sortMoves(MOVE_LIST* moves, Position& position, INT32 depth, UCHAR parameterFlags, KILLER_LIST* killerList)
 	{
 		// Falls keine Sortierung aktiviert wurde: nichts tun
 		if (parameterFlags < FT_BIT_SORT_BEGIN ) return;
