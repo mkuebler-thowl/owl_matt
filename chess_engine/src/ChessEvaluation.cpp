@@ -195,7 +195,7 @@ namespace owl
 		// Piece Square Table für König hinzufügen
  		if (evaluationFeatureFlags & EVAL_FT_PIECE_SQUARE_TABLE && pos_game_phase != GamePhase::Opening)
 		{
-			UINT64 table_index[PLAYER_COUNT] =
+			INT32 table_index[PLAYER_COUNT] =
 			{
 				king_pos[WHITE_INDEX].first + ((COLUMNS * king_pos[WHITE_INDEX].second)),
 				king_pos[BLACK_INDEX].first + ((COLUMNS * king_pos[BLACK_INDEX].second))

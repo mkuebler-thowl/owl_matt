@@ -5,7 +5,6 @@
 
 namespace owl
 {
-
 	constexpr INT32 VALUE = 0;
 	constexpr INT32 MIN_MAX_VALUE_SIZE = 1;
 
@@ -15,7 +14,7 @@ namespace owl
 	class MinMaxResult
 	{
 	public:
-		VOID insert(const Move& move, const EVALUATION_VALUE value) const;
+		VOID insert(const Move& move, const EVALUATION_VALUE value, const MOVE_LIST* bestMoves = nullptr) const;
 		std::pair<Move, EVALUATION_VALUE> getResult() const;
 		BOOL empty() const;
 	private:
@@ -26,6 +25,14 @@ namespace owl
 		mutable MoveMap m_result;
 #else
 		mutable Move m_best;
+#endif
+        
+#if LOG_MOVE_STACK==true
+        mutable MOVE_LIST m_movePath;
+    public:
+        inline const MOVE_LIST getMovePath() const {
+            return m_movePath;
+        }
 #endif
 	};
 }

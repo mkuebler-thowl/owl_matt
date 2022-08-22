@@ -7,6 +7,7 @@
 
 #define OWL_USE_RANDOM false
 #define OWL_USE_EVALUATION_COMPONENT_REPRESENTAION true
+#define LOG_MOVE_STACK true
 
 namespace owl
 {
@@ -281,10 +282,19 @@ namespace owl
 		{}
 
 		EvaluationDataScore(FLOAT score) 
-			: score(score), material(0.f), gamePhase(0.f), 
+			: score(score), material(0.f), gamePhase(0.f),
 			squareTable(0.f), pieceMobility(0.f),
 			pawnStructure(0.f), bishopPair(0.f), dynamicPawns(0.f)
 		{}
+        
+        friend std::ostream& operator<<(std::ostream& os, const EvaluationDataScore& data)
+        {
+            os << "score: " << data.score << " material: " << data.material << " gamephase: "
+            << data.gamePhase << " squaretable: " << data.squareTable << " piecemobility: " << data.pieceMobility
+            <<" pawnstructure: " << data.pawnStructure << " bishoppair: " << data.bishopPair << " dynamicpawns: " << data.dynamicPawns;
+            
+            return os;
+        }
 	};
 
 	using  EVALUATION_VALUE = EvaluationDataScore;

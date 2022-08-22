@@ -120,6 +120,7 @@ namespace owl
 		return m_position;
 	}
 
+    // TODO: Funktioniert aktuell noch nicht
 	EVALUATION_VALUE ChessEngine::minMax(Position& position, INT32 player, INT32 depth)
 	{
 		if (m_stop) return -INF;
@@ -200,8 +201,8 @@ namespace owl
 		{
 			position.applyMove(move);
 
-			FLOAT new_alpha = player == m_player ? value : alpha;
-			FLOAT new_beta = player == m_player ? beta : value;
+			FLOAT new_alpha = player == m_player ? static_cast<FLOAT>(value) : alpha;
+			FLOAT new_beta = player == m_player ? beta : static_cast<FLOAT>(value);
 
 			EVALUATION_VALUE new_value = alphaBeta(position, -player, depth - 1, new_alpha, new_beta, parameterFlags, killerList);
 
@@ -209,6 +210,35 @@ namespace owl
 
 			if (player == m_player && new_value > value)
 			{
+                MOVE_LIST _best_moves;
+                // Move-Stack ausgeben:
+            #if LOG_MOVE_STACK==true
+                if (depth == 1)
+                {
+                    std::cout << "info update old_value: {" << value << "} value: {" << new_value << "}\n";
+                    position.applyMove(move);
+                    std::stack<Position::MoveData> _mvs = position.getMoveDataStack();
+                    std::vector<Position::MoveData> _vmvs;
+                    
+                    while(_mvs.size() > 1)
+                    {
+                        _vmvs.insert(_vmvs.begin(), _mvs.top());
+                        _mvs.pop();
+                    }
+                    
+                    std::cout << "info update fen " << ChessUtility::positionToFen(position) << "\n";
+                    
+                    std::cout << "info update moves ";
+                    for(auto& item : _vmvs)
+                    {
+                        std::cout << ChessUtility::moveToString(item.move) << " ";
+                        _best_moves.push_back(item.move);
+                    }
+                    std::cout << "\n\n";
+                    position.undoLastMove();
+                }
+            #endif
+                
 				value = new_value;
 
 				if (depth == m_startedDepth) {
@@ -223,8 +253,37 @@ namespace owl
 			}
 			else if (player != m_player && new_value < value)
 			{
+                MOVE_LIST _best_moves;
+            #if LOG_MOVE_STACK==true
+                if (depth == 1)
+                {
+                    std::cout << "info update old_value: {" << value << "} value: {" << new_value << "}\n";
+                    position.applyMove(move);
+                    std::stack<Position::MoveData> _mvs = position.getMoveDataStack();
+                    std::vector<Position::MoveData> _vmvs;
+                    
+                    while(_mvs.size() > 1)
+                    {
+                        _vmvs.insert(_vmvs.begin(), _mvs.top());
+                        _mvs.pop();
+                    }
+                    
+                    std::cout << "info update fen " << ChessUtility::positionToFen(position) << "\n";
+                    
+                    std::cout << "info update moves ";
+                    for(auto& item : _vmvs)
+                    {
+                        std::cout << ChessUtility::moveToString(item.move) << " ";
+                        _best_moves.push_back(item.move);
+                    }
+                    std::cout << "\n\n";
+                    position.undoLastMove();
+                    
+                }
+            #endif
+                
 				value = new_value;
-
+                
 				if (depth == m_startedDepth) {
 					m_result.insert(move, value);
 				}
@@ -360,4 +419,8 @@ namespace owl
 	{
 		return s_capture_map[static_cast<UINT64>(capture)];
 	}
+
+    const MinMaxResult ChessEngine::getMinMaxResult() const {
+        return m_result;
+    }
 }

@@ -352,38 +352,6 @@ namespace owl
 	}
 	VOID Position::setGameState(GameState state) const
 	{
-#ifdef DEBUG
-		if (state != GameState::Active && m_state == GameState::Active)
-		{
-			std::cout << "[FOUND ENDGAME]\n";
-			std::cout << "-----------------------------------------------------------------------------------------------------------------------\n";
-			std::cout << "GameState: " << (INT32)state << "\t(0=Active, 1=WhiteWins, 2=BlackWins, 3=Remis)\n";
-			std::cout << "MoveStack: ";
-			auto cpy = m_moveDataStack;
-
-			MOVE_LIST mvs;
-
-			while (cpy.size() > 2)
-			{
-				std::cout << "\t";  
-				cpy.top().move.print();
-				std::cout << "-> ";
-				mvs.push_back(cpy.top().move);
-				cpy.pop();
-			}
-			std::cout << "\n Moves in Notation: ";
-			for (auto mv : mvs)
-			{
-				std::cout << ChessUtility::moveToString(mv) << ", ";
-			}
-
-			std::cout << "\nPosition:\n\n";
-			print();
-			std::cout << "--------\n";
-			std::cout << "ABCDEFGH\n\n";
-			std::cout << "-----------------------------------------------------------------------------------------------------------------------\n";
-		}
-#endif
 		m_state = state;
 	}
 

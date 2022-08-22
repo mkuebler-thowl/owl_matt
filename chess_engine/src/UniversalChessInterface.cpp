@@ -400,8 +400,16 @@ namespace owl
 
         auto best = result.first;
         auto value = result.second;
-
         std::cout << "info score " << value << " cp " << ChessUtility::convertToCentipawns(value) << std::endl;
+#if LOG_MOVE_STACK==true
+        std::cout << "info best move path: ";
+        auto best_moves = m_pEngine->getMinMaxResult().getMovePath();
+        for (auto& best_move : best_moves)
+        {
+            std::cout << ChessUtility::moveToString(best_move) << " ";
+        }
+        std::cout << "\n";
+#endif
         std::cout << "bestmove " << ChessUtility::moveToString(best) << std::endl;
 
         if (m_readyCheckQueued) {

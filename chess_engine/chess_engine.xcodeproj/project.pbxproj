@@ -1,0 +1,289 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0DFCA6466562193817703486 /* EngineOptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69578B0E9B50D5C01530114E /* EngineOptions.cpp */; };
+		4D99242C475AE09E8159E26C /* Position.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A379E294EBEAC6C6308998D4 /* Position.cpp */; };
+		612DB8C4031754B6FA3E6704 /* ChessValidation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BEAF80AC8CD2D45E13E126EC /* ChessValidation.cpp */; };
+		9931FCB6065A0B2807ECFAF6 /* ChessUtility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DEDB437E2C3E39B0A25D39BE /* ChessUtility.cpp */; };
+		A394311A3621FB0C9EFA9F5A /* ChessEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 668118A229ECDA5468907EE2 /* ChessEngine.cpp */; };
+		A58AD5C0D66ECDB2E9870400 /* Command.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CDDFBFE8F405EF9A5B0CE628 /* Command.cpp */; };
+		A8F4B11E4ADE4D1042055F5E /* ChessEvaluation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4940AA661763FE189E7250A6 /* ChessEvaluation.cpp */; };
+		B3445FA2552DFB944C550DE2 /* IChessInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81F716AA501A6A5CD728BCEA /* IChessInterface.cpp */; };
+		C059FA1252E7C404BBC06852 /* RepitionMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 63B8E61A2724A7CC65C84C5A /* RepitionMap.cpp */; };
+		C691A92E8D1FA0A0FB21C76E /* CommandBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2625F276BB9CB1A82A3908B6 /* CommandBuilder.cpp */; };
+		C8B46010C2761C82FC751E50 /* owl_matt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFC9F238F83AD66A3CD9A878 /* owl_matt.cpp */; };
+		D4F658D4421E674643B15714 /* MinMaxResult.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D36B64BC20CE5AEE96ED5AFC /* MinMaxResult.cpp */; };
+		DDDAB742EF91F73464FFE582 /* UniversalChessInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C9FB7C4A3DE3F3FC6031A28A /* UniversalChessInterface.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		3161B2B0A2ECCB2251EDF0F0 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		02D91094D0FC6446580AB6D4 /* IChessInterface.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = IChessInterface.hpp; path = src/IChessInterface.hpp; sourceTree = "<group>"; };
+		0D692C1E55DA10509A78E25E /* Position.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = Position.hpp; path = src/Position.hpp; sourceTree = "<group>"; };
+		2625F276BB9CB1A82A3908B6 /* CommandBuilder.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = CommandBuilder.cpp; path = src/CommandBuilder.cpp; sourceTree = "<group>"; };
+		2F20F2623291C494B3FE68A2 /* Move.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = Move.hpp; path = src/Move.hpp; sourceTree = "<group>"; };
+		3F917A960DB4CE4894C320D6 /* ChessValidation.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = ChessValidation.hpp; path = src/ChessValidation.hpp; sourceTree = "<group>"; };
+		4940AA661763FE189E7250A6 /* ChessEvaluation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ChessEvaluation.cpp; path = src/ChessEvaluation.cpp; sourceTree = "<group>"; };
+		63B8E61A2724A7CC65C84C5A /* RepitionMap.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = RepitionMap.cpp; path = src/RepitionMap.cpp; sourceTree = "<group>"; };
+		668118A229ECDA5468907EE2 /* ChessEngine.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ChessEngine.cpp; path = src/ChessEngine.cpp; sourceTree = "<group>"; };
+		69578B0E9B50D5C01530114E /* EngineOptions.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = EngineOptions.cpp; path = src/EngineOptions.cpp; sourceTree = "<group>"; };
+		7003CB34E3EC42E60639F174 /* UniversalChessInterface.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = UniversalChessInterface.hpp; path = src/UniversalChessInterface.hpp; sourceTree = "<group>"; };
+		7746B7B8A940026A231F3DF8 /* EngineOptions.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = EngineOptions.hpp; path = src/EngineOptions.hpp; sourceTree = "<group>"; };
+		81F716AA501A6A5CD728BCEA /* IChessInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = IChessInterface.cpp; path = src/IChessInterface.cpp; sourceTree = "<group>"; };
+		84A8D5D4855BD2C6F93DA414 /* chess_engine */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = chess_engine; sourceTree = BUILT_PRODUCTS_DIR; };
+		8C2064D2B2469484194D8B12 /* Command.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = Command.hpp; path = src/Command.hpp; sourceTree = "<group>"; };
+		A379E294EBEAC6C6308998D4 /* Position.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Position.cpp; path = src/Position.cpp; sourceTree = "<group>"; };
+		AFC9F238F83AD66A3CD9A878 /* owl_matt.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = owl_matt.cpp; path = src/owl_matt.cpp; sourceTree = "<group>"; };
+		B5AC08C6030EFEF8792DFF06 /* MinMaxResult.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = MinMaxResult.hpp; path = src/MinMaxResult.hpp; sourceTree = "<group>"; };
+		BEAF80AC8CD2D45E13E126EC /* ChessValidation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ChessValidation.cpp; path = src/ChessValidation.cpp; sourceTree = "<group>"; };
+		C11BE7880E7EDDBA849DDDC8 /* ChessUtility.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = ChessUtility.hpp; path = src/ChessUtility.hpp; sourceTree = "<group>"; };
+		C9FB7C4A3DE3F3FC6031A28A /* UniversalChessInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = UniversalChessInterface.cpp; path = src/UniversalChessInterface.cpp; sourceTree = "<group>"; };
+		CA22A4509845F8021F544A90 /* ChessEvaluation.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = ChessEvaluation.hpp; path = src/ChessEvaluation.hpp; sourceTree = "<group>"; };
+		CDDFBFE8F405EF9A5B0CE628 /* Command.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Command.cpp; path = src/Command.cpp; sourceTree = "<group>"; };
+		D049958493B55736D258FBC4 /* RepitionMap.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = RepitionMap.hpp; path = src/RepitionMap.hpp; sourceTree = "<group>"; };
+		D311C80C967D89BED5212E4C /* ChessEngine.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = ChessEngine.hpp; path = src/ChessEngine.hpp; sourceTree = "<group>"; };
+		D36B64BC20CE5AEE96ED5AFC /* MinMaxResult.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = MinMaxResult.cpp; path = src/MinMaxResult.cpp; sourceTree = "<group>"; };
+		D428B470FA4EE4226155DAB0 /* defines.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = defines.hpp; path = src/defines.hpp; sourceTree = "<group>"; };
+		D594BBC06B0B7AF2D9A7D200 /* CommandBuilder.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = CommandBuilder.hpp; path = src/CommandBuilder.hpp; sourceTree = "<group>"; };
+		DEDB437E2C3E39B0A25D39BE /* ChessUtility.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ChessUtility.cpp; path = src/ChessUtility.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4351014471F75536CB38AF84 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		8424DD2B30879D5DEF10136B /* chess_engine */ = {
+			isa = PBXGroup;
+			children = (
+				668118A229ECDA5468907EE2 /* ChessEngine.cpp */,
+				D311C80C967D89BED5212E4C /* ChessEngine.hpp */,
+				4940AA661763FE189E7250A6 /* ChessEvaluation.cpp */,
+				CA22A4509845F8021F544A90 /* ChessEvaluation.hpp */,
+				DEDB437E2C3E39B0A25D39BE /* ChessUtility.cpp */,
+				C11BE7880E7EDDBA849DDDC8 /* ChessUtility.hpp */,
+				BEAF80AC8CD2D45E13E126EC /* ChessValidation.cpp */,
+				3F917A960DB4CE4894C320D6 /* ChessValidation.hpp */,
+				CDDFBFE8F405EF9A5B0CE628 /* Command.cpp */,
+				8C2064D2B2469484194D8B12 /* Command.hpp */,
+				2625F276BB9CB1A82A3908B6 /* CommandBuilder.cpp */,
+				D594BBC06B0B7AF2D9A7D200 /* CommandBuilder.hpp */,
+				69578B0E9B50D5C01530114E /* EngineOptions.cpp */,
+				7746B7B8A940026A231F3DF8 /* EngineOptions.hpp */,
+				81F716AA501A6A5CD728BCEA /* IChessInterface.cpp */,
+				02D91094D0FC6446580AB6D4 /* IChessInterface.hpp */,
+				D36B64BC20CE5AEE96ED5AFC /* MinMaxResult.cpp */,
+				B5AC08C6030EFEF8792DFF06 /* MinMaxResult.hpp */,
+				2F20F2623291C494B3FE68A2 /* Move.hpp */,
+				A379E294EBEAC6C6308998D4 /* Position.cpp */,
+				0D692C1E55DA10509A78E25E /* Position.hpp */,
+				63B8E61A2724A7CC65C84C5A /* RepitionMap.cpp */,
+				D049958493B55736D258FBC4 /* RepitionMap.hpp */,
+				C9FB7C4A3DE3F3FC6031A28A /* UniversalChessInterface.cpp */,
+				7003CB34E3EC42E60639F174 /* UniversalChessInterface.hpp */,
+				D428B470FA4EE4226155DAB0 /* defines.hpp */,
+				AFC9F238F83AD66A3CD9A878 /* owl_matt.cpp */,
+				A6C936B49B3FADE6EA134CF4 /* Products */,
+			);
+			name = chess_engine;
+			sourceTree = "<group>";
+		};
+		A6C936B49B3FADE6EA134CF4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				84A8D5D4855BD2C6F93DA414 /* chess_engine */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8A03433A2CF169ECBC17497A /* chess_engine */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 318C49A360329D95B973F7E3 /* Build configuration list for PBXNativeTarget "chess_engine" */;
+			buildPhases = (
+				B33881E4E1DED5D63B203024 /* Resources */,
+				1CE59B3B4B8BEF2DA4CD497B /* Sources */,
+				4351014471F75536CB38AF84 /* Frameworks */,
+				3161B2B0A2ECCB2251EDF0F0 /* Embed Libraries */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = chess_engine;
+			productInstallPath = "$(HOME)/bin";
+			productName = chess_engine;
+			productReference = 84A8D5D4855BD2C6F93DA414 /* chess_engine */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+			};
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "chess_engine" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 8424DD2B30879D5DEF10136B /* chess_engine */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8A03433A2CF169ECBC17497A /* chess_engine */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B33881E4E1DED5D63B203024 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1CE59B3B4B8BEF2DA4CD497B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A394311A3621FB0C9EFA9F5A /* ChessEngine.cpp in Sources */,
+				A8F4B11E4ADE4D1042055F5E /* ChessEvaluation.cpp in Sources */,
+				9931FCB6065A0B2807ECFAF6 /* ChessUtility.cpp in Sources */,
+				612DB8C4031754B6FA3E6704 /* ChessValidation.cpp in Sources */,
+				A58AD5C0D66ECDB2E9870400 /* Command.cpp in Sources */,
+				C691A92E8D1FA0A0FB21C76E /* CommandBuilder.cpp in Sources */,
+				0DFCA6466562193817703486 /* EngineOptions.cpp in Sources */,
+				B3445FA2552DFB944C550DE2 /* IChessInterface.cpp in Sources */,
+				D4F658D4421E674643B15714 /* MinMaxResult.cpp in Sources */,
+				4D99242C475AE09E8159E26C /* Position.cpp in Sources */,
+				C059FA1252E7C404BBC06852 /* RepitionMap.cpp in Sources */,
+				DDDAB742EF91F73464FFE582 /* UniversalChessInterface.cpp in Sources */,
+				C8B46010C2761C82FC751E50 /* owl_matt.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		5EC516D45F7813C6D359E514 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = NDEBUG;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				OBJROOT = "../bin-int/Release/Win64/Release/chess_engine";
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = ../bin/Release;
+				USER_HEADER_SEARCH_PATHS = ../external/spdlog;
+			};
+			name = Release;
+		};
+		CE88EAE9FE1AB9DBD927F929 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = ../bin/Debug;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = chess_engine;
+			};
+			name = Debug;
+		};
+		DB3264233673B79509CE0263 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = ../bin/Release;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = chess_engine;
+			};
+			name = Release;
+		};
+		F0D14E1A625C668C115D8C5A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				OBJROOT = "../bin-int/Debug/Win64/Debug/chess_engine";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = ../bin/Debug;
+				USER_HEADER_SEARCH_PATHS = ../external/spdlog;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "chess_engine" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F0D14E1A625C668C115D8C5A /* Debug */,
+				5EC516D45F7813C6D359E514 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		318C49A360329D95B973F7E3 /* Build configuration list for PBXNativeTarget "chess_engine" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CE88EAE9FE1AB9DBD927F929 /* Debug */,
+				DB3264233673B79509CE0263 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}

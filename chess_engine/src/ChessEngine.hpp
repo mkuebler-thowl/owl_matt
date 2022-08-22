@@ -45,6 +45,8 @@ namespace owl
 		const Position& getPosition() const;
 
 		INT32 getPlayer() const;
+        
+        const MinMaxResult getMinMaxResult() const;
 	private:
 		EVALUATION_VALUE minMax(Position& position, INT32 player, INT32 depth);
 		EVALUATION_VALUE alphaBeta(Position& position, INT32 player,
@@ -89,7 +91,7 @@ namespace owl
 		BOOL m_ready = true;
 		BOOL m_stop = false;
 		INT32 m_startedDepth = 0;
-
+        
 		std::mutex m_mutex;
 		INT32 m_player;
 		Position m_position;
