@@ -210,8 +210,6 @@ namespace owl
 
 			if (player == m_player && new_value > value)
 			{
-                MOVE_LIST _best_moves;
-                // Move-Stack ausgeben:
             #if LOG_MOVE_STACK==true
                 if (depth == 1)
                 {
@@ -232,7 +230,6 @@ namespace owl
                     for(auto& item : _vmvs)
                     {
                         std::cout << ChessUtility::moveToString(item.move) << " ";
-                        _best_moves.push_back(item.move);
                     }
                     std::cout << "\n\n";
                     position.undoLastMove();
@@ -253,7 +250,6 @@ namespace owl
 			}
 			else if (player != m_player && new_value < value)
 			{
-                MOVE_LIST _best_moves;
             #if LOG_MOVE_STACK==true
                 if (depth == 1)
                 {
@@ -274,7 +270,6 @@ namespace owl
                     for(auto& item : _vmvs)
                     {
                         std::cout << ChessUtility::moveToString(item.move) << " ";
-                        _best_moves.push_back(item.move);
                     }
                     std::cout << "\n\n";
                     position.undoLastMove();
@@ -419,8 +414,4 @@ namespace owl
 	{
 		return s_capture_map[static_cast<UINT64>(capture)];
 	}
-
-    const MinMaxResult ChessEngine::getMinMaxResult() const {
-        return m_result;
-    }
 }

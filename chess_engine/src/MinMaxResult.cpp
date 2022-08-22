@@ -5,13 +5,9 @@
 
 namespace owl
 {
-	VOID MinMaxResult::insert(const Move& move, const EVALUATION_VALUE value, const MOVE_LIST* bestMoves) const
+	VOID MinMaxResult::insert(const Move& move, const EVALUATION_VALUE value) const
 	{
 		updateCurrentValue(value);
-    // ZŸge ausgeben:
-    #if LOG_MOVE_STACK
-        m_movePath = *bestMoves;
-    #endif
 	#if OWL_USE_RANDOM==true
 		m_result.emplace(move, value);
 		
