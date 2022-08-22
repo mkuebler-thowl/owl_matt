@@ -48,6 +48,7 @@ namespace owl
 		auto index = distribution(generator);
 		return *std::next(std::begin(m_result), index);
 	#else
+		if (m_best.isMoveInvalid()) return { INVALID_MOVE , 0 };
 		return { m_best, m_currentBestValue };
 	#endif
 	}

@@ -35,8 +35,14 @@ namespace owl
 		m_mutex.unlock();
 
 		auto time_start = std::chrono::steady_clock::now();
+
+		// Wenn Tiefe = 0: einfach die Position direkt evaluieren
+		if (depth == 0)
+		{
+			m_result.insert(INVALID_MOVE, ChessEvaluation::evaluate(m_position, player, EVAL_FT_STANDARD, true));
+		}
 		// Führe MinMax aus:
-		if (parameterFlags == FT_NULL) minMax(m_position, m_player, depth);
+		else if (parameterFlags == FT_NULL) minMax(m_position, m_player, depth);
 		// Führe Alpha-Beta aus
 		else alphaBeta(m_position, m_player, depth, -INF, INF, 
 			parameterFlags,	// Parameter-Flags
@@ -188,20 +194,20 @@ namespace owl
 		// Züge gegebenfalls sortieren
 		sortMoves(&moves, position, depth, parameterFlags, killerList);
 		
-		EVALUATION_VALUE value = player == PLAYER_WHITE ? alpha : beta;
+		EVALUATION_VALUE value = player == m_player ? alpha : beta;
 
 		for (auto move : moves)
 		{
 			position.applyMove(move);
 
-			auto new_alpha = player == PLAYER_WHITE ? value : alpha;
-			auto new_beta = player == PLAYER_WHITE ? beta : value;
+			FLOAT new_alpha = player == m_player ? value : alpha;
+			FLOAT new_beta = player == m_player ? beta : value;
 
 			EVALUATION_VALUE new_value = alphaBeta(position, -player, depth - 1, new_alpha, new_beta, parameterFlags, killerList);
 
 			position.undoLastMove();
 
-			if (player == PLAYER_WHITE && new_value > value)
+			if (player == m_player && new_value > value)
 			{
 				value = new_value;
 
@@ -215,7 +221,7 @@ namespace owl
 					break; 
 				}
 			}
-			else if (player == PLAYER_BLACK && new_value < value)
+			else if (player != m_player && new_value < value)
 			{
 				value = new_value;
 
