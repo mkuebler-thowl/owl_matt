@@ -14,7 +14,7 @@ namespace owl
 		// Lösche Züge, die kleiner sind als (Bester Zug-Threshold):
 		for (auto it = m_result.begin(); it != m_result.end();)
 		{
-			if (it->second < m_currentBestValue - RANDOM_THRESHOLD)
+			if (it->second < static_cast<FLOAT>(m_currentBestValue) - RANDOM_THRESHOLD)
 			{
 				it = m_result.erase(it);
 			}

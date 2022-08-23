@@ -30,7 +30,7 @@ namespace owl
 		/// <param name="parameterFlags:">Für Min-Max-Erweiterungen können Feature-Parameter über Bitflags aktiviert werden</param>
 		/// <param name="random:">Bei Aktivierung wird aus einer Menge bestmöglicher Züge (+-Threshold) ein Zug zufällig gewählt</param>
 		/// <returns>Der bestmögliche gefundene Zug innerhalb der Suchtiefe</returns>
-		PAIR<Move, EVALUATION_VALUE> searchMove(INT32 player, INT32 depth, UCHAR parameter_flags, BOOL random = false);
+		PAIR<Move, EVALUATION_VALUE> searchMove(INT32 player, INT32 depth, UCHAR parameter_flags);
 
 		BOOL inDebugMode() const;
 		VOID setDebugMode(BOOL debug);

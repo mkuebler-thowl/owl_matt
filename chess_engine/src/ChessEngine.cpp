@@ -21,7 +21,7 @@ namespace owl
 	{
 	}
 
-	PAIR<Move, EVALUATION_VALUE> ChessEngine::searchMove(INT32 player, INT32 depth, UCHAR parameterFlags, BOOL random)
+	PAIR<Move, EVALUATION_VALUE> ChessEngine::searchMove(INT32 player, INT32 depth, UCHAR parameterFlags)
 	{
 		m_mutex.lock();
 
@@ -197,7 +197,7 @@ namespace owl
 		
 		EVALUATION_VALUE value = player == m_player ? alpha : beta;
 
-		for (auto move : moves)
+		for (auto& move : moves)
 		{
 			position.applyMove(move);
 
@@ -208,9 +208,9 @@ namespace owl
 
 			position.undoLastMove();
 
-			if (player == m_player && new_value > value)
+			if (player == m_player && new_value >= static_cast<FLOAT>(value)-RANDOM_THRESHOLD)
 			{
-            #if LOG_MOVE_STACK==true
+            #if OWL_LOG_MOVE_STACK==true
                 if (depth == 1)
                 {
                     std::cout << "info update old_value: {" << value << "} value: {" << new_value << "}\n";
@@ -235,22 +235,22 @@ namespace owl
                     position.undoLastMove();
                 }
             #endif
-				value = new_value;
-                // TODO:
+
+				if (new_value > value) value = new_value;
                 
 				if (depth == m_startedDepth) {
 					m_result.insert(move, value);
 				}
 
-				if (value >= beta)
+				if (static_cast<FLOAT>(value)-RANDOM_THRESHOLD >= beta)
 				{
 					insertKiller(killerList, move, depth);
 					break; 
 				}
 			}
-			else if (player != m_player && new_value < value)
+			else if (player != m_player && new_value <= static_cast<FLOAT>(value)+RANDOM_THRESHOLD)
 			{
-            #if LOG_MOVE_STACK==true
+            #if OWL_LOG_MOVE_STACK==true
                 if (depth == 1)
                 {
                     std::cout << "info update old_value: {" << value << "} value: {" << new_value << "}\n";
@@ -276,14 +276,15 @@ namespace owl
                     
                 }
             #endif
-                
+				if (new_value < value) value = new_value;
+				
 				value = new_value;
                 
 				if (depth == m_startedDepth) {
 					m_result.insert(move, value);
 				}
 
-				if (value <= alpha)
+				if (static_cast<FLOAT>(value)+RANDOM_THRESHOLD <= alpha)
 				{
 					insertKiller(killerList, move, depth);
 					break;

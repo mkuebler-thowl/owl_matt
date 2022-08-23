@@ -181,8 +181,9 @@ namespace owl
 
         for (auto& move_str : moves)
         {
-            if (move_str == "0000") continue; // TODO: 0000 in stringToMove() auslagern
-            Move move = ChessUtility::stringToMove(move_str);
+            if (move_str == "0000") continue;
+            Move move = ChessUtility::stringToMove(move_str, &position);
+            //Move move = ChessUtility::stringToMove(move_str);
             m_pEngine->getPosition().applyMove(move);
         }
     }
@@ -398,10 +399,11 @@ namespace owl
     {
         INT32 depth = p_data->depth == 0 ? MAX_DEPTH : p_data->depth;
 
-        auto result = m_pEngine->searchMove(m_pEngine->getPosition().getPlayer(), depth, FT_STANDARD, USE_RANDOM);
+        auto result = m_pEngine->searchMove(m_pEngine->getPosition().getPlayer(), depth, FT_STANDARD);
 
         auto best = result.first;
         auto value = result.second;
+
         std::cout << "info score " << value << " cp " << ChessUtility::convertToCentipawns(value) << std::endl;
         std::cout << "bestmove " << ChessUtility::moveToString(best) << std::endl;
 

@@ -7,7 +7,7 @@
 
 #define OWL_USE_RANDOM false
 #define OWL_USE_EVALUATION_COMPONENT_REPRESENTAION true
-#define LOG_MOVE_STACK false
+#define OWL_LOG_MOVE_STACK false
 
 namespace owl
 {
@@ -26,7 +26,6 @@ namespace owl
 	class MinMaxResult;
 
 	struct Move;
-
 
 	// Typdefinitionen
 	typedef std::int16_t INT16;
@@ -75,8 +74,8 @@ namespace owl
 
 	constexpr UCHAR FT_STANDARD = FT_ALPHA_BETA | FT_SRT_MATERIAL | FT_SRT_MVV_LVA | FT_SRT_KILLER; // OWL-Matt Standard Features
 
-	constexpr BOOL USE_RANDOM = false; // Soll der Min-Max aus einer zufälligen Anzahl an Zügen ziehen?
-	constexpr FLOAT RANDOM_THRESHOLD = 4.0f; // Standardabweichung für alle Züge mit relativen Abstand zum besten gefunden Zug (Delta-Phi-Cut)
+	constexpr FLOAT RANDOM_DELTA_PHI_CUT = 0.5f;
+	constexpr FLOAT RANDOM_THRESHOLD = OWL_USE_RANDOM==false ? 0 : RANDOM_DELTA_PHI_CUT; // Standardabweichung für alle Züge mit relativen Abstand zum besten gefunden Zug (Delta-Phi-Cut)
 	
 	// Spieler
 	constexpr INT32 PLAYER_WHITE = 1;	// Spieler Weiß
@@ -327,11 +326,10 @@ namespace owl
 #endif
 	// Faktoren (Mit welcher Gewichtung die Features Einfluss auf die Bewertung haben 0.0 = 0% und 1.0 = 100%)
 	constexpr FLOAT MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT = 1.00f; // Materialwerte zu Spielphase (Faktor)
-	constexpr FLOAT PIECE_SQUARE_TABLE_WEIGHT = 0.50f; // Piece-Square-Tabelle (Faktor)
+	constexpr FLOAT PIECE_SQUARE_TABLE_WEIGHT = 0.5f; // Piece-Square-Tabelle (Faktor)
 	constexpr FLOAT PIECE_MOBILITY_WEIGHT = 0.50f; // Piece-Mobility (Faktor)
 	constexpr FLOAT BISHOP_PAIR_BONUS_WEIGHT = 0.50f; // Läuferpaar (Faktor)
 	constexpr FLOAT PAWN_STRUCTURE_WEIGHT = 0.25f; // Bauernstruktur (Faktor)
-
 
 	// Materialwert + Addition für die jeweilige Spielphase								//  P	   N	  B		 R		Q		K
 	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_VALUES						= { 1.00f, 3.00f, 3.00f, 5.00f, 9.00f,	0.00f }; // Materialwert
@@ -509,7 +507,6 @@ namespace owl
 	constexpr FLOAT PIECE_SQUARE_TABLE_KING_END_GAME_WEIGHT = 1.0f;	// König-Tabellen-Endspiel-Gewicht (Faktor)
 
 	constexpr std::array<FLOAT, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_PAWN = {
-        // TODO: Tabelle nochmal ŸberprŸfen
 		0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f,
 		0.50f, 0.50f, 0.50f, 0.50f, 0.50f, 0.50f, 0.50f, 0.50f,
 		0.10f, 0.10f, 0.20f, 0.30f, 0.30f, 0.20f, 0.10f, 0.10f,
@@ -554,14 +551,14 @@ namespace owl
 	};
 
 	constexpr std::array<FLOAT, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_QUEEN = {
-		-0.20f,-0.10f,-0.10f, -0.05, -0.05f,-0.10f,-0.10f,-0.20f,
-		-0.10f, 0.00f, 0.00f,  0.00,  0.00f, 0.00f, 0.00f,-0.10f,
-		-0.10f, 0.00f, 0.05f,  0.05,  0.05f, 0.05f, 0.00f,-0.10f,
-		-0.05f, 0.00f, 0.05f,  0.05,  0.05f, 0.05f, 0.00f,-0.05f,
-		 0.00f, 0.00f, 0.05f,  0.05,  0.05f, 0.05f, 0.00f,-0.05f,
-		-0.10f, 0.05f, 0.05f,  0.05,  0.05f, 0.05f, 0.00f,-0.10f,
-		-0.10f, 0.00f, 0.05f,  0.00,  0.00f, 0.00f, 0.00f,-0.10f,
-		-0.20f,-0.10f,-0.10f, -0.05, -0.05f,-0.10f,-0.10f,-0.20f
+		-0.20f,-0.10f,-0.10f, -0.05f, -0.05f,-0.10f,-0.10f,-0.20f,
+		-0.10f, 0.00f, 0.00f,  0.00f,  0.00f, 0.00f, 0.00f,-0.10f,
+		-0.10f, 0.00f, 0.05f,  0.05f,  0.05f, 0.05f, 0.00f,-0.10f,
+		-0.05f, 0.00f, 0.05f,  0.05f,  0.05f, 0.05f, 0.00f,-0.05f,
+		 0.00f, 0.00f, 0.05f,  0.05f,  0.05f, 0.05f, 0.00f,-0.05f,
+		-0.10f, 0.05f, 0.05f,  0.05f,  0.05f, 0.05f, 0.00f,-0.10f,
+		-0.10f, 0.00f, 0.05f,  0.00f,  0.00f, 0.00f, 0.00f,-0.10f,
+		-0.20f,-0.10f,-0.10f, -0.05f, -0.05f,-0.10f,-0.10f,-0.20f
 	};
 
 	constexpr std::array<FLOAT, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_KING_MID_GAME = {

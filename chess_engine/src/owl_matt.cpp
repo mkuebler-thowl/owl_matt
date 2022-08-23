@@ -8,7 +8,4 @@ auto main() -> owl::INT32
 	// UCI starten:
 	 owl::UniversalChessInterface uci;
 	 uci.start();
-
-	std::cout << "exit" << std::endl;
-
 }
