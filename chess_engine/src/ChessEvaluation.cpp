@@ -246,7 +246,7 @@ namespace owl
 					case KING_INDEX: factor = PIECE_MOBILITY_KING_WEIGHT; break;
 					}
 					*piece_mobility[color_index] += PIECE_MOBILITY_WEIGHT * factor * possible_moves[color_index][type_index];
-                    std::cout << *piece_mobility[color_index] << " ";
+                    //std::cout << *piece_mobility[color_index] << " ";
 				}
 			}
 		}

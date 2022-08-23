@@ -7,7 +7,7 @@
 
 #define OWL_USE_RANDOM false
 #define OWL_USE_EVALUATION_COMPONENT_REPRESENTAION true
-#define LOG_MOVE_STACK true
+#define LOG_MOVE_STACK false
 
 namespace owl
 {
@@ -325,8 +325,6 @@ namespace owl
 		std::cout << " }\n";
 	}
 #endif
-
-
 	// Faktoren (Mit welcher Gewichtung die Features Einfluss auf die Bewertung haben 0.0 = 0% und 1.0 = 100%)
 	constexpr FLOAT MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT = 1.00f; // Materialwerte zu Spielphase (Faktor)
 	constexpr FLOAT PIECE_SQUARE_TABLE_WEIGHT = 0.50f; // Piece-Square-Tabelle (Faktor)
@@ -382,15 +380,15 @@ namespace owl
 
 	constexpr INT32 MAX_PIECE_PROMOTION_TYPES = 4;
 
-	constexpr CHAR WHITE_PIECES[MAX_PIECE_TYPES] =
+	constexpr CHAR WHITE_PIECES[MAX_PIECE_TYPES+1] =
 	{
 		WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, 
-		WHITE_ROOK, WHITE_QUEEN, WHITE_KING 
+		WHITE_ROOK, WHITE_QUEEN, WHITE_KING, '\0'
 	};
-	constexpr CHAR BLACK_PIECES[MAX_PIECE_TYPES] =
+	constexpr CHAR BLACK_PIECES[MAX_PIECE_TYPES+1] =
 	{ 
 		BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, 
-		BLACK_ROOK, BLACK_QUEEN, BLACK_KING 
+		BLACK_ROOK, BLACK_QUEEN, BLACK_KING, '\0'
 	};
 
 	constexpr CHAR WHITE_PROMOTION_PIECES[MAX_PIECE_PROMOTION_TYPES] =

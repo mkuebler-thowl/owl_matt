@@ -639,9 +639,6 @@ namespace owl
 			{
 				auto place = position[line_y][line_x];
 				auto capture = enemies_string.find(place) != std::string::npos;
-
-                // TODO: Feld nicht leer => line empty false
-                // Alle 4 FŠlle testen
                 
                 if (place == EMPTY_FIELD) {
                     line_empty = true;
@@ -665,7 +662,7 @@ namespace owl
                 }
                 
                 if (add_move) {
-                    // Zug zur Liste hinzufŸgen
+                    // Zug zur Liste hinzufügen
                     Move move;
                     move.startX = x;
                     move.startY = y;
@@ -679,7 +676,6 @@ namespace owl
                     // ZurŸcksetzen
                     add_move = false;
                 }
-                
 			}
 			else
 			{
@@ -699,7 +695,7 @@ namespace owl
 
 	std::string ChessValidation::getEnemyPiecesString(INT32 player)
 	{
-		return std::string(player == PLAYER_WHITE ? "pnbrqk" : "PNBRQK");
+		return std::string(player == PLAYER_WHITE ? BLACK_PIECES : WHITE_PIECES);
 	}
 
 	BOOL ChessValidation::isInsideChessboard(INT32 x, INT32 y)

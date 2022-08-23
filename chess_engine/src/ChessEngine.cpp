@@ -290,7 +290,7 @@ namespace owl
 				}
 			}
 		}
-		
+
 		return value;
 	}
 
