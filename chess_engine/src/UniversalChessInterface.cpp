@@ -181,6 +181,7 @@ namespace owl
 
         for (auto& move_str : moves)
         {
+            if (move_str == "0000") continue; // TODO: 0000 in stringToMove() auslagern
             Move move = ChessUtility::stringToMove(move_str);
             m_pEngine->getPosition().applyMove(move);
         }
@@ -395,7 +396,7 @@ namespace owl
 
     VOID UniversalChessInterface::go(std::shared_ptr<GoSubcommandData> p_data)
     {
-        INT32 depth = p_data->depth == 0 ? 4 : p_data->depth;
+        INT32 depth = p_data->infinite ? MAX_DEPTH : p_data->depth;
         auto result = m_pEngine->searchMove(m_pEngine->getPosition().getPlayer(), depth, FT_STANDARD, USE_RANDOM);
 
         auto best = result.first;

@@ -75,7 +75,7 @@ namespace owl
 		{
 		case WHITE_PAWN: getValidPawnMoves(position, x, y, PLAYER_WHITE, noKingCheck); break;
 		case BLACK_PAWN: getValidPawnMoves(position, x, y, PLAYER_BLACK, noKingCheck); break;
-		case WHITE_KNIGHT:getValidKnightMoves(position, x, y, PLAYER_WHITE, noKingCheck); break;
+		case WHITE_KNIGHT: getValidKnightMoves(position, x, y, PLAYER_WHITE, noKingCheck); break;
 		case BLACK_KNIGHT: getValidKnightMoves(position, x, y, PLAYER_BLACK, noKingCheck); break;
 		case WHITE_BISHOP: getValidBishopMoves(position, x, y, PLAYER_WHITE, noKingCheck); break;
 		case BLACK_BISHOP: getValidBishopMoves(position, x, y, PLAYER_BLACK, noKingCheck); break;
@@ -86,6 +86,7 @@ namespace owl
 		case WHITE_KING: getValidKingMoves(position, x, y, PLAYER_WHITE, noKingCheck); break;
 		case BLACK_KING: getValidKingMoves(position, x, y, PLAYER_BLACK, noKingCheck); break;
 		}
+        
 		return s_data.size();
 	}
 
@@ -449,13 +450,16 @@ namespace owl
 
 		std::string enemies = getEnemyPiecesString(player);
 
-		for (auto pair : MOVE_DIR_KNIGHT)
+		for (const INT32* pair : MOVE_DIR_KNIGHT)
 		{
+            INT32 first = pair[FIRST];
+            INT32 second = pair[SECOND];
+            
 			if (isInsideChessboard(x + pair[FIRST], y + pair[SECOND]))
 			{
 				auto piece = position[y + pair[SECOND]][x + pair[FIRST]];
 				auto capture = enemies.find(piece) != std::string::npos;
-				if (piece == ' ' || capture)
+				if (piece == EMPTY_FIELD || capture)
 				{
 					Move move;
 					move.startX = x;
@@ -479,6 +483,8 @@ namespace owl
 		//MOVE_LIST moves;
 		//moves.reserve(MAX_MOVES_PER_KING);
 
+        // TODO: 4 FŠlle durchgehen
+        
 		std::string enemies = getEnemyPiecesString(player);
 
 		for (auto pair : MOVE_DIR_KING)
@@ -489,6 +495,7 @@ namespace owl
 			{
 				auto piece = position[y + second][x + first];
 				auto capture = enemies.find(piece) != std::string::npos;
+                // 4 FŠlle unterscheiden
 				if (piece == EMPTY_FIELD || capture)
 				{
 					Move move;
@@ -604,7 +611,7 @@ namespace owl
 
 		for (auto direction : MOVE_DIR_BISHOP)
 		{
-			continueValidMovesOnLine(position, x, y, enemies, direction[FIRST], direction[SECOND]);
+			continueValidMovesOnLine(position, x, y, enemies, direction[FIRST], direction[SECOND], noKingCheck);
 			//moves.insert(moves.end(), tmp.begin(), tmp.end());
 			//std::move(tmp.begin(), tmp.end(), std::back_inserter(moves));
 		}
@@ -614,9 +621,12 @@ namespace owl
 
 	VOID ChessValidation::continueValidMovesOnLine(Position& position, INT32 x, INT32 y, const std::string& enemies_string, INT32 xDir, INT32 yDir, BOOL noKingCheck)
 	{
+        if (noKingCheck) return;
+        
 		//MOVE_LIST moves;
 		//moves.reserve(MAX_LINE_LENGTH);
 		BOOL line_empty = true;
+        BOOL add_move = false;
 
 		INT32 offset = 1;
 
@@ -630,30 +640,58 @@ namespace owl
 				auto place = position[line_y][line_x];
 				auto capture = enemies_string.find(place) != std::string::npos;
 
-				if (place == EMPTY_FIELD || capture)
-				{
-					Move move;
-					move.startX = x;
-					move.startY = y;
-					move.targetX = line_x;
-					move.targetY = line_y;
-					move.capture = capture;
+                // TODO: Feld nicht leer => line empty false
+                // Alle 4 FŠlle testen
+                
+                if (place == EMPTY_FIELD) {
+                    line_empty = true;
+                    if (capture) {
+                        // UngŸltig
+                        add_move = false;
+                    } else {
+                        // Zug auf leeres Feld
+                        add_move = true;
+                    }
+                    
+                } else {
+                    line_empty = false;
+                    if (capture) {
+                        // Gegnerische Figur gefunden, schlagen, Zug hinzu
+                        add_move = true;
+                    } else {
+                        // Eigene Figur gefunden, kein gŸltiger Zug
+                        add_move = false;
+                    }
+                }
+                
+                if (add_move) {
+                    // Zug zur Liste hinzufŸgen
+                    Move move;
+                    move.startX = x;
+                    move.startY = y;
+                    move.targetX = line_x;
+                    move.targetY = line_y;
+                    move.capture = capture;
 
-					if (!isKingInCheckAfterMove(position, position.getPlayer(), move, noKingCheck))
-						s_data.emplace_back(move);
-
-					if (capture) line_empty = false;
-				}
-				else
-				{
-					line_empty = false;
-				}
+                    if (!isKingInCheckAfterMove(position, position.getPlayer(), move, noKingCheck))
+                        s_data.emplace_back(move);
+                    
+                    // ZurŸcksetzen
+                    add_move = false;
+                }
+                
 			}
 			else
 			{
 				line_empty = false;
 			}
-			offset++;
+            
+            if (line_empty) {
+                offset++;
+            } else {
+                break;
+            }
+			
 		}
 
 		return;
@@ -661,11 +699,11 @@ namespace owl
 
 	std::string ChessValidation::getEnemyPiecesString(INT32 player)
 	{
-		return std::string(player == PLAYER_WHITE ? BLACK_PIECES : WHITE_PIECES);
+		return std::string(player == PLAYER_WHITE ? "pnbrqk" : "PNBRQK");
 	}
 
 	BOOL ChessValidation::isInsideChessboard(INT32 x, INT32 y)
 	{
-		return x>=FIRST_ROW_INDEX && x<COLUMNS && y>=FIRST_ROW_INDEX && y<ROWS;
+		return x>=FIRST_COLUMN_INDEX && x<COLUMNS && y>=FIRST_ROW_INDEX && y<ROWS;
 	}
 }

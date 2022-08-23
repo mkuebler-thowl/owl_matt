@@ -94,7 +94,7 @@ namespace owl
 	constexpr INT32 KILLER_PRIO_2 = 1; // Zweite Killerzug Priorität
 	constexpr INT32 KILLER_NO_PRIO = 0; // Keine Killerzug Priorität (Kein Killermove)
 
-	constexpr INT32 MAX_DEPTH = 10; // Später auf maximale erreichbare Suchtiefe anpassen
+	constexpr INT32 MAX_DEPTH = 4; // Später auf maximale erreichbare Suchtiefe anpassen
 
 	// Positionsbezogen:
 	constexpr INT32 EN_PASSANT_WHITE_Y = 5; // Übergangene Zeile y bei En Passant für Spieler Weiß
@@ -180,7 +180,9 @@ namespace owl
 		EVAL_FT_PIECE_SQUARE_TABLE |
 		EVAL_FT_PIECE_MOBILITY |
 		EVAL_FT_PAWN_STRUCTURE |
-		EVAL_FT_BISHOP_PAIR;
+        EVAL_FT_BISHOP_PAIR
+        | EVAL_FT_DYNAMIC_PAWNS
+        ;
 
 	// Alle Bewertungsfunktions-Features
 	constexpr UCHAR EVAL_FT_ALL = 0xff;
@@ -327,10 +329,10 @@ namespace owl
 
 	// Faktoren (Mit welcher Gewichtung die Features Einfluss auf die Bewertung haben 0.0 = 0% und 1.0 = 100%)
 	constexpr FLOAT MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT = 1.00f; // Materialwerte zu Spielphase (Faktor)
-	constexpr FLOAT PIECE_SQUARE_TABLE_WEIGHT = 1.00f; // Piece-Square-Tabelle (Faktor)
-	constexpr FLOAT PIECE_MOBILITY_WEIGHT = 1.00f; // Piece-Mobility (Faktor)
-	constexpr FLOAT BISHOP_PAIR_BONUS_WEIGHT = 1.00f; // Läuferpaar (Faktor)
-	constexpr FLOAT PAWN_STRUCTURE_WEIGHT = 1.00f; // Bauernstruktur (Faktor)
+	constexpr FLOAT PIECE_SQUARE_TABLE_WEIGHT = 0.50f; // Piece-Square-Tabelle (Faktor)
+	constexpr FLOAT PIECE_MOBILITY_WEIGHT = 0.50f; // Piece-Mobility (Faktor)
+	constexpr FLOAT BISHOP_PAIR_BONUS_WEIGHT = 0.50f; // Läuferpaar (Faktor)
+	constexpr FLOAT PAWN_STRUCTURE_WEIGHT = 0.25f; // Bauernstruktur (Faktor)
 
 
 	// Materialwert + Addition für die jeweilige Spielphase								//  P	   N	  B		 R		Q		K
@@ -509,6 +511,7 @@ namespace owl
 	constexpr FLOAT PIECE_SQUARE_TABLE_KING_END_GAME_WEIGHT = 1.0f;	// König-Tabellen-Endspiel-Gewicht (Faktor)
 
 	constexpr std::array<FLOAT, MAX_FIELDS_ON_BOARD> PIECE_SQUARE_TABLE_PAWN = {
+        // TODO: Tabelle nochmal ŸberprŸfen
 		0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f,
 		0.50f, 0.50f, 0.50f, 0.50f, 0.50f, 0.50f, 0.50f, 0.50f,
 		0.10f, 0.10f, 0.20f, 0.30f, 0.30f, 0.20f, 0.10f, 0.10f,
@@ -641,7 +644,7 @@ namespace owl
 
 	constexpr INT32 MOVE_DIR_KNIGHT[MAX_MOVES_PER_KNIGHT][VEC] = 
 	{ 
-		{-1,-2}, {2,-1}, {2,1}, {1,2}, {-1,2}, {-2,1}, {-2,-1}, {-1,-2} 
+		{-1,-2}, {2,-1}, {2,1}, {1,2}, {-1,2}, {-2,1}, {-2,-1}, {1,-2}
 	};
 	constexpr INT32 MOVE_DIR_KING[MAX_MOVES_PER_KING_WITHOUT_CASTLING][VEC] =
 	{
