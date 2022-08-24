@@ -325,11 +325,11 @@ namespace owl
 	}
 #endif
 	// Faktoren (Mit welcher Gewichtung die Features Einfluss auf die Bewertung haben 0.0 = 0% und 1.0 = 100%)
-	constexpr FLOAT MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT = 1.00f; // Materialwerte zu Spielphase (Faktor)
-	constexpr FLOAT PIECE_SQUARE_TABLE_WEIGHT = 0.5f; // Piece-Square-Tabelle (Faktor)
-	constexpr FLOAT PIECE_MOBILITY_WEIGHT = 0.50f; // Piece-Mobility (Faktor)
-	constexpr FLOAT BISHOP_PAIR_BONUS_WEIGHT = 0.50f; // Läuferpaar (Faktor)
-	constexpr FLOAT PAWN_STRUCTURE_WEIGHT = 0.25f; // Bauernstruktur (Faktor)
+	constexpr FLOAT MATERIAL_DYNAMIC_GAME_PHASE_WEIGHT	= 1.00f; // Materialwerte zu Spielphase (Faktor)
+	constexpr FLOAT PIECE_SQUARE_TABLE_WEIGHT			= 0.35f; // Piece-Square-Tabelle (Faktor)
+	constexpr FLOAT PIECE_MOBILITY_WEIGHT				= 0.50f; // Piece-Mobility (Faktor)
+	constexpr FLOAT BISHOP_PAIR_BONUS_WEIGHT			= 0.50f; // Läuferpaar (Faktor)
+	constexpr FLOAT PAWN_STRUCTURE_WEIGHT				= 0.1f; // Bauernstruktur (Faktor)
 
 	// Materialwert + Addition für die jeweilige Spielphase								//  P	   N	  B		 R		Q		K
 	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_VALUES						= { 1.00f, 3.00f, 3.00f, 5.00f, 9.00f,	0.00f }; // Materialwert
@@ -339,6 +339,7 @@ namespace owl
 
 	// Spielphase Material Balance
 	constexpr std::array<INT32, MAX_PIECE_TYPES> START_PIECE_COUNT = { 8,	   2,	  2,	 2,		1,		1 }; // Anzahl der Figuren beim Start (Für 100% Materialwertberechnung)
+
 
 	constexpr FLOAT GET_MAX_MATERIAL_SUM(FLOAT ratio) {
 		auto value = 0.0f;
@@ -471,12 +472,12 @@ namespace owl
 	constexpr FLOAT BISHOP_PAIR_BONUS = 0.50f; // Läuferpaar-Bonus
 
 	// Figurenbewegung (Gewichtung)
-	constexpr FLOAT PIECE_MOBILITY_PAWN_WEIGHT = 0.10f; // Bauern-Figurbewegung (Faktor)
-	constexpr FLOAT PIECE_MOBILITY_KNIGHT_WEIGHT = 0.10f; // Springer-Figurenbewegung (Faktor)
-	constexpr FLOAT PIECE_MOBILITY_BISHOP_WEIGHT = 0.10f; // Läufer-Figurenbewegung (Faktor)
-	constexpr FLOAT PIECE_MOBILITY_ROOK_WEIGHT = 0.10f; // Turm-Figurenbewegung (Faktor)
-	constexpr FLOAT PIECE_MOBILITY_QUEEN_WEIGHT = 0.10f; // Dame-Figurenbewegung (Faktor)
-	constexpr FLOAT PIECE_MOBILITY_KING_WEIGHT = 0.10f; // König-Figurenbewegung (Faktor)
+	constexpr FLOAT PIECE_MOBILITY_PAWN_WEIGHT		= 0.10f; // Bauern-Figurbewegung (Faktor)
+	constexpr FLOAT PIECE_MOBILITY_KNIGHT_WEIGHT	= 0.10f; // Springer-Figurenbewegung (Faktor)
+	constexpr FLOAT PIECE_MOBILITY_BISHOP_WEIGHT	= 0.10f; // Läufer-Figurenbewegung (Faktor)
+	constexpr FLOAT PIECE_MOBILITY_ROOK_WEIGHT		= 0.10f; // Turm-Figurenbewegung (Faktor)
+	constexpr FLOAT PIECE_MOBILITY_QUEEN_WEIGHT		= 0.10f; // Dame-Figurenbewegung (Faktor)
+	constexpr FLOAT PIECE_MOBILITY_KING_WEIGHT		= 0.10f; // König-Figurenbewegung (Faktor)
 
 	// Zusätzliche Dynamische Bauerngewichtung
 	constexpr INT32 MAX_DYNAMIC_PAWNS = MAX_PAWN_COUNT; // Anzahl der möglichen Bauern für die Dynamik
@@ -636,6 +637,9 @@ namespace owl
 	constexpr INT32 VEC = 2;
 	constexpr INT32 FIRST = 0;
 	constexpr INT32 SECOND = 1;
+
+	constexpr INT32 ONE_FIELD_DOWN = 1;
+	constexpr INT32 ONE_FIELD_UP = -1;
 
 	constexpr INT32 MOVE_DIR_KNIGHT[MAX_MOVES_PER_KNIGHT][VEC] = 
 	{ 

@@ -46,8 +46,7 @@ namespace owl
 
 		INT32 getPlayer() const;
 	private:
-		EVALUATION_VALUE minMax(Position& position, INT32 player, INT32 depth);
-		EVALUATION_VALUE alphaBeta(Position& position, INT32 player,
+		EVALUATION_VALUE minMax(Position& position, INT32 player,
 			INT32 depth, FLOAT alpha, FLOAT beta, 
 			UCHAR parameterFlags, KILLER_LIST* killerList = nullptr);
 	public:

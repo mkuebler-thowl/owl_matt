@@ -94,7 +94,6 @@ namespace owl
 		if (move.enPassantCapture && (move.targetY == EN_PASSANT_WHITE_Y || move.targetY == EN_PASSANT_BLACK_Y))
 		{
 			m_data[move.startY][move.targetX] = EMPTY_FIELD;
-
 		}
 
 		if (move_data.piece != WHITE_PAWN && move_data.piece != BLACK_PAWN && !move.capture) addPlyCount();
@@ -107,9 +106,10 @@ namespace owl
 		// En Passant aktiv? zurücksetzen;
 		if (isEnPassant())
 		{
-			resetEnPassant();
 			move_data.enPassantFlag = true;
 			move_data.enPassantPos = m_enPassantPosition;
+			resetEnPassant();
+
 		}
 		else
 		{
@@ -149,12 +149,12 @@ namespace owl
 		else if (move_data.piece == BLACK_ROOK && move.startX == FIRST_COLUMN_INDEX)
 		{
 			resetBlackCastlingLong();
-			checkFirstMovement(HAS_BLACK_ROOK_R_MOVED_BIT, move_data.movedFirstTimeFlag);
+			checkFirstMovement(HAS_BLACK_ROOK_L_MOVED_BIT, move_data.movedFirstTimeFlag);
 		}
 		else if (move_data.piece == BLACK_ROOK && move.startX == LAST_COLUMN_INDEX)
 		{
 			resetBlackCastlingShort();
-			checkFirstMovement(HAS_BLACK_ROOK_L_MOVED_BIT, move_data.movedFirstTimeFlag);
+			checkFirstMovement(HAS_BLACK_ROOK_R_MOVED_BIT, move_data.movedFirstTimeFlag);
 		}
 		else if (move_data.piece == WHITE_ROOK && move.startX == FIRST_COLUMN_INDEX)
 		{
@@ -258,7 +258,14 @@ namespace owl
 		// Wurde vorher ein En Passant Capture gespielt? (Setze den Bauer wieder zurück)
 		if (last_move_data.move.enPassantCapture)
 		{
-			m_data[last_move_data.enPassantPos.second][last_move_data.enPassantPos.first] = last_move_data.piece == WHITE_PAWN ? BLACK_PAWN : WHITE_PAWN;
+			if (last_move_data.piece == WHITE_PAWN)
+			{
+				m_data[last_move_data.enPassantPos.second+ONE_FIELD_DOWN][last_move_data.enPassantPos.first] = BLACK_PAWN;
+			}
+			else
+			{
+				m_data[last_move_data.enPassantPos.second+ONE_FIELD_UP][last_move_data.enPassantPos.first] = WHITE_PAWN;
+			}
 		}
 
 		// lange Rochade durchgeführt? 

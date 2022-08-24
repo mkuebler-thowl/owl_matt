@@ -11,10 +11,6 @@ project "chess_engine"
    targetdir "bin/%{cfg.buildcfg}"
    objdir "bin-int/%{cfg.buildcfg}"
 
-   buildoptions {
-
-   }
-
    files { 
       "%{prj.name}/src/**.hpp",
       "%{prj.name}/src/**.cpp",
@@ -32,35 +28,6 @@ project "chess_engine"
       defines { "NDEBUG" }
       optimize "On"
    
-   filter { "platforms:Win64 "}
-      system "Windows"
-      architecture "x86_64"
-
-project "benchmark"
-   location "benchmark"
-   kind "ConsoleApp"
-   language "C++"
-   cppdialect "C++17"
-   targetdir "bin/%{cfg.buildcfg}"
-   objdir "bin-int/%{cfg.buildcfg}"
-
-   buildoptions {
-
-   }
-
-   files {
-      "%{prj.name}/src/**.hpp",
-      "%{prj.name}/src/**.cpp"
-   }
-
-   filter "configurations:Debug"
-   defines { "DEBUG" }
-   symbols "On"
-
-   filter "configurations:Release"
-      defines { "NDEBUG" }
-      optimize "On"
-
    filter { "platforms:Win64 "}
       system "Windows"
       architecture "x86_64"

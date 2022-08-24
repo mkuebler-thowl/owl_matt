@@ -35,24 +35,24 @@ namespace owl
 					switch (piece_type)
 					{
 					case PAWN_INDEX: {
-						getValidPawnMoves(position, x, y, player);
+						getValidPawnMoves(position, x, y, player, false);
 						break; }
 					case KNIGHT_INDEX: {
-						getValidKnightMoves(position, x, y, player);
+						getValidKnightMoves(position, x, y, player, false);
 						break; }
 					case KING_INDEX: {
-						getValidKingMoves(position, x, y, player);
+						getValidKingMoves(position, x, y, player, false);
 						
 						break; }
 					case ROOK_INDEX: {
-						getValidRookMoves(position, x, y, player);
+						getValidRookMoves(position, x, y, player, false);
 						break; }
 					case BISHOP_INDEX: {
-						getValidBishopMoves(position, x, y, player);
+						getValidBishopMoves(position, x, y, player, false);
 						break; }
 					case QUEEN_INDEX: {
-						getValidRookMoves(position, x, y, player);
-						getValidBishopMoves(position, x, y, player);
+						getValidRookMoves(position, x, y, player, false);
+						getValidBishopMoves(position, x, y, player, false);
 						break; }
 					}
 				}
@@ -87,7 +87,7 @@ namespace owl
 		case BLACK_KING: getValidKingMoves(position, x, y, PLAYER_BLACK, noKingCheck); break;
 		}
         
-		return s_data.size();
+		return static_cast<INT32>(s_data.size());
 	}
 
 	BOOL ChessValidation::isKingInCheckAfterMove(Position& position, INT32 player, const Move& move, BOOL noKingCheck)
@@ -95,7 +95,7 @@ namespace owl
 		if (noKingCheck) return false;
 
 		position.applyMove(move);
-		auto value = isKingInCheck(position, player);
+		auto value = isKingInCheck(position, player, noKingCheck);
 		position.undoLastMove();
 
 		return value;
@@ -595,8 +595,6 @@ namespace owl
 		for (auto direction : MOVE_DIR_ROOK)
 		{
 			continueValidMovesOnLine(position, x, y, enemies, direction[FIRST], direction[SECOND], noKingCheck);
-			//moves.insert(moves.end(), tmp.begin(), tmp.end());
-			//std::move(tmp.begin(), tmp.end(), std::back_inserter(moves));
 		}
 
 		return;
@@ -612,8 +610,6 @@ namespace owl
 		for (auto direction : MOVE_DIR_BISHOP)
 		{
 			continueValidMovesOnLine(position, x, y, enemies, direction[FIRST], direction[SECOND], noKingCheck);
-			//moves.insert(moves.end(), tmp.begin(), tmp.end());
-			//std::move(tmp.begin(), tmp.end(), std::back_inserter(moves));
 		}
 
 		return;
@@ -623,8 +619,6 @@ namespace owl
 	{
         if (noKingCheck) return;
         
-		//MOVE_LIST moves;
-		//moves.reserve(MAX_LINE_LENGTH);
 		BOOL line_empty = true;
         BOOL add_move = false;
 
@@ -643,7 +637,7 @@ namespace owl
                 if (place == EMPTY_FIELD) {
                     line_empty = true;
                     if (capture) {
-                        // UngŸltig
+                        // Ungültig
                         add_move = false;
                     } else {
                         // Zug auf leeres Feld
@@ -673,7 +667,7 @@ namespace owl
                     if (!isKingInCheckAfterMove(position, position.getPlayer(), move, noKingCheck))
                         s_data.emplace_back(move);
                     
-                    // ZurŸcksetzen
+                    // Zurücksetzen
                     add_move = false;
                 }
 			}

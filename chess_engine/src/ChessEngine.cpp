@@ -41,10 +41,7 @@ namespace owl
 		{
 			m_result.insert(INVALID_MOVE, ChessEvaluation::evaluate(m_position, player, EVAL_FT_STANDARD, true));
 		}
-		// Führe MinMax aus:
-		else if (parameterFlags == FT_NULL) minMax(m_position, m_player, depth);
-		// Führe Alpha-Beta aus
-		else alphaBeta(m_position, m_player, depth, -INF, INF, 
+		else minMax(m_position, m_player, depth, -INF, INF, 
 			parameterFlags,	// Parameter-Flags
 			parameterFlags & FT_SRT_KILLER ? &killer_list : nullptr // Killer-Liste
 		);
@@ -120,57 +117,7 @@ namespace owl
 		return m_position;
 	}
 
-    // TODO: Funktioniert aktuell noch nicht
-	EVALUATION_VALUE ChessEngine::minMax(Position& position, INT32 player, INT32 depth)
-	{
-		if (m_stop) return -INF;
-
-		auto value = -player * INF;
-
-		if (depth == 0)
-		{
-			return ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD);
-		}
-
-		auto moves = ChessValidation::getValidMoves(position, player);
-
-		if (moves.empty())
-		{
-			return ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD);
-		}
-		else if (moves.size() == 1 && depth == m_startedDepth)
-		{
-			return ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD);
-		}
-
-		for (auto &move : moves)
-		{
-			position.applyMove(move);
-
-			auto new_value = minMax(position, -player, depth - 1);
-
-			position.undoLastMove();
-
-			if (new_value > value && player == m_player 
-				|| new_value < value && player != m_player)
-			{
-				value = new_value;
-				if (depth == m_startedDepth) {
-					m_result.insert(move, value);
-				}
-			}
-			else if (new_value == value && m_result.empty())
-			{
-				if (depth == m_startedDepth) {
-					m_result.insert(move, value);
-				}
-			}
-		}
-
-		return value;
-	}
-
-	EVALUATION_VALUE ChessEngine::alphaBeta(Position& position, INT32 player, INT32 depth, FLOAT alpha, FLOAT beta, UCHAR parameterFlags, KILLER_LIST* killerList)
+	EVALUATION_VALUE ChessEngine::minMax(Position& position, INT32 player, INT32 depth, FLOAT alpha, FLOAT beta, UCHAR parameterFlags, KILLER_LIST* killerList)
 	{		
 		if (m_stop)
 		{
@@ -204,11 +151,11 @@ namespace owl
 			FLOAT new_alpha = player == m_player ? static_cast<FLOAT>(value) : alpha;
 			FLOAT new_beta = player == m_player ? beta : static_cast<FLOAT>(value);
 
-			EVALUATION_VALUE new_value = alphaBeta(position, -player, depth - 1, new_alpha, new_beta, parameterFlags, killerList);
+			EVALUATION_VALUE new_value = minMax(position, -player, depth - 1, new_alpha, new_beta, parameterFlags, killerList);
 
 			position.undoLastMove();
 
-			if (player == m_player && new_value >= static_cast<FLOAT>(value)-RANDOM_THRESHOLD)
+			if (player == m_player && new_value > static_cast<FLOAT>(value)-RANDOM_THRESHOLD)
 			{
             #if OWL_LOG_MOVE_STACK==true
                 if (depth == 1)
@@ -242,13 +189,13 @@ namespace owl
 					m_result.insert(move, value);
 				}
 
-				if (static_cast<FLOAT>(value)-RANDOM_THRESHOLD >= beta)
+				if (parameterFlags & FT_ALPHA_BETA && static_cast<FLOAT>(value)-RANDOM_THRESHOLD >= beta)
 				{
 					insertKiller(killerList, move, depth);
 					break; 
 				}
 			}
-			else if (player != m_player && new_value <= static_cast<FLOAT>(value)+RANDOM_THRESHOLD)
+			else if (player != m_player && new_value < static_cast<FLOAT>(value)+RANDOM_THRESHOLD)
 			{
             #if OWL_LOG_MOVE_STACK==true
                 if (depth == 1)
@@ -284,7 +231,7 @@ namespace owl
 					m_result.insert(move, value);
 				}
 
-				if (static_cast<FLOAT>(value)+RANDOM_THRESHOLD <= alpha)
+				if (parameterFlags & FT_ALPHA_BETA && static_cast<FLOAT>(value)+RANDOM_THRESHOLD <= alpha)
 				{
 					insertKiller(killerList, move, depth);
 					break;
@@ -341,6 +288,9 @@ namespace owl
 
 				return left_move_value > right_move_value;
 			}
+
+			// Unterdrückung der Warnung: Wenn alles klappt, wird 'return true' gar nicht erst erreicht
+			return true; 
 		});
 	}
 
