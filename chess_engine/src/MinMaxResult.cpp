@@ -5,16 +5,16 @@
 
 namespace owl
 {
-	VOID MinMaxResult::insert(const Move& move, const EVALUATION_VALUE value) const
+	VOID MinMaxResult::insert(const Move& move, const EVALUATION_VALUE value, BOOL shouldMax) const
 	{
-		updateCurrentValue(value);
+		updateCurrentValue(value, shouldMax);
 	#if OWL_USE_RANDOM==true
 		m_result.emplace(move, value);
 		
 		// Lösche Züge, die kleiner sind als (Bester Zug-Threshold):
 		for (auto it = m_result.begin(); it != m_result.end();)
 		{
-			if (it->second < static_cast<FLOAT>(m_currentBestValue) - RANDOM_THRESHOLD)
+			if (it->second < static_cast<FLOAT>(m_currentBestValue) - RANDOM_THRESHOLD || it->second > m_currentBestValue)
 			{
 				it = m_result.erase(it);
 			}
@@ -54,9 +54,19 @@ namespace owl
 	#endif
 	}
 
-	void MinMaxResult::updateCurrentValue(const EVALUATION_VALUE newValue) const
+	void MinMaxResult::updateCurrentValue(const EVALUATION_VALUE newValue, BOOL shouldMax) const
 	{
-		m_currentBestValue = newValue;
+		if (shouldMax)
+		{
+			m_currentBestValue = std::max(m_currentBestValue, newValue);
+		}
+		else {
+			m_currentBestValue = std::min(m_currentBestValue, newValue);
+		}
+	}
+	const MoveMap MinMaxResult::testGetResults() const
+	{
+		return m_result;
 	}
 }
 

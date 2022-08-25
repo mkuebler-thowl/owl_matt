@@ -14,14 +14,18 @@ namespace owl
 	class MinMaxResult
 	{
 	public:
-		VOID insert(const Move& move, const EVALUATION_VALUE value) const;
+		VOID insert(const Move& move, const EVALUATION_VALUE value, BOOL shouldMax) const;
 		std::pair<Move, EVALUATION_VALUE> getResult() const;
 		BOOL empty() const;
+		
 	private:
-		void updateCurrentValue(const EVALUATION_VALUE newValue) const;
+		void updateCurrentValue(const EVALUATION_VALUE newValue, BOOL shouldMax) const;
 		mutable EVALUATION_VALUE m_currentBestValue = -INF;
 #if OWL_USE_RANDOM==true
+	private:
 		mutable MoveMap m_result;
+	public:
+		const MoveMap testGetResults() const;
 #else
 		mutable Move m_best;
 #endif

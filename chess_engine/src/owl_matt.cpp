@@ -6,5 +6,5 @@
 
 auto main() -> owl::INT32
 {
-	owl::test::EvaluationTest::deltaPhiCut();
+	owl::test::EvaluationTest::randomMovesPerK();
 }

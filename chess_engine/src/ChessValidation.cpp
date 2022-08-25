@@ -112,7 +112,6 @@ namespace owl
 		if (checkKingAxis(king_x, king_y, position, player)) return true;
 		if (checkKingDiagonal(king_x, king_y, position, player)) return true;
 		if (checkKingKnights(king_x, king_y, position, player)) return true;
-
 		return false;
 	}
 
@@ -132,6 +131,7 @@ namespace owl
 	{
 		CHAR enemy_queen = player == PLAYER_WHITE ? BLACK_QUEEN : WHITE_QUEEN;
 		CHAR enemy_bishop = player == PLAYER_WHITE ? BLACK_BISHOP : WHITE_BISHOP;
+		CHAR enemy_king = player == PLAYER_WHITE ? BLACK_KING : WHITE_KING;
 
 		INT32 min = std::min<INT32>(king_x, king_y);
 		// diagonal links oben:
@@ -141,6 +141,7 @@ namespace owl
 			{
 				auto place = position[king_y - i][king_x - i];
 				if (place == enemy_queen || place == enemy_bishop) return true;
+				if (place == enemy_king && abs(i - king_x) <= 1 && abs(i - king_y)) return true;
 				else if (place != EMPTY_FIELD) break;
 			}
 		}
@@ -152,6 +153,7 @@ namespace owl
 			{
 				auto place = position[king_y + i][king_x + i];
 				if (place == enemy_queen || place == enemy_bishop) return true;
+				if (place == enemy_king && abs(i - king_x) <= 1 && abs(i - king_y)) return true;
 				if (place != EMPTY_FIELD) break;
 			}
 		}
@@ -163,6 +165,7 @@ namespace owl
 			{
 				auto place = position[king_y - i][king_x + i];
 				if (place == enemy_queen || place == enemy_bishop) return true;
+				if (place == enemy_king && abs(i - king_x) <= 1 && abs(i - king_y)) return true;
 				if (place != EMPTY_FIELD) break;
 			}
 		}
@@ -174,6 +177,7 @@ namespace owl
 			{
 				auto place = position[king_y + i][king_x - i];
 				if (place == enemy_queen || place == enemy_bishop) return true;
+				if (place == enemy_king && abs(i - king_x) <= 1 && abs(i - king_y)) return true;
 				if (place != EMPTY_FIELD) break;
 			}
 		}
@@ -186,6 +190,7 @@ namespace owl
 
 		CHAR enemy_queen = PIECES[enemy_player_index][QUEEN_INDEX];
 		CHAR enemy_rook = PIECES[enemy_player_index][ROOK_INDEX];
+		CHAR enemy_king = PIECES[enemy_player_index][KING_INDEX];
 
 		// horizontal:
 		// links vom König:
@@ -195,6 +200,7 @@ namespace owl
 			{
 				auto place = position[king_y][x];
 				if (place == enemy_queen || place == enemy_rook) return true;
+				if (place == enemy_king && abs(x-king_x) <= 1) return true;
 				if (place != EMPTY_FIELD) break;
 			}
 		}
@@ -205,6 +211,7 @@ namespace owl
 			{
 				auto place = position[king_y][x];
 				if (place == enemy_queen || place == enemy_rook) return true;
+				if (place == enemy_king && abs(x-king_x) <= 1) return true;
 				if (place != EMPTY_FIELD) break;
 			}
 		}
@@ -217,6 +224,7 @@ namespace owl
 			{
 				auto place = position[y][king_x];
 				if (place == enemy_queen || place == enemy_rook) return true;
+				if (place == enemy_king && abs(y-king_y) <= 1) return true;
 				if (place != EMPTY_FIELD) break;
 			}
 		}
@@ -227,6 +235,7 @@ namespace owl
 			{
 				auto place = position[y][king_x];
 				if (place == enemy_queen || place == enemy_rook) return true;
+				if (place == enemy_king && abs(y-king_y) <= 1) return true;
 				if (place != EMPTY_FIELD) break;
 			}
 		}
@@ -479,12 +488,7 @@ namespace owl
 	}
 
 	VOID ChessValidation::getValidKingMoves(Position& position, INT32 x, INT32 y, INT32 player, BOOL noKingCheck)
-	{
-		//MOVE_LIST moves;
-		//moves.reserve(MAX_MOVES_PER_KING);
-
-        // TODO: 4 FŠlle durchgehen
-        
+	{    
 		std::string enemies = getEnemyPiecesString(player);
 
 		for (auto pair : MOVE_DIR_KING)
@@ -555,7 +559,6 @@ namespace owl
 				&& position[FIRST_ROW_INDEX][5] == EMPTY_FIELD
 				&& position[FIRST_ROW_INDEX][6] == EMPTY_FIELD)
 			{
-
 				Move move;
 				move.startX = x;
 				move.startY = y;

@@ -6,6 +6,7 @@
 #include "../Position.hpp"
 #include "../ChessUtility.hpp"
 #include "../ChessEvaluation.hpp"
+#include "../ChessEngine.hpp"
 
 namespace owl
 {
@@ -209,16 +210,21 @@ namespace owl
 
 		struct EvaluationTest
 		{
+			friend class ChessEngine;
+			friend class MinMaxResult;
+
 			inline static void deltaPhiCut()
 			{
 				Position pos = ChessUtility::fenToPosition(STARTPOS_FEN);
 				std::vector<EVALUATION_VALUE> owl_phi_k;
-				size_t sf_count = sizeof(RESULT_STOCKFISH_PHI_K) / sizeof(double);
+				size_t sf_count = 39;
+				//size_t sf_count = sizeof(RESULT_STOCKFISH_PHI_K) / sizeof(double);
 
 
 				owl_phi_k.push_back(ChessEvaluation::evaluate(pos, PLAYER_WHITE, EVAL_FT_STANDARD, true));
 
 				double delta_phi_k = 0;
+				double varianz = 0;
 
 				for (int i = 0; i < sf_count-1; i++)
 				{
@@ -239,29 +245,70 @@ namespace owl
 				double errors = 0.0;
 				for (int i = 0; i < sf_count; i++)
 				{					
+					auto a = static_cast<double>(owl_phi_k[i].score);
+					auto b = RESULT_STOCKFISH_PHI_K[i];
 
+					std::cout << i << "\t" << a << "\t" << b << "\t" << (a-b) << "\n";
 
 					if (RESULT_STOCKFISH_PHI_K[i] == ERROR_VAL) 
 					{
 						errors++; 
-						std::cout << " [Stockfish-Check-No-Eval -> Skip Move]\n";
 						continue;
 					}
 
-					auto a = static_cast<double>(owl_phi_k[i].score);
-					auto b = RESULT_STOCKFISH_PHI_K[i];
-					
-					std::cout << "[" << a << " - " << b << " = " << (a - b) << " (abs " << abs(a - b) << ")] ";
-					std::string fen = std::string(*(MASTER_GAME_FENS.begin() + i));
-					std::cout << " [FEN: " << fen << "]\n";
-
 					delta_phi_k += abs(a - b);
+					varianz += pow(a - b, 2);
 				}
 				std::cout << "delta-phi-cut = " << delta_phi_k << "/ (" << sf_count << "-" << errors << ")\n";
 
 				delta_phi_k = delta_phi_k / (static_cast<double>(sf_count)-errors);
 
-				std::cout << "delta-phi-cut = " << delta_phi_k << std::endl;
+				varianz = varianz / ((static_cast<double>(sf_count) - errors)-1);
+				auto standard_abw = sqrt(varianz);
+
+				std::cout << "delta-phi-cut = " << delta_phi_k << " +-" << standard_abw << std::endl;
+			}
+		
+			inline static void randomMovesPerK()
+			{
+				// unter defines.h: USE_RADOM = true, RANDOM_DELTA_PHI_CUT = 0.360322
+				size_t sf_count = sizeof(RESULT_STOCKFISH_PHI_K) / sizeof(double);
+
+				//std::cout << "x\tnrand\n";
+
+				// nur weiße Züge +2
+				for (int i = 78; i < sf_count; i += 2)
+				{
+					std::string fen = *(MASTER_GAME_FENS.begin() + i);
+					auto pos = ChessUtility::fenToPosition(fen);
+
+					auto engine = ChessEngine();
+					engine.setPosition(pos);
+					
+					engine.searchMove(PLAYER_WHITE, 4, FT_STANDARD);
+					auto minMaxresult = engine.m_result;
+					auto results = minMaxresult.testGetResults();
+
+					auto valid_moves = ChessValidation::getValidMoves(pos, PLAYER_WHITE);
+
+					//std::cout << valid_moves.size() << "\n";
+					std::cout << results.size() << "\n";
+
+					//pos.applyMove(ChessUtility::stringToMove(*(MASTER_GAME_MOVES_STR.begin() + i), &pos));
+					//pos.applyMove(ChessUtility::stringToMove(*(MASTER_GAME_MOVES_STR.begin() + i+1), &pos));
+				}
+			}
+		
+			inline static void checkValidMoves()
+			{
+				auto pos = ChessUtility::fenToPosition("7Q/5p1p/6p1/8/2p5/3r1PP1/7P/1K1k4 w - - 1 40");
+
+				auto moves = ChessValidation::getValidMoves(pos, PLAYER_WHITE);
+
+				for (auto mv : moves)
+				{
+					std::cout << ChessUtility::moveToString(mv) << std::endl;
+				}
 			}
 		};
 	}

@@ -196,5 +196,10 @@ namespace owl
 
 		/// Spielphase
 		mutable GamePhase m_gamePhase;
+
+#if DEBUG
+	public:
+		std::string M_FEN;
+#endif
 	};
 }

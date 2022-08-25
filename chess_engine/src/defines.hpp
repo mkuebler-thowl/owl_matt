@@ -5,9 +5,10 @@
 #include <iostream>
 #include <cstdint>
 
-#define OWL_USE_RANDOM false
+#define OWL_USE_RANDOM true
 #define OWL_USE_EVALUATION_COMPONENT_REPRESENTAION true
 #define OWL_LOG_MOVE_STACK false
+#define OWL_LOG_NO_INFO true
 
 namespace owl
 {
@@ -74,7 +75,7 @@ namespace owl
 
 	constexpr UCHAR FT_STANDARD = FT_ALPHA_BETA | FT_SRT_MATERIAL | FT_SRT_MVV_LVA | FT_SRT_KILLER; // OWL-Matt Standard Features
 
-	constexpr FLOAT RANDOM_DELTA_PHI_CUT = 0.5f;
+	constexpr FLOAT RANDOM_DELTA_PHI_CUT = 1.0f * 0.360322f;
 	constexpr FLOAT RANDOM_THRESHOLD = OWL_USE_RANDOM==false ? 0 : RANDOM_DELTA_PHI_CUT; // Standardabweichung für alle Züge mit relativen Abstand zum besten gefunden Zug (Delta-Phi-Cut)
 	
 	// Spieler
@@ -329,7 +330,7 @@ namespace owl
 	constexpr FLOAT PIECE_SQUARE_TABLE_WEIGHT			= 0.35f; // Piece-Square-Tabelle (Faktor)
 	constexpr FLOAT PIECE_MOBILITY_WEIGHT				= 0.50f; // Piece-Mobility (Faktor)
 	constexpr FLOAT BISHOP_PAIR_BONUS_WEIGHT			= 0.50f; // Läuferpaar (Faktor)
-	constexpr FLOAT PAWN_STRUCTURE_WEIGHT				= 0.1f; // Bauernstruktur (Faktor)
+	constexpr FLOAT PAWN_STRUCTURE_WEIGHT				= 1.00f; // Bauernstruktur (Faktor)
 
 	// Materialwert + Addition für die jeweilige Spielphase								//  P	   N	  B		 R		Q		K
 	constexpr std::array<FLOAT, MAX_PIECE_TYPES> MATERIAL_VALUES						= { 1.00f, 3.00f, 3.00f, 5.00f, 9.00f,	0.00f }; // Materialwert

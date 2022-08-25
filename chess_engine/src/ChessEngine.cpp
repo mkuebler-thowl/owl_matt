@@ -39,7 +39,7 @@ namespace owl
 		// Wenn Tiefe = 0: einfach die Position direkt evaluieren
 		if (depth == 0)
 		{
-			m_result.insert(INVALID_MOVE, ChessEvaluation::evaluate(m_position, player, EVAL_FT_STANDARD, true));
+			m_result.insert(INVALID_MOVE, ChessEvaluation::evaluate(m_position, player, EVAL_FT_STANDARD, true), player == m_player);
 		}
 		else minMax(m_position, m_player, depth, -INF, INF, 
 			parameterFlags,	// Parameter-Flags
@@ -47,8 +47,9 @@ namespace owl
 		);
 		auto time_end = std::chrono::steady_clock::now();
 
+#if OWL_LOG_NO_INFO==false
 		std::cout << "info searchtime " << (std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start).count()) << " ms" << std::endl;
-
+#endif
 		m_mutex.lock();
 
 		m_ready = true;
@@ -186,13 +187,18 @@ namespace owl
 				if (new_value > value) value = new_value;
                 
 				if (depth == m_startedDepth) {
-					m_result.insert(move, value);
-				}
+					m_result.insert(move, new_value, true);
 
-				if (parameterFlags & FT_ALPHA_BETA && static_cast<FLOAT>(value)-RANDOM_THRESHOLD >= beta)
+					if (parameterFlags & FT_ALPHA_BETA && static_cast<FLOAT>(value) - RANDOM_THRESHOLD >= beta)
+					{
+						insertKiller(killerList, move, depth);
+						break;
+					}
+				}
+				else if (parameterFlags & FT_ALPHA_BETA && static_cast<FLOAT>(value) >= beta)
 				{
 					insertKiller(killerList, move, depth);
-					break; 
+					break;
 				}
 			}
 			else if (player != m_player && new_value < static_cast<FLOAT>(value)+RANDOM_THRESHOLD)
@@ -224,14 +230,17 @@ namespace owl
                 }
             #endif
 				if (new_value < value) value = new_value;
-				
-				value = new_value;
                 
 				if (depth == m_startedDepth) {
-					m_result.insert(move, value);
-				}
+					m_result.insert(move, new_value, false);
 
-				if (parameterFlags & FT_ALPHA_BETA && static_cast<FLOAT>(value)+RANDOM_THRESHOLD <= alpha)
+					if (parameterFlags & FT_ALPHA_BETA && static_cast<FLOAT>(value) + RANDOM_THRESHOLD <= alpha)
+					{
+						insertKiller(killerList, move, depth);
+						break;
+					}
+				}
+				else if (parameterFlags & FT_ALPHA_BETA && static_cast<FLOAT>(value) <= alpha)
 				{
 					insertKiller(killerList, move, depth);
 					break;
