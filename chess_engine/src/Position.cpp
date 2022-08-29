@@ -56,6 +56,10 @@ namespace owl
 		m_moveDataStack.push({ Move{}, EMPTY_FIELD, EMPTY_FIELD, false, m_enPassantPosition, {false,0}, m_movedFirstTime });
 
 		calculateKingPositions();
+
+#if DEBUG
+		M_FEN = ChessUtility::positionToFen(*this);
+#endif
 	}
 
 	owl::BOARD_LINE& Position::operator[](INT32 index) const
@@ -176,6 +180,10 @@ namespace owl
 		changePlayer();
 
 		m_moveDataStack.push(move_data);
+
+#if DEBUG
+		M_FEN = ChessUtility::positionToFen(*this);
+#endif
 	}
 
 	VOID Position::undoLastMove()
@@ -307,6 +315,10 @@ namespace owl
 
 		// Zug vom Stack entfernen
 		m_moveDataStack.pop();
+
+#if DEBUG
+		M_FEN = ChessUtility::positionToFen(*this);
+#endif
 	}
 
 	VOID Position::setEnPassant(INT32 x, INT32 y)
@@ -448,9 +460,9 @@ namespace owl
 		auto white_king_already_found = false;
 		// Suche schwarzen König von oben nach unten:
 		// Gegebenfalls betrachten ob weißer König höher steht als schwarzer König
-		for (auto y = FIRST_ROW_INDEX; y < LAST_ROW_INDEX; y++)
+		for (auto y = FIRST_ROW_INDEX; y < ROWS; y++)
 		{
-			for (auto x = FIRST_COLUMN_INDEX; x < LAST_COLUMN_INDEX; x++)
+			for (auto x = FIRST_COLUMN_INDEX; x < COLUMNS; x++)
 			{
 				auto piece = m_data[y][x];
 
@@ -470,9 +482,9 @@ namespace owl
 		if (white_king_already_found) return;
 
 		// Suche weißen König von unten nach oben - sofern noch nicht gefunden
-		for (auto y = LAST_ROW_INDEX; y > FIRST_ROW_INDEX; y--)
+		for (auto y = LAST_ROW_INDEX; y > ROWS; y--)
 		{
-			for (auto x = FIRST_COLUMN_INDEX; x < LAST_COLUMN_INDEX; x++)
+			for (auto x = FIRST_COLUMN_INDEX; x < COLUMNS; x++)
 			{
 				auto piece = m_data[y][x];
 				

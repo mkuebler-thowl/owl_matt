@@ -5,40 +5,25 @@
 
 namespace owl
 {
-
-	/// Datenstruktur zur Information eines Spielzugs, der auf eine Spielstellung ausgeführt werden kann.
+	/**
+	 * Datenstruktur zur Information eines Spielzugs, der auf eine Spielstellung ausgeführt werden kann.
+	 */
 	struct Move
 	{
-		/// Startfeld (Spalte)
-		INT32 startX = 0;
-		/// Startfeld (Reihe)
-		INT32 startY = 0;
+		INT32 startX = 0;		// Startfeld (Spalte)
+		INT32 startY = 0;		// Startfeld (Reihe)
+		INT32 targetX = 0;		// Zielfeld (Spalte)
+		INT32 targetY = 0;		// Zielfeld (Reihe)
 
-		/// Zielfeld (Spalte)
-		INT32 targetX = 0;
-		/// Zielfeld (Reihe)
-		INT32 targetY = 0;
+		BOOL capture = false;	// Figure geschlagen
+		CHAR promotion = 0;		// Bauernumwandlung
+		BOOL enPassantCapture = false;// Figure durch EnPassant geschlagen?
+		BOOL castlingLong = false; // Ist der Zug eine lange Rochade?
+		BOOL castlingShort = false;// Ist der Zug eine kurze Rochade?
 
-		/// Figure geschlagen
-		BOOL capture = false;
-		/// Bauernumwandlung
-		CHAR promotion = 0;
-
-		/// <summary>
-		/// Figure durch EnPassant geschlagen?
-		/// </summary>
-		BOOL enPassantCapture = false;
-		
-		/// <summary>
-		/// Ist der Zug eine lange Rochade?
-		/// </summary>
-		BOOL castlingLong = false;
-
-		/// <summary>
-		/// Ist der Zug eine kurze Rochade?
-		/// </summary>
-		BOOL castlingShort = false;
-
+		/**
+		 * Print-Funktion zur Ausgabe der Attribute.
+		 */
 		VOID print() const
 		{
 			std::cout << "{ start: " << startX << ", " << startY
@@ -51,7 +36,12 @@ namespace owl
 				<< "}\n";
 		}
 
-		/// Ist der Zug an der gleichen Stelle?
+		/**
+		 * Ist der Zug an der gleichen Stelle?
+		 * 
+		 * \param other Zug der verglichen werden soll
+		 * \return gleicher Zug?
+		 */
 		constexpr BOOL operator==(const Move& other) const
 		{
 			return startX == other.startX 
@@ -60,20 +50,39 @@ namespace owl
 				&& targetY == other.targetY;
 		}
 
-		/// Ist der Zug nicht an der gleichen Stelle?
+		/**
+		 * Ist der Zug nicht an der gleichen Stelle?
+		 *
+		 * \param other Zug der verglichen werden soll
+		 * \return !(gleicher Zug)
+		 */
 		constexpr BOOL operator!=(const Move& other) const
 		{
 			return !(operator==(other));
 		}
 
-		BOOL isMoveInvalid()
+		/**
+		 * Ist der Zug illegal?.
+		 * 
+		 * \return Ist der Zug illegal?
+		 */
+		BOOL isMoveInvalid() const
 		{
 			return startX == targetX
 				&& startY == targetY;
 		}
 
+		/**
+		 * Hashfunktions-Struct. Zur Verwendung der std::unordered_map<Move,...>
+		 */
 		struct HashFunction
 		{
+			/**
+			 * Die Hash-Operation zur Unterscheidung der Züge innerhalb der std::unordered_map<Move,...>
+			 * 
+			 * \param move Der Zug der gehasht werden soll
+			 * \return Der Hashwert
+			 */
 			UINT64 operator()(const Move& move) const
 			{
 				UINT64 s_x = std::hash<INT32>()(move.startX);
@@ -85,5 +94,5 @@ namespace owl
 		};
 	};
 
-	constexpr Move INVALID_MOVE = { 0,0,0,0 };
+	constexpr Move INVALID_MOVE = { 0,0,0,0 }; // Initialzug (Illegal)
 }

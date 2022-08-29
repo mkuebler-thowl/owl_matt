@@ -131,11 +131,13 @@ namespace owl {
         // Spieler
         out += pos.getPlayer() == PLAYER_WHITE ? "w " : "b ";
 
+        auto possible_castling = false;
         // Rochade
-        if (pos.getWhiteCastlingShort())    out += "K";
-        if (pos.getWhiteCastlingLong())     out += "Q";
-        if (pos.getBlackCastlingShort())    out += "k";
-        if (pos.getBlackCastlingLong())     out += "q";
+        if (pos.getWhiteCastlingShort())   { out += "K"; possible_castling = true; }
+        if (pos.getWhiteCastlingLong())    { out += "Q"; possible_castling = true; }
+        if (pos.getBlackCastlingShort())   { out += "k"; possible_castling = true; }
+        if (pos.getBlackCastlingLong())    { out += "q"; possible_castling = true; }
+        if (!possible_castling) out += "-";
         out += " ";
 
         // En Passant

@@ -5,9 +5,8 @@
 namespace owl
 {
     /**
-         * @brief List of regular expressions for validating and filtering uci commands
-         *
-         */
+     * Regex-Liste zur Filterung der UCI-Befehle.
+     */
     const std::array<const std::string, 13U> COMMAND_VALIDATION_MAP = {
         "^uci$",
         "^debug (on|off)$",
@@ -23,13 +22,6 @@ namespace owl
         "^getvalidmoves$",
         "^ucinewgame$"
     };
-
-    /**
-     * @brief construct a Command from a string using the uci standard
-     *
-     * @param command_str string in uci format
-     * @return Command
-     */
     Command CommandBuilder::build(const std::string& command_str)
     {
         std::smatch match;
