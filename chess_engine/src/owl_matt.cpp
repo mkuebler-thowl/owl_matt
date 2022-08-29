@@ -2,9 +2,10 @@
 
 #include "defines.hpp"
 
-#include "test/TestEvaluation.hpp"
+#include "UniversalChessInterface.hpp"
 
 auto main() -> owl::INT32
 {
-	owl::test::EvaluationTest::randomMovesPerK();
+	owl::UniversalChessInterface uci;
+	uci.start();
 }

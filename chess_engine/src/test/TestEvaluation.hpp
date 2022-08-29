@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <chrono>
 
 #include "../Position.hpp"
 #include "../ChessUtility.hpp"
@@ -61,7 +62,7 @@ namespace owl
 			"a4a7",				// 44. Qa7 1-0
 		};
 
-		constexpr double ERROR_VAL = 7777.0;
+		constexpr double ERROR_VAL = 7777.0; // Fehlerwert aus Stockfish (Konstante in Python-Skript für die Auswertung der Bewertungsfunktion)
 		constexpr double RESULT_STOCKFISH_PHI_K[] =
 		{
 			0.28,0.21,0.6,0.56,0.62,0.47,0.66,0.5,0.6,0.42,0.64,0.55,0.62,0.23,0.38,
@@ -71,7 +72,7 @@ namespace owl
 			2.42,1.68,1.45,1.12,1.77,1.33,1.75,0.65,-0.69,7777.0,2.53,7777.0,1.36,
 			7777.0,-0.11,7777.0,0.9,-0.2,-0.08,-1.68,-9.66,4.36,-0.97,0.71,3.37,
 			-0.01,1.07,7777.0,2.51,1.49,1.86,1.78,2.67,2.23,
-		};
+		}; // Ergebnisse der Stockfish-Bewertungsfunktion
 
 		constexpr auto MASTER_GAME_FENS = {
 			"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
@@ -206,13 +207,19 @@ namespace owl
 			"8/7p/6p1/5p2/Q4P2/2p3P1/3r3P/2K1k3 w - - 2 44",
 
 			"8/Q6p/6p1/5p2/5P2/2p3P1/3r3P/2K1k3 b - - 3 44"
-		};
+		}; // FEN-Strings der Großmeisterpartie Kasparov gegen Topalov 1999
 
+		/**
+		 * Test-Klasse für die Auswertung:
+		 */
 		struct EvaluationTest
 		{
 			friend class ChessEngine;
 			friend class MinMaxResult;
 
+			/**
+			 * Berechnung von Delta-Phi-Cut und Delta-Phi-Cut-mean.
+			 */
 			inline static void deltaPhiCut()
 			{
 				Position pos = ChessUtility::fenToPosition(STARTPOS_FEN);
@@ -220,13 +227,14 @@ namespace owl
 				size_t sf_count = 39;
 				//size_t sf_count = sizeof(RESULT_STOCKFISH_PHI_K) / sizeof(double);
 
-
 				owl_phi_k.push_back(ChessEvaluation::evaluate(pos, PLAYER_WHITE, EVAL_FT_STANDARD, true));
 
 				double delta_phi_k = 0;
 				double varianz = 0;
 
-				for (int i = 0; i < sf_count-1; i++)
+				const auto START = 0;
+
+				for (int i = START; i < sf_count-1; i++)
 				{
 					auto mvs = *(MASTER_GAME_MOVES_STR.begin() + i);
 					
@@ -243,12 +251,17 @@ namespace owl
 				}
 
 				double errors = 0.0;
-				for (int i = 0; i < sf_count; i++)
+				for (int i = START; i < sf_count; i++)
 				{					
 					auto a = static_cast<double>(owl_phi_k[i].score);
 					auto b = RESULT_STOCKFISH_PHI_K[i];
+					std::string b_str = b == ERROR_VAL ? "nan" : std::to_string(b);
 
-					std::cout << i << "\t" << a << "\t" << b << "\t" << (a-b) << "\n";
+					std::string a_str = b_str == "nan" ? "nan" : std::to_string(a);
+					std::string c_str = b_str == "nan" ? "nan" : std::to_string(abs(a-b));
+
+
+					std::cout << i << "\t" << a_str << "\t" << b_str << "\t" << c_str << "\n";
 
 					if (RESULT_STOCKFISH_PHI_K[i] == ERROR_VAL) 
 					{
@@ -257,11 +270,28 @@ namespace owl
 					}
 
 					delta_phi_k += abs(a - b);
-					varianz += pow(a - b, 2);
+					
 				}
+
+
 				std::cout << "delta-phi-cut = " << delta_phi_k << "/ (" << sf_count << "-" << errors << ")\n";
 
 				delta_phi_k = delta_phi_k / (static_cast<double>(sf_count)-errors);
+
+				// Standardabweichung ermitteln
+				for (int i = 0; i < sf_count; i++) {
+
+					auto a = static_cast<double>(owl_phi_k[i].score);
+					auto b = RESULT_STOCKFISH_PHI_K[i];
+
+					if (RESULT_STOCKFISH_PHI_K[i] == ERROR_VAL)
+					{
+						errors++;
+						continue;
+					}
+
+					varianz += pow(abs(a - b)-delta_phi_k, 2);
+				}
 
 				varianz = varianz / ((static_cast<double>(sf_count) - errors)-1);
 				auto standard_abw = sqrt(varianz);
@@ -269,46 +299,200 @@ namespace owl
 				std::cout << "delta-phi-cut = " << delta_phi_k << " +-" << standard_abw << std::endl;
 			}
 		
+			/**
+			 * Berechnung der Anzahl der Zufallszüge.
+			 */
 			inline static void randomMovesPerK()
 			{
+#if OWL_USE_RANDOM==true
 				// unter defines.h: USE_RADOM = true, RANDOM_DELTA_PHI_CUT = 0.360322
 				size_t sf_count = sizeof(RESULT_STOCKFISH_PHI_K) / sizeof(double);
 
 				//std::cout << "x\tnrand\n";
 
 				// nur weiße Züge +2
-				for (int i = 78; i < sf_count; i += 2)
+				for (int i = 0; i < sf_count; i += 2)
 				{
 					std::string fen = *(MASTER_GAME_FENS.begin() + i);
 					auto pos = ChessUtility::fenToPosition(fen);
 
-					auto engine = ChessEngine();
-					engine.setPosition(pos);
-					
-					engine.searchMove(PLAYER_WHITE, 4, FT_STANDARD);
-					auto minMaxresult = engine.m_result;
-					auto results = minMaxresult.testGetResults();
+					size_t values[4];
 
-					auto valid_moves = ChessValidation::getValidMoves(pos, PLAYER_WHITE);
+					for (int j = 0; j < 4; j++)
+					{
 
-					//std::cout << valid_moves.size() << "\n";
-					std::cout << results.size() << "\n";
+						auto engine = ChessEngine();
+						engine.setPosition(pos);
 
-					//pos.applyMove(ChessUtility::stringToMove(*(MASTER_GAME_MOVES_STR.begin() + i), &pos));
-					//pos.applyMove(ChessUtility::stringToMove(*(MASTER_GAME_MOVES_STR.begin() + i+1), &pos));
+						engine.searchMove(PLAYER_WHITE, j+1, FT_STANDARD);
+						auto minMaxresult = engine.m_result;
+
+						auto results = minMaxresult.testGetResults();
+						values[j] = results.size();
+
+					}
+					size_t valid_moves = ChessValidation::getValidMoves(pos, PLAYER_WHITE).size();
+					std::cout << i << "\t" << values[0] << "\t" << values[1] << "\t" << values[2] << "\t" << values[3] << "\t" << valid_moves << "\n";
 				}
+#endif
 			}
 		
-			inline static void checkValidMoves()
+			/**
+			 * Berechnung der Leisutng einer Konfiguration und Suchtiefe d.
+			 * 
+			 */
+			inline static void performance()
 			{
-				auto pos = ChessUtility::fenToPosition("7Q/5p1p/6p1/8/2p5/3r1PP1/7P/1K1k4 w - - 1 40");
-
-				auto moves = ChessValidation::getValidMoves(pos, PLAYER_WHITE);
-
-				for (auto mv : moves)
+				std::vector<UCHAR> Konfigurationen =
 				{
-					std::cout << ChessUtility::moveToString(mv) << std::endl;
+					FT_NULL,
+					FT_ALPHA_BETA,
+					FT_ALPHA_BETA | FT_SRT_MATERIAL | FT_SRT_MVV_LVA,
+					FT_ALPHA_BETA | FT_SRT_MATERIAL | FT_SRT_MVV_LVA | FT_SRT_KILLER,
+					FT_ALPHA_BETA | FT_SRT_MVV_LVA,
+					FT_ALPHA_BETA | FT_SRT_MVV_LVA | FT_SRT_KILLER,
+					FT_ALPHA_BETA | FT_SRT_KILLER,
+				};
+
+				constexpr auto MICROSECONDS_TO_MILLISECONDS = 0.001000f;
+				constexpr auto MILLISECONDS_TO_SECONDS = 0.001000f;
+
+				const INT32 N = sizeof(RESULT_STOCKFISH_PHI_K) / sizeof(double); // Anzahl Züge
+				FLOAT t = 0; // Gesamtzeit der Partie in ms
+
+				FLOAT t_Zug = 0.f; // Mittelwert Zeit pro Zug in ms
+				FLOAT t_Zug_Abw = 0.0f; // Standardabweichung pro Zug in ms
+				std::vector<FLOAT> t_Zug_list; // Zeit pro Zug in ms
+				t_Zug_list.reserve(N);
+
+				INT32 k = 0; // Anzahl der Knoten
+				FLOAT k_Zug = 0.f; // Mittelwert Knoten pro Zug
+				FLOAT k_Zug_Abw = 0.0f; // Standardabweichung Knoten pro Zug
+				std::vector<FLOAT> k_Zug_list; // Knoten pro Zug in ms
+				k_Zug_list.reserve(N);
+
+				FLOAT n_prune = 0.f; // Mittelwert Anzahl der Abschneidungen
+				FLOAT n_prune_Abw = 0.0f; // Standardabweichung Anzahl der Abschneidungen
+				INT32 n_prunes = 0;	// Gesamte Anzahl der Abschneidungen
+				std::vector<FLOAT> n_prune_list; // Anzahl der Abschneidungen
+				n_prune_list.reserve(N);
+
+				FLOAT gamma_k = 0.f; // Mittelwert legale Züge pro Zug
+				FLOAT gamma_k_Abw = 0.f; // Standardabweichung legale Züge pro Zug
+				std::vector<FLOAT> gamma_k_list; // legale Züge pro Zug
+				gamma_k_list.reserve(N);
+
+				FLOAT divide_t_Zug_gamma_k = 0.0f;		// Mittelwert tZug / Gamma(k)
+				FLOAT divide_t_Zug_gamma_k_Abw = 0.0f;	// Standardabweichung tZug / Gamma(k)
+
+				std::vector<FLOAT> divide_t_Zug_gamma_k_list; // tZug / Gamma(k)
+				divide_t_Zug_gamma_k_list.reserve(N);
+
+				INT32 depth = 6;
+
+				for (int i = 0; i < N; i++)
+				{
+					ChessEngine engine;
+
+					std::string fen = *(MASTER_GAME_FENS.begin() + i);
+					auto position = ChessUtility::fenToPosition(fen);
+
+					engine.setPosition(position);
+					auto player = position.getPlayer();
+					auto moves = ChessValidation::getValidMoves(position, player);
+					gamma_k_list.push_back(static_cast<FLOAT>(moves.size()));
+
+					engine.searchMove(player, depth, FT_ALPHA_BETA | FT_SRT_MVV_LVA | FT_SRT_KILLER);
+
+					auto suchzeit = static_cast<FLOAT>(engine.getSearchTime()) * MICROSECONDS_TO_MILLISECONDS;
+					t += suchzeit;
+					t_Zug_list.push_back(suchzeit);
+
+					auto knoten = engine.getNodesCount();
+					k += knoten;
+					k_Zug_list.push_back(static_cast<FLOAT>(knoten));
+
+					auto prunes = engine.getPrunesCount();
+					n_prunes += prunes;
+					n_prune_list.push_back(static_cast<FLOAT>(prunes));
+
+					divide_t_Zug_gamma_k_list.push_back(static_cast<FLOAT>(t_Zug_list[i]) / static_cast<FLOAT>(gamma_k_list[i]));
 				}
+
+				// tZug ausgeben in Sekunden
+				{
+					for (int i = 0; i < t_Zug_list.size(); i++)
+					{
+						auto tzug = t_Zug_list[i] * MILLISECONDS_TO_SECONDS;
+						std::cout << tzug << "\n";
+					}
+				}
+
+				//// Mittelwerte bestimmen
+				//t_Zug = mittelwert(t_Zug_list);
+				//t_Zug_Abw = standardabweichung(t_Zug_list, t_Zug);
+
+				//k_Zug = mittelwert(k_Zug_list);
+				//k_Zug_Abw = standardabweichung(k_Zug_list, k_Zug);
+
+				////n_prune = mittelwert(n_prune_list);
+				////n_prune_Abw = standardabweichung(n_prune_list, n_prune);
+
+				////gamma_k = mittelwert(gamma_k_list);
+				////gamma_k_Abw = standardabweichung(gamma_k_list, gamma_k);
+
+				//divide_t_Zug_gamma_k = mittelwert(divide_t_Zug_gamma_k_list);
+				//divide_t_Zug_gamma_k_Abw = standardabweichung(divide_t_Zug_gamma_k_list, divide_t_Zug_gamma_k);
+				//std::cout << "tZug\t\tkZug\t\tnPrune\t\tgamma(k)/tZug\t\tk\t\tt\n";
+
+				//std::cout << t_Zug << "+-" << t_Zug_Abw << "\t";
+				//std::cout << k_Zug << "+-" << k_Zug_Abw << "\t";
+				//std::cout << n_prunes << "\t";
+				////std::cout << gamma_k << "+-" << gamma_k_Abw << "\t";
+				//std::cout << divide_t_Zug_gamma_k << "+-" << divide_t_Zug_gamma_k_Abw << "\t";
+				//std::cout << k << "\t";
+				//std::cout << t << "\t";
+			}
+
+			/**
+			 * Berechnung des Mittelwerts eines dynamischen Arrays mit FLOAT Elementen
+			 * 
+			 * \param values FLOAT-Array
+			 * \return Mittelwert
+			 */
+			inline static FLOAT mittelwert(const std::vector<FLOAT>& values)
+			{
+				auto value = 0.0f;
+
+				for (int i = 0; i < values.size(); i++)
+				{
+					value += values[i];
+				}
+
+				return value / values.size();
+			}
+
+			/**
+			 * Berechnung der Standarbweichung eines dynamischen Arrays mit FLOAT Elementen.
+			 * 
+			 * \param values FLOAT-Array
+			 * \param expectation Mittelwert
+			 * \return Standardabweichung
+			 */
+			inline static FLOAT standardabweichung(const std::vector<FLOAT>& values, FLOAT expectation)
+			{
+				auto value = 0.0f;
+
+				for (int i = 0; i < values.size(); i++)
+				{
+					value += pow((values[i]-expectation), 2);
+				}
+
+				auto varianz = value / (values.size() - 1);
+
+				auto abw = sqrt(varianz);
+
+				return abw;
 			}
 		};
 	}

@@ -9,17 +9,66 @@ namespace owl
 	{
 		updateCurrentValue(value, shouldMax);
 	#if OWL_USE_RANDOM==true
-		m_result.emplace(move, value);
-		
-		// Lösche Züge, die kleiner sind als (Bester Zug-Threshold):
-		for (auto it = m_result.begin(); it != m_result.end();)
+		if (m_result.size() < MAX_RANDOM_MOVES_SIZE)
 		{
-			if (it->second < static_cast<FLOAT>(m_currentBestValue) - RANDOM_THRESHOLD || it->second > m_currentBestValue)
-			{
-				it = m_result.erase(it);
-			}
-			else { it++; }
+			m_result.emplace(move, value);
 		}
+		else
+		{
+			auto min = m_result.begin();
+			auto max = m_result.begin();
+
+			auto min_value = INF;
+			auto max_value = -INF;
+
+			for (auto it = m_result.begin(); it != m_result.end(); it++)
+			{
+				if (it->second < min_value) 
+				{
+					min_value = it->second;
+					min = it;
+				}
+				if (it->second > max_value)
+				{
+					max_value = it->second;
+					max = it;
+				}
+			}
+
+			if ((value > min_value) && value > (max_value - RANDOM_THRESHOLD))
+			{
+				m_result.erase(min);
+				m_result.emplace(move, value);
+			}
+		}
+
+		// Lösche Züge, die kleiner sind als (Bester Zug-Threshold):
+		//for (auto it = m_result.begin(); it != m_result.end();)
+		//{
+		//	if (it->second < static_cast<FLOAT>(m_currentBestValue) - RANDOM_THRESHOLD || it->second > m_currentBestValue)
+		//	{
+		//		it = m_result.erase(it);
+		//	}
+		//	else { it++; }
+		//}
+
+		//// Lösche Züge, wenn die Anzahl der maximal gültigen Zufallszüge überschritten wurde
+		//if (m_result.size() > MAX_RANDOM_MOVES_SIZE)
+		//{
+		//	auto worst_value = m_currentBestValue;
+		//	auto worst_it = m_result.begin();
+
+		//	for (auto it = m_result.begin(); it != m_result.end(); it++)
+		//	{
+		//		if (it->second < worst_value)
+		//		{
+		//			worst_value = it->second;
+		//			worst_it = it;
+		//		}
+		//	}
+
+		//	m_result.erase(worst_it);
+		//}
 	#else
 		m_best = move;
 	#endif
@@ -54,7 +103,15 @@ namespace owl
 	#endif
 	}
 
-	void MinMaxResult::updateCurrentValue(const EVALUATION_VALUE newValue, BOOL shouldMax) const
+	VOID MinMaxResult::clear() const
+	{
+#if OWL_USE_RANDOM==true
+		m_result.clear();
+#endif
+		m_currentBestValue = -INF;
+	}
+
+	VOID MinMaxResult::updateCurrentValue(const EVALUATION_VALUE newValue, BOOL shouldMax) const
 	{
 		if (shouldMax)
 		{
@@ -64,9 +121,11 @@ namespace owl
 			m_currentBestValue = std::min(m_currentBestValue, newValue);
 		}
 	}
+#if OWL_USE_RANDOM==true
 	const MoveMap MinMaxResult::testGetResults() const
 	{
 		return m_result;
 	}
+#endif
 }
 

@@ -520,6 +520,7 @@ namespace owl
 		if (player == PLAYER_WHITE)
 		{
 			if (position.getWhiteCastlingShort() 
+				&& !isPlaceInCheck(position, 4, LAST_ROW_INDEX, player, noKingCheck)
 				&& !isPlaceInCheck(position, 5, LAST_ROW_INDEX, player, noKingCheck)
 				&& !isPlaceInCheck(position, 6, LAST_ROW_INDEX, player, noKingCheck)
 				&& position[LAST_ROW_INDEX][5] == EMPTY_FIELD
@@ -537,6 +538,7 @@ namespace owl
 			if (position.getWhiteCastlingLong()
 				&& !isPlaceInCheck(position, 2, LAST_ROW_INDEX, player, noKingCheck)
 				&& !isPlaceInCheck(position, 3, LAST_ROW_INDEX, player, noKingCheck)
+				&& !isPlaceInCheck(position, 4, LAST_ROW_INDEX, player, noKingCheck)
 				&& position[LAST_ROW_INDEX][3] == EMPTY_FIELD
 				&& position[LAST_ROW_INDEX][2] == EMPTY_FIELD
 				&& position[LAST_ROW_INDEX][1] == EMPTY_FIELD)
@@ -554,6 +556,7 @@ namespace owl
 		else if (player == PLAYER_BLACK)
 		{
 			if (position.getBlackCastlingShort()
+				&& !isPlaceInCheck(position, 4, FIRST_ROW_INDEX, player, noKingCheck)
 				&& !isPlaceInCheck(position, 5, FIRST_ROW_INDEX, player, noKingCheck)
 				&& !isPlaceInCheck(position, 6, FIRST_ROW_INDEX, player, noKingCheck)
 				&& position[FIRST_ROW_INDEX][5] == EMPTY_FIELD
@@ -571,6 +574,7 @@ namespace owl
 			if (position.getBlackCastlingLong()
 				&& !isPlaceInCheck(position, 2, FIRST_ROW_INDEX, player, noKingCheck)
 				&& !isPlaceInCheck(position, 3, FIRST_ROW_INDEX, player, noKingCheck)
+				&& !isPlaceInCheck(position, 4, FIRST_ROW_INDEX, player, noKingCheck)
 				&& position[FIRST_ROW_INDEX][3] == EMPTY_FIELD
 				&& position[FIRST_ROW_INDEX][2] == EMPTY_FIELD
 				&& position[FIRST_ROW_INDEX][1] == EMPTY_FIELD)

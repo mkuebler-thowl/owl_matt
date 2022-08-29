@@ -8,7 +8,7 @@ namespace owl
 	EVALUATION_VALUE ChessEvaluation::evaluate(Position& position, INT32 enginePlayer, UCHAR evaluationFeatureFlags, BOOL validationCheckMate)
 	{
 		// Checkmate überprüfen?
-		// Hinweis: getValidMoves() berechnet das Checkmate intern und es soll nur bei in Schach-Stellungen
+		// Hinweis: getValidMoves() berechnet das Checkmate intern und es soll nur bei "in Schach"-Stellungen
 		// die Liste der möglichen Züge berechnet werden. Andernfalls wird nicht von einer Endstellung ausgegangen.
 		// Vorteil: Mehr Effizienz
 		if (validationCheckMate)
@@ -84,6 +84,9 @@ namespace owl
 					continue;
 
 				auto type = GET_PIECE_INDEX_BY_TYPE(piece);
+
+				if (type < 0 || type >= MAX_PIECE_TYPES) continue;
+
 				auto color = GET_PLAYER_INDEX_BY_PIECE(piece);
 
 				piece_count[color][type]++;
@@ -116,7 +119,7 @@ namespace owl
 					if (is_connected_passed) *pawn_structure[color] += PAWN_STRUCTURE_CONNECTED_PASSED_PAWNS_BONUS * PAWN_STRUCTURE_WEIGHT;
 				}
 
-				*material[color] += MATERIAL_VALUES[type];
+				if(type >= 0 && type < MAX_PIECE_TYPES) *material[color] += MATERIAL_VALUES[type];
 
 				// Piece Mobility Züge zählen
 				if (evaluationFeatureFlags & EVAL_FT_PIECE_MOBILITY)
@@ -277,15 +280,15 @@ namespace owl
 
 	BOOL ChessEvaluation::isDoublePawn(const Position& position, INT32 x, INT32 y)
 	{
-		if (isPieceEqualOnOffset(position, x, y, 0, 1)) return true;
-		if (isPieceEqualOnOffset(position, x, y, 0, -1)) return true;
+		if (isPawnPieceAlliedOnOffset(position, x, y, 0, 1)) return true;
+		if (isPawnPieceAlliedOnOffset(position, x, y, 0, -1)) return true;
 
 		return false;
 	}
 	BOOL ChessEvaluation::isConnectedPawn(const Position& position, INT32 x, INT32 y)
 	{
-		if (isPieceEqualOnOffset(position, x, y, 1, 0)) return true;		
-		if (isPieceEqualOnOffset(position, x, y, -1, 0)) return true;
+		if (isPawnPieceAlliedOnOffset(position, x, y, 1, 0)) return true;		
+		if (isPawnPieceAlliedOnOffset(position, x, y, -1, 0)) return true;
 
 		return false;
 	}
@@ -296,9 +299,9 @@ namespace owl
 		auto dir = position.getPlayer();
 
 		// Gegnerischer Bauer vorne
-		if (isPieceEnemyPawnOnOffset(position, x, y, 0, dir)) return true;
-		if (isPieceEnemyPawnOnOffset(position, x, y, 1, 2 * dir)) return true;
-		if (isPieceEnemyPawnOnOffset(position, x, y, -1, 2 * dir)) return true;
+		if (isPawnPieceHostileOnOffset(position, x, y, 0, dir)) return true;
+		if (isPawnPieceHostileOnOffset(position, x, y, 1, 2 * dir)) return true;
+		if (isPawnPieceHostileOnOffset(position, x, y, -1, 2 * dir)) return true;
 
 		return false;
 	}
@@ -319,15 +322,15 @@ namespace owl
 	}
 	BOOL ChessEvaluation::isChainPawn(const Position& position, INT32 x, INT32 y)
 	{
-		if (isPieceEqualOnOffset(position, x, y, 1, 1)) return true;
-		if (isPieceEqualOnOffset(position, x, y, 1, -1)) return true;
-		if (isPieceEqualOnOffset(position, x, y, -1, 1)) return true;
-		if (isPieceEqualOnOffset(position, x, y, -1, -1)) return true;
+		if (isPawnPieceAlliedOnOffset(position, x, y, 1, 1)) return true;
+		if (isPawnPieceAlliedOnOffset(position, x, y, 1, -1)) return true;
+		if (isPawnPieceAlliedOnOffset(position, x, y, -1, 1)) return true;
+		if (isPawnPieceAlliedOnOffset(position, x, y, -1, -1)) return true;
 
 		return false;
 	}
 
-	BOOL ChessEvaluation::isPieceEqualOnOffset(const Position& position, INT32 x, INT32 y, INT32 xOffset, INT32 yOffset)
+	BOOL ChessEvaluation::isPawnPieceAlliedOnOffset(const Position& position, INT32 x, INT32 y, INT32 xOffset, INT32 yOffset)
 	{
 		if (ChessValidation::isInsideChessboard(x + xOffset, y + yOffset))
 		{
@@ -336,7 +339,7 @@ namespace owl
 
 		return false;
 	}
-	BOOL ChessEvaluation::isPieceEnemyPawnOnOffset(const Position& position, INT32 x, INT32 y, INT32 xOffset, INT32 yOffset)
+	BOOL ChessEvaluation::isPawnPieceHostileOnOffset(const Position& position, INT32 x, INT32 y, INT32 xOffset, INT32 yOffset)
 	{
 		auto start_color = GetPlayerIndexByPositionPlayer(position.getPlayer());
 		auto target_color = start_color + 1 % PLAYER_COUNT;

@@ -7,24 +7,39 @@
 
 namespace owl
 {
-	/// <summary>
-	/// Datenstruktur zur Überprüfung der Stellungswiederholung. Diese verwendet ein Dictionary-Datenstruktur.
-	/// - Diese besteht aus String-Schlüssel (64-CHAR Feldinformation)
-	/// - Jeder Schlüssel verweist auf die Anzahl der Wiederholungen der korrespondierenden Schachstellung.
-	/// </summary>
+	/**
+	 *  Datenstruktur zur Überprüfung der Stellungswiederholung. Diese verwendet ein Dictionary-Datenstruktur.
+	 * Diese besteht aus Positions-Schlüssel (UINT64-Hash aus allen Zellen des Spielfelds)
+	 * Jeder Schlüssel verweist auf die Anzahl der Wiederholungen der korrespondierenden Schachstellung.
+	 */
 	class RepitionMap
 	{
 	public:
-		/// <summary>
-		/// Neu Spielposition zur Repition Map hinzufügen. Wird für die dreimalige Stellungswiederholung verwendet.
-		/// </summary>
-		/// <param name="position:">Die jeweilige Stellung</param>
+		/**
+		 * Neu Spielposition zur Repition Map hinzufügen. Wird für die dreimalige Stellungswiederholung verwendet.
+		 * 
+		 * \param position Die jeweilige Stellung
+		 */
 		VOID addPosition(const Position& position);
-
+		/**
+		 * Ist die Position bereits blockiert.
+		 * 
+		 * \param position Die zu überprüfende Stellung
+		 * \return Ist die Position blockiert?
+		 */
 		BOOL isPositionAlreadyLocked(const Position& position) const;
 
+		/**
+		 * Hash-Funktions-Struct für Positionen
+		 */
 		struct HashFunction
 		{
+			/**
+			 * Hash-Funktion für Positionen
+			 * 
+			 * \param position Die Stellung der gehasht werden soll
+			 * \return Der Hashwert
+			 */
 			UINT64 operator()(const Position& position) const
 			{
 				UINT64 rows[ROWS];
@@ -50,13 +65,7 @@ namespace owl
 			}
 		};
 	private:
-
-		/// <summary>
-		/// Stellungswiederholung-Dictionary
-		/// string: Zusammensetzung aus 64 Felder bzw. Characters
-		/// INT32: Die Anzahl der sich wiederholenden Stellung
-		/// </summary>
-		mutable std::unordered_map<Position, INT32, HashFunction> m_data;
+		mutable std::unordered_map<Position, INT32, HashFunction> m_data; // Hash-Map für die Stellungswiederholungsüberprüfung
 
 	};
 }

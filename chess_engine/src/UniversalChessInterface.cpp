@@ -399,11 +399,14 @@ namespace owl
     {
         INT32 depth = p_data->depth == 0 ? MAX_DEPTH : p_data->depth;
 
+        Position pos = m_pEngine->getPosition();
+
         auto result = m_pEngine->searchMove(m_pEngine->getPosition().getPlayer(), depth, FT_STANDARD);
 
         auto best = result.first;
         auto value = result.second;
 
+        std::cout << "info depth 0 " << ChessEvaluation::evaluate(pos, m_pEngine->getPlayer(), EVAL_FT_STANDARD, false) << "\n";
         std::cout << "info score " << value << " cp " << ChessUtility::convertToCentipawns(value) << std::endl;
         std::cout << "bestmove " << ChessUtility::moveToString(best) << std::endl;
 

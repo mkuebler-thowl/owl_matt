@@ -9,7 +9,6 @@
 
 namespace owl
 {
-
 	//static MinMaxResult m_result;
 
 	ChessEngine::ChessEngine()
@@ -30,7 +29,10 @@ namespace owl
 		m_startedDepth = depth;
 		m_repitionMap.addPosition(m_position);
 		if(m_player == 0) m_player = player;
-		KILLER_LIST killer_list;
+
+		// Testwerte für Effizienz:
+		m_nodes = 0;
+		m_prunes = 0;
 
 		m_mutex.unlock();
 
@@ -41,17 +43,14 @@ namespace owl
 		{
 			m_result.insert(INVALID_MOVE, ChessEvaluation::evaluate(m_position, player, EVAL_FT_STANDARD, true), player == m_player);
 		}
-		else minMax(m_position, m_player, depth, -INF, INF, 
-			parameterFlags,	// Parameter-Flags
-			parameterFlags & FT_SRT_KILLER ? &killer_list : nullptr // Killer-Liste
-		);
+		else minMax(m_position, m_player, depth, -INF, INF, parameterFlags);
 		auto time_end = std::chrono::steady_clock::now();
+		m_searchTime = (std::chrono::duration_cast<std::chrono::microseconds>(time_end - time_start).count());
 
 #if OWL_LOG_NO_INFO==false
-		std::cout << "info searchtime " << (std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start).count()) << " ms" << std::endl;
+		std::cout << "info searchtime " << m_searchTime << " ms" << std::endl;
 #endif
 		m_mutex.lock();
-
 		m_ready = true;
 		m_stop = false;
 		auto result = m_result.getResult();
@@ -113,17 +112,34 @@ namespace owl
 		return m_player;
 	}
 
+	INT32 ChessEngine::getPrunesCount() const
+	{
+		return m_prunes;
+	}
+
+	INT32 ChessEngine::getNodesCount() const
+	{
+		return m_nodes;
+	}
+
+	INT64 ChessEngine::getSearchTime() const
+	{
+		return m_searchTime;
+	}
+
 	Position& ChessEngine::getPosition()
 	{
 		return m_position;
 	}
 
-	EVALUATION_VALUE ChessEngine::minMax(Position& position, INT32 player, INT32 depth, FLOAT alpha, FLOAT beta, UCHAR parameterFlags, KILLER_LIST* killerList)
+	EVALUATION_VALUE ChessEngine::minMax(Position& position, INT32 player, INT32 depth, FLOAT alpha, FLOAT beta, UCHAR parameterFlags)
 	{		
 		if (m_stop)
 		{
 			return -INF;
 		}
+
+		m_nodes++;
 
 		// Blattknoten erreicht?
 		if (depth == 0)
@@ -137,11 +153,11 @@ namespace owl
 		// Endstellung erreicht? 
 		if (moves.empty())
 		{
-			return ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD);
+			return ChessEvaluation::evaluate(position, m_player, EVAL_FT_STANDARD, false);
 		}
 
 		// Züge gegebenfalls sortieren
-		sortMoves(&moves, position, depth, parameterFlags, killerList);
+		sortMoves(&moves, position, depth, parameterFlags);
 		
 		EVALUATION_VALUE value = player == m_player ? alpha : beta;
 
@@ -152,7 +168,7 @@ namespace owl
 			FLOAT new_alpha = player == m_player ? static_cast<FLOAT>(value) : alpha;
 			FLOAT new_beta = player == m_player ? beta : static_cast<FLOAT>(value);
 
-			EVALUATION_VALUE new_value = minMax(position, -player, depth - 1, new_alpha, new_beta, parameterFlags, killerList);
+			EVALUATION_VALUE new_value = minMax(position, -player, depth - 1, new_alpha, new_beta, parameterFlags);
 
 			position.undoLastMove();
 
@@ -191,13 +207,15 @@ namespace owl
 
 					if (parameterFlags & FT_ALPHA_BETA && static_cast<FLOAT>(value) - RANDOM_THRESHOLD >= beta)
 					{
-						insertKiller(killerList, move, depth);
+						insertKiller(move, depth);
+						m_prunes++;
 						break;
 					}
 				}
 				else if (parameterFlags & FT_ALPHA_BETA && static_cast<FLOAT>(value) >= beta)
 				{
-					insertKiller(killerList, move, depth);
+					insertKiller(move, depth);
+					m_prunes++;
 					break;
 				}
 			}
@@ -236,13 +254,15 @@ namespace owl
 
 					if (parameterFlags & FT_ALPHA_BETA && static_cast<FLOAT>(value) + RANDOM_THRESHOLD <= alpha)
 					{
-						insertKiller(killerList, move, depth);
+						insertKiller(move, depth);
+						m_prunes++;
 						break;
 					}
 				}
 				else if (parameterFlags & FT_ALPHA_BETA && static_cast<FLOAT>(value) <= alpha)
 				{
-					insertKiller(killerList, move, depth);
+					insertKiller(move, depth);
+					m_prunes++;
 					break;
 				}
 			}
@@ -251,14 +271,14 @@ namespace owl
 		return value;
 	}
 
-	VOID ChessEngine::sortMoves(MOVE_LIST* moves, Position& position, INT32 depth, UCHAR parameterFlags, KILLER_LIST* killerList)
+	VOID ChessEngine::sortMoves(MOVE_LIST* moves, Position& position, INT32 depth, UCHAR parameterFlags)
 	{
 		// Falls keine Sortierung aktiviert wurde: nichts tun
 		if (parameterFlags < FT_BIT_SORT_BEGIN ) return;
 
 		auto& enginePlayer = m_player;
 
-		std::sort(moves->begin(), moves->end(), [&position, depth, parameterFlags, killerList, &enginePlayer](const Move& left, const Move& right)
+		std::sort(moves->begin(), moves->end(), [this, &position, depth, parameterFlags, &enginePlayer](const Move& left, const Move& right)
 		{
 			// MVV_LVA: 
 			if (parameterFlags & FT_SRT_MVV_LVA)
@@ -274,15 +294,20 @@ namespace owl
 			}
 
 			// Killer-Heuristik:
-			if (parameterFlags & FT_SRT_KILLER && killerList != nullptr)
+			if (parameterFlags & FT_SRT_KILLER)
 			{
-				auto left_prio = compareKiller(killerList, left, depth);
+				// Linke Seite mit Killer vergleichen
+				auto left_prio = compareKiller(left, depth);
 				if (left_prio == KILLER_PRIO_1) return CHOOSE_LEFT;
 
-				auto right_prio = compareKiller(killerList, right, depth);
+				// Rechte Seite mit Killer vergleichen
+				auto right_prio = compareKiller(right, depth);
 				if (right_prio == KILLER_PRIO_1) return CHOOSE_RIGHT;
 
-				return left_prio > right_prio;
+				// Falls einer der beiden Seiten ein Killerzug sind vergleichen
+				if (left_prio > KILLER_NO_PRIO || right_prio > KILLER_NO_PRIO)
+					return left_prio > right_prio;
+				// Ansonsten fortfahren
 			}
 
 			// Material-Heuristik
@@ -299,8 +324,41 @@ namespace owl
 			}
 
 			// Unterdrückung der Warnung: Wenn alles klappt, wird 'return true' gar nicht erst erreicht
-			return true; 
+			return false; 
 		});
+	}
+
+	VOID ChessEngine::insertKiller(const Move move, const INT32 ply)
+	{
+		// Ignoriere Captures, invalide Züge und bereits vorhandene Züge in der Killer-Liste
+		if (move.capture) return;
+		if (move.isMoveInvalid()) return;
+		if (move == m_killerList[FIRST_KILLER_INDEX][ply] || move == m_killerList[LAST_KILLER_INDEX][ply]) return;
+		// Ansonten:
+
+		// Verschiebe Zug: 1. Feld => 2. Feld
+		m_killerList[LAST_KILLER_INDEX][ply] = m_killerList[FIRST_KILLER_INDEX][ply];
+
+		// Platziere neuen Zug: 1. Feld
+		m_killerList[FIRST_KILLER_INDEX][ply] = move;
+	}
+
+	INT32 ChessEngine::compareKiller(const Move move, const INT32 ply)
+	{
+		// Wurzelknoten?
+		if (ply >= MAX_DEPTH) return KILLER_NO_PRIO;
+
+		// Noch keiner Killer vorhanden?
+		if (m_killerList[FIRST_KILLER_INDEX][ply].isMoveInvalid()) return KILLER_NO_PRIO;
+
+		// Zug = erstes Element?
+		if (move == m_killerList[FIRST_KILLER_INDEX][ply]) return KILLER_PRIO_1;
+		
+		// Zug = zweites Element?
+		if (move == m_killerList[LAST_KILLER_INDEX][ply]) return KILLER_PRIO_2;
+
+		// Zug kein Killer?
+		return KILLER_NO_PRIO;
 	}
 
 	Captures ChessEngine::getCaptureValue(CHAR attacker, CHAR victim)
@@ -368,10 +426,5 @@ namespace owl
 		}
 
 		return Captures::kxP;
-	}
-
-	std::string ChessEngine::getCaptureValueString(Captures capture)
-	{
-		return s_capture_map[static_cast<UINT64>(capture)];
 	}
 }
